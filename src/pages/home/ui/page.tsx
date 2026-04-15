@@ -35,7 +35,7 @@ export const HomePage = withViewModel(HomePageVM, ({ model }) => {
   if (model.isLoadingMore && model.hasMoreProducts) {
     rows.push({ type: 'loading' });
   }
-
+  
   return (
     <main className="w-full bg-base-bg pt-6 pb-10">
       <section className="mx-auto max-w-[1416px]">

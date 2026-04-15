@@ -18,7 +18,10 @@ export class Globals {
     this.isServer = !this.isClient;
     this.router = new Router(params.router);
     this.stores = {
-      appInfo: new AppInfoStore(this.router),
+      appInfo: new AppInfoStore({
+        router: this.router,
+        appName: params.appName,
+      }),
       viewModels: new VMStore(this, {
         vmConfig: {
           observable: {

@@ -1,21 +1,21 @@
-import { action, makeObservable, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import type { Router } from '../../router';
 
-export type AppInfoSnapshot = {
-  appName: string;
-};
+export interface AppInfoParams {
+  router: Router;
+  appName?: string;
+}
 
 export class AppInfoStore {
   appName: string;
   title: string;
 
-  constructor(_router: Router) {
-    this.appName = 'GOZ0N';
-    this.title = '';
+  constructor(private params: AppInfoParams) {
+    this.appName = params.appName ?? 'GOZ0N';
+    this.title = this.appName;
 
     makeObservable(this, {
       appName: observable,
-      patch: action,
       title: observable,
     });
   }
@@ -25,12 +25,6 @@ export class AppInfoStore {
       this.title = title;
     } else {
       globalThis.document.title = title;
-    }
-  }
-
-  patch(next: Partial<AppInfoSnapshot>): void {
-    if (next.appName !== undefined) {
-      this.appName = next.appName;
     }
   }
 }

@@ -24,6 +24,7 @@ export const config = {
   distDir,
   srcDir,
   serverDir,
+  isDev: process.env.NODE_ENV !== 'production',
 }
 
 export const app = appBase as (typeof appBase & typeof config);
