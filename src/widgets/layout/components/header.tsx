@@ -54,7 +54,7 @@ export const Header = observer(() => {
               aria-label="Искать"
               className="h-10 w-11 rounded-none bg-brand text-white"
             >
-              <SearchIcon className="size-4" />
+              <SearchIcon className="size-4 m-auto" />
             </Button>
           </div>
           <Navbar />
