@@ -1,4 +1,7 @@
-export const NotFoundPage = () => {
+import { withViewModel } from 'mobx-view-model-react';
+import { NotFoundPageVM } from '../model';
+
+export const NotFoundPage = withViewModel(NotFoundPageVM, () => {
   return (
     <main className="flex min-h-[60vh] w-full items-center justify-center bg-base-bg">
       <div className="flex flex-col items-center gap-6 text-center">
@@ -20,4 +23,4 @@ export const NotFoundPage = () => {
       </div>
     </main>
   );
-};
+});

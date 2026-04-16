@@ -1,4 +1,3 @@
-import type { ViewModelStore } from 'mobx-view-model';
 import { assert } from 'yummies/assert';
 import type { AnyObject, Maybe } from 'yummies/types';
 import { VMStore } from '../shared/lib/view-models/vm-store';
@@ -11,7 +10,7 @@ export class Globals {
   readonly isServer: boolean;
 
   readonly router: Router;
-  readonly stores: { appInfo: AppInfoStore; viewModels: ViewModelStore };
+  readonly stores: { appInfo: AppInfoStore; viewModels: VMStore };
 
   constructor(private params: GlobalsCreateParams) {
     this.isClient = typeof window !== 'undefined';
@@ -42,7 +41,7 @@ export class Globals {
     return new Globals(ssrData);
   }
 
-  toSnapshot(): AnyObject {
+  toSnapshot(): GlobalsCreateParams {
     return this.params;
   }
 }

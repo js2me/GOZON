@@ -13,3 +13,8 @@ export interface ProductCardInfo {
   reviewsCount?: string;
   reviewsLabel?: string;
 }
+
+export type ProductRow = {
+  items?: ProductCardInfo[];
+  loading?: boolean;
+};

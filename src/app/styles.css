@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --color-brand: #00910a;
@@ -9,5 +9,5 @@
 
 html,
 body {
-  background-color: var(--color-base-bg);
+	background-color: var(--color-base-bg);
 }

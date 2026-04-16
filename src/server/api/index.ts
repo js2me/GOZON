@@ -1,6 +1,5 @@
-import { Request, Response } from "express";
-import { allProducts } from "../data/products";
-
+import type { Request, Response } from 'express';
+import { allProducts } from '../data/products';
 
 export const handleApiRequest = (req: Request, res: Response) => {
   if (req.path === '/api/products') {
@@ -23,4 +22,4 @@ export const handleApiRequest = (req: Request, res: Response) => {
     );
     return;
   }
-}
+};

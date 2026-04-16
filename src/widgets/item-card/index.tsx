@@ -98,10 +98,7 @@ const renderDots = (slidesCount: number, activeSlide: number) => {
   }
 
   return (
-    <div
-      aria-label={`Слайд ${activeSlide + 1} из ${slidesCount}`}
-      className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center"
-    >
+    <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
       <div className="inline-flex items-center gap-1.5 rounded-full px-2 py-1">
         {Array.from({ length: slidesCount }, (_, index) => (
           <span

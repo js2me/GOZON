@@ -1,10 +1,7 @@
-
-
-
-import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fakerRU as faker } from '@faker-js/faker';
+import express from 'express';
 
 const port = Number(process.env.PORT ?? 6473);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -25,9 +22,9 @@ export const config = {
   srcDir,
   serverDir,
   isDev: process.env.NODE_ENV !== 'production',
-  usePipeStreamsToRender: false,
-}
+  renderUsingStreams: true,
+};
 
-export const app = appBase as (typeof appBase & typeof config);
+export const app = appBase as typeof appBase & typeof config;
 
 Object.assign(app, config);

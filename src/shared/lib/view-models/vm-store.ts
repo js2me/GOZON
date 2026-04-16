@@ -1,3 +1,4 @@
+import { when } from 'mobx';
 import {
   type AnyViewModel,
   mergeVMConfigs,
@@ -13,6 +14,13 @@ export class VMStore extends ViewModelStoreBase {
     config?: ViewModelStoreConfig,
   ) {
     super(config);
+  }
+
+  // с помощью такого метода мы можем дождаться полноценного маунта всех VM
+  async waitUnitMountAllViews() {
+    await when(() => {
+      return !this.mountingViews.size;
+    });
   }
 
   createViewModel<VM extends AnyViewModel>(

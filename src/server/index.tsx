@@ -1,21 +1,12 @@
 import '../app/bootstrap/server';
 
-import express from 'express';
 import http from 'node:http';
-import { Globals } from '../globals';
-import { app } from './app';
+import express from 'express';
 import path from 'path';
+import { Globals } from '../globals';
 import { handleApiRequest } from './api';
+import { app } from './app';
 import { renderHtml } from './ssr';
-
-
-function sendHtmlPage(
-  req: express.Request,
-  res: express.Response,
-  clientScript: string,
-  styleHref: string,
-) {
-}
 
 async function main() {
   const httpServer = http.createServer(app);
@@ -34,8 +25,10 @@ async function main() {
 
   app.use('/dist', express.static(app.distDir));
   app.use('/public', express.static(app.publicDir));
-  app.use('/api/assets', express.static(path.resolve(app.serverDir, 'data/assets')));
-
+  app.use(
+    '/api/assets',
+    express.static(path.resolve(app.serverDir, 'data/assets')),
+  );
 
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api')) {

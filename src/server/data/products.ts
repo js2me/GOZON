@@ -1,12 +1,13 @@
-
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
-
-import { ProductDC } from '../../shared/api/api';
+import type { ProductDC } from '../../shared/api/api';
 import { app } from '../app';
 
-const productImagesDir = path.resolve(app.serverDir, 'data/assets/product-images');
+const productImagesDir = path.resolve(
+  app.serverDir,
+  'data/assets/product-images',
+);
 const productImageUrls = readdirSync(productImagesDir)
   .filter((filename) => filename.endsWith('.webp'))
   .map((filename) => `/api/assets/product-images/${filename}`);

@@ -4,6 +4,7 @@ import type { Router } from '../../router';
 export interface AppInfoParams {
   router: Router;
   appName?: string;
+  title?: string;
 }
 
 export class AppInfoStore {

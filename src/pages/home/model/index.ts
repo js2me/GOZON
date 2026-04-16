@@ -1,23 +1,51 @@
-import { makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
+import type { ComputeItemKey } from 'react-virtuoso';
+import { sleep } from 'yummies/async';
 import { loadProducts } from '../../../shared/api/api';
-import { VM } from '../../../shared/lib/view-models/vm';
+import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import { mapProductToCard } from './map-product-to-card';
-import type { ProductCardInfo } from './types';
+import type { ProductCardInfo, ProductRow } from './types';
 
 const PAGE_SIZE = 100;
 
-export class HomePageVM extends VM {
+export const ITEMS_PER_ROW = 5;
+
+export class HomePageVM extends PageVM {
   isProductsLoaded = false;
-
   isLoadingMore = false;
-
   hasMoreProducts = true;
-
   offset = 0;
-
   products: ProductCardInfo[] = [];
   firstPageProducts: ProductCardInfo[] = [];
   firstPageHasMoreProducts = true;
+
+  get virtualProductRows(): ProductRow[] {
+    const productRows: ProductRow[] = Array.from(
+      { length: Math.ceil(this.products.length / ITEMS_PER_ROW) },
+      (_, rowIndex) =>
+        ({
+          items: this.products.slice(
+            rowIndex * ITEMS_PER_ROW,
+            rowIndex * ITEMS_PER_ROW + ITEMS_PER_ROW,
+          ),
+        }) satisfies ProductRow,
+    );
+    const rows = [...productRows];
+
+    if (this.isLoadingMore && this.hasMoreProducts) {
+      rows.push({ loading: true });
+    }
+
+    return rows;
+  }
+
+  defineComputeItemKey: ComputeItemKey<ProductRow, any> = (index, row) => {
+    if (row.loading) {
+      return 'loading-row';
+    }
+
+    return row.items?.map((product) => product.id).join('-') || String(index);
+  };
 
   loadProductsChunk = async () => {
     if (this.isLoadingMore || !this.hasMoreProducts) {
@@ -72,6 +100,7 @@ export class HomePageVM extends VM {
       isLoadingMore: observable.ref,
       hasMoreProducts: observable.ref,
       offset: observable.ref,
+      virtualProductRows: computed,
     });
 
     if (this.globals.isClient) {
@@ -81,5 +110,13 @@ export class HomePageVM extends VM {
     this.globals.stores.appInfo.setTitle(
       `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`,
     );
+  }
+
+  async mount() {
+    // искусственное замедление
+    // как демонстрация возможности выполнения чего-то асинхронного
+    // перед отрисовки вьюшки
+    await sleep(1000);
+    super.mount();
   }
 }

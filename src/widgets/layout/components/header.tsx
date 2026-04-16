@@ -15,7 +15,7 @@ export const Header = observer(() => {
         className="sticky top-0 z-20 flex w-full max-w-[1416px] flex-col items-center justify-center rounded-b-[32px] bg-contrast-bg px-4 py-4"
         ref={model.headerRef}
       >
-        <div className="-mt-2 mx-auto flex w-full items-center gap-3">
+        <div className="mx-auto -mt-2 flex w-full items-center gap-3">
           <Link
             aria-label={appName}
             className="shrink-0 no-underline"
@@ -54,7 +54,7 @@ export const Header = observer(() => {
               aria-label="Искать"
               className="h-10 w-11 rounded-none bg-brand text-white"
             >
-              <SearchIcon className="size-4 m-auto" />
+              <SearchIcon className="m-auto size-4" />
             </Button>
           </div>
           <Navbar />
@@ -62,7 +62,7 @@ export const Header = observer(() => {
       </header>
       <div
         className={
-          '-mt-7 mx-auto flex w-full max-w-[1416px] items-center gap-4 overflow-x-auto rounded-b-[32px] bg-contrast-bg px-4 py-4 pt-9 text-slate-500 text-xs'
+          'mx-auto -mt-7 flex w-full max-w-[1416px] items-center gap-4 overflow-x-auto rounded-b-[32px] bg-contrast-bg px-4 py-4 pt-9 text-slate-500 text-xs'
         }
       >
         {model.quickLinks.map(({ href, label }) => (
