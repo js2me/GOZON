@@ -25,6 +25,7 @@ export const config = {
   srcDir,
   serverDir,
   isDev: process.env.NODE_ENV !== 'production',
+  usePipeStreamsToRender: false,
 }
 
 export const app = appBase as (typeof appBase & typeof config);
