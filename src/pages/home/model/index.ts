@@ -1,6 +1,5 @@
 import { computed, makeObservable, observable } from 'mobx';
 import type { ComputeItemKey } from 'react-virtuoso';
-import { sleep } from 'yummies/async';
 import { loadProducts } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import { mapProductToCard } from './map-product-to-card';
@@ -112,11 +111,11 @@ export class HomePageVM extends PageVM {
     );
   }
 
-  async mount() {
-    // искусственное замедление
-    // как демонстрация возможности выполнения чего-то асинхронного
-    // перед отрисовки вьюшки
-    await sleep(1000);
-    super.mount();
-  }
+  // async mount() {
+  //   // искусственное замедление
+  //   // как демонстрация возможности выполнения чего-то асинхронного
+  //   // перед отрисовки вьюшки
+  //   await sleep(1000);
+  //   super.mount();
+  // }
 }
