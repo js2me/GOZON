@@ -7,6 +7,7 @@ import { Globals } from '../globals';
 import { handleApiRequest } from './api';
 import { app } from './app';
 import { renderHtml } from './ssr';
+import { createSsrApi } from './ssr/api';
 
 async function main() {
   const httpServer = http.createServer(app);
@@ -35,6 +36,7 @@ async function main() {
       return handleApiRequest(req, res);
     }
 
+    const ssrApi = createSsrApi(req);
     const globals = new Globals({
       appName: app.isDev ? 'GOZON(dev)' : 'GOZON',
       router: {
@@ -42,6 +44,7 @@ async function main() {
           initialEntries: [req.path],
         },
       },
+      ssrApi,
     });
 
     return renderHtml(globals, req, res);

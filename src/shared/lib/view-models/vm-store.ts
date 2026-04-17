@@ -19,8 +19,10 @@ export class VMStore extends ViewModelStoreBase {
   // с помощью такого метода мы можем дождаться полноценного маунта всех VM
   async waitUnitMountAllViews() {
     await when(() => {
+      console.log('this.mountingViews.size', this.mountingViews.size);
       return !this.mountingViews.size;
     });
+    console.log("resolve")
   }
 
   createViewModel<VM extends AnyViewModel>(

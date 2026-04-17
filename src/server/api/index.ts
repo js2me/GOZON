@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import type { ProductsChunkDC, ProfileDC } from '../../shared/api/api';
 import { allProducts } from '../data/products';
 
 export const handleApiRequest = (req: Request, res: Response) => {
@@ -14,11 +15,27 @@ export const handleApiRequest = (req: Request, res: Response) => {
 
     const items = allProducts.slice(offset, offset + limit);
     const hasMore = offset + items.length < allProducts.length;
+    const productsChunk: ProductsChunkDC = {
+      items,
+      hasMore,
+    };
+
     res.status(200).send(
-      JSON.stringify({
-        items,
-        hasMore,
-      }),
+      JSON.stringify(productsChunk),
+    );
+    return;
+  }
+
+  if (req.path === '/api/profile') {
+    const profile: ProfileDC = {
+      firstName: 'Сергей',
+      lastName: 'Волков',
+      dateBirth: '1996-09-05',
+      male: true,
+    };
+
+    res.status(200).send(
+      JSON.stringify(profile),
     );
     return;
   }

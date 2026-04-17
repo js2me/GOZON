@@ -13,10 +13,24 @@ export const renderWithStreams = (
   clientScript: string,
   styleHref: string,
 ) => {
-  const dataJson = JSON.stringify(globals.toSnapshot()).replace(
-    /</g,
-    '\\u003c',
-  );
+
+  const waitFullMount = (op: () => any) => {
+    return async () => {
+      await globals.stores.viewModels.waitUnitMountAllViews();
+      return op();
+    }
+  }
+
+  const ssrData = waitFullMount(() => {
+    const snapshot = globals.toSnapshot();
+
+    console.log('snapshot', snapshot)
+
+    return JSON.stringify(snapshot).replace(
+      /</g,
+      '\\u003c',
+    )
+  })
 
   res.status(200);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -35,7 +49,7 @@ export const renderWithStreams = (
   <body>
     <div id="root">${appStream}</div>
     ${REACT_REFRESH_PREAMBLE}
-    <script>window.__SSR_DATA__ = ${dataJson};</script>
+    <script>window.__SSR_DATA__ = ${ssrData};</script>
     <script type="module" src="${clientScript}"></script>
   </body>
 </html>`;

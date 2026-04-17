@@ -18,6 +18,13 @@ export interface ProductsChunkDC {
   hasMore: boolean;
 }
 
+export interface ProfileDC {
+  firstName: string;
+  lastName: string;
+  dateBirth: string;
+  male: boolean;
+}
+
 export const loadProducts = async ({
   limit,
   offset,
@@ -27,5 +34,10 @@ export const loadProducts = async ({
     offset: String(offset),
   });
   const response = await fetch(`/api/products?${searchParams.toString()}`);
+  return response.json();
+};
+
+export const loadProfile = async (): Promise<ProfileDC> => {
+  const response = await fetch('/api/profile');
   return response.json();
 };

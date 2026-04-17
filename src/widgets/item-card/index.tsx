@@ -1,5 +1,5 @@
 import { Skeleton } from '@heroui/react';
-import { Flame, Heart, MessageCircle, Star, TrendingDown } from 'lucide-react';
+import { Flame, MessageCircle, Star, TrendingDown } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { cva, cx } from 'yummies/css';
 
@@ -61,7 +61,7 @@ const badgeCx = cva(
 );
 
 const priceMetaClassName = cva(
-  'mt-3 flex items-center gap-2 text-base font-medium',
+  'mt-3 flex items-center gap-2 text-[clamp(12px,5cqw,16px)] font-medium',
   {
     variants: {
       tone: {
@@ -105,12 +105,46 @@ const renderDots = (slidesCount: number, activeSlide: number) => {
             key={index}
             className={cx(
               'block size-2 rounded-full transition-colors',
-              index === activeSlide ? 'bg-[#005bff]' : 'bg-white/80',
+              index === activeSlide ? 'bg-profile-button' : 'bg-white/80',
             )}
           />
         ))}
       </div>
     </div>
+  );
+};
+
+const FavoriteIcon = ({ isFavorite }: { isFavorite: boolean }) => {
+  if (isFavorite) {
+    return (
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+      >
+        <path
+          clipRule="evenodd"
+          d="M12 22c-.316-.02-.56-.147-.848-.278a23.5 23.5 0 0 1-4.781-2.942C3.777 16.705 1 13.449 1 9a6 6 0 0 1 6-6 6.18 6.18 0 0 1 5 2.568A6.18 6.18 0 0 1 17 3a6 6 0 0 1 6 6c0 4.448-2.78 7.705-5.375 9.78a23.6 23.6 0 0 1-4.78 2.942c-.543.249-.732.278-.845.278"
+          fill="#F8104B"
+          fillRule="evenodd"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" fill="none" height="24" viewBox="0 0 24 24" width="24">
+      <path
+        d="M7 5a4 4 0 0 0-4 4c0 3.552 2.218 6.296 4.621 8.22A21.5 21.5 0 0 0 12 19.91a21.6 21.6 0 0 0 4.377-2.69C18.78 15.294 21 12.551 21 9a4 4 0 0 0-4-4c-1.957 0-3.652 1.396-4.02 3.2a1 1 0 0 1-1.96 0C10.652 6.396 8.957 5 7 5"
+        fill="white"
+      />
+      <path
+        d="M12 22c-.316-.02-.56-.147-.848-.278a23.5 23.5 0 0 1-4.781-2.942C3.777 16.705 1 13.449 1 9a6 6 0 0 1 6-6 6.18 6.18 0 0 1 5 2.568A6.18 6.18 0 0 1 17 3a6 6 0 0 1 6 6c0 4.448-2.78 7.705-5.375 9.78a23.6 23.6 0 0 1-4.78 2.942c-.543.249-.732.278-.845.278M7 5a4 4 0 0 0-4 4c0 3.552 2.218 6.296 4.621 8.22A21.5 21.5 0 0 0 12 19.91a21.6 21.6 0 0 0 4.377-2.69C18.78 15.294 21 12.551 21 9a4 4 0 0 0-4-4c-1.957 0-3.652 1.396-4.02 3.2a1 1 0 0 1-1.96 0C10.652 6.396 8.957 5 7 5"
+        fill="black"
+      />
+    </svg>
   );
 };
 
@@ -180,7 +214,7 @@ export const ItemCard = ({
   return (
     <article
       className={cx(
-        'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-white p-2',
+        'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-white p-2 [container-type:inline-size]',
         className,
       )}
     >
@@ -215,18 +249,12 @@ export const ItemCard = ({
         <button
           aria-label={favoriteLabel}
           className={cx(
-            'absolute top-3 right-3 z-10 inline-flex size-10 items-center justify-center rounded-full border-[3px] bg-white text-black transition-transform hover:scale-105',
-            isFavorite ? 'border-brand-accent' : 'border-transparent',
+            'absolute top-2 right-2 z-10 inline-flex size-8 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105',
           )}
           onClick={onFavoriteClick}
           type="button"
         >
-          <Heart
-            className={cx(
-              'size-6',
-              isFavorite && 'fill-brand-accent text-brand-accent',
-            )}
-          />
+          <FavoriteIcon isFavorite={isFavorite} />
         </button>
 
         {badge ? (
@@ -239,16 +267,16 @@ export const ItemCard = ({
 
       <div className="flex min-h-0 flex-1 flex-col px-2 pt-2 pb-2">
         <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-          <span className="font-extrabold text-[28px] text-brand-accent leading-none tracking-[-0.02em]">
+          <span className="font-extrabold text-[clamp(16px,10cqw,28px)] text-brand-accent leading-none tracking-[-0.02em]">
             {price}
           </span>
           {originalPrice ? (
-            <span className="font-semibold text-[18px] text-slate-400 leading-none line-through">
+            <span className="font-semibold text-[clamp(12px,6.5cqw,18px)] text-slate-400 leading-none line-through">
               {originalPrice}
             </span>
           ) : null}
           {discount ? (
-            <span className="font-bold text-[18px] text-brand-accent leading-none">
+            <span className="font-bold text-[clamp(12px,6.5cqw,18px)] text-brand-accent leading-none">
               {discount}
             </span>
           ) : null}
@@ -269,17 +297,17 @@ export const ItemCard = ({
 
         <LinkTag
           {...(href ? { href } : {})}
-          className="mt-1.5 block shrink-0 font-normal text-[16px] text-slate-900 leading-5 no-underline"
+          className="mt-1.5 block shrink-0 font-normal text-[clamp(12px,6cqw,16px)] text-slate-900 leading-[1.25] no-underline"
           style={titleStyle}
         >
           {title}
         </LinkTag>
 
         {rating || reviewsCount ? (
-          <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[16px] text-slate-500 leading-none">
+          <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[clamp(12px,5.5cqw,16px)] text-slate-500 leading-none">
             {rating ? (
               <span className="flex items-center gap-1.5 font-semibold text-slate-900">
-                <Star className="size-4 fill-[#ff9e00] text-[#ff9e00]" />
+                <Star className="size-4 fill-rating-star text-rating-star" />
                 <span>{rating}</span>
               </span>
             ) : null}

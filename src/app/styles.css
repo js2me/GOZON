@@ -5,6 +5,13 @@
   --color-brand-accent: #F91155;
   --color-base-bg: #F5F7FA;
   --color-contrast-bg: #FFF;
+  --color-profile-link: #2f73ff;
+  --color-profile-panel-bg: #f1f3f5;
+  --color-profile-card-muted: #e9ebee;
+  --color-profile-card-soft: #f4f5f7;
+  --color-profile-icon-muted: #c5cbd3;
+  --color-profile-button: #1f66ff;
+  --color-rating-star: #ff9e00;
 }
 
 html,

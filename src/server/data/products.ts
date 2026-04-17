@@ -32,7 +32,9 @@ export const allProducts = app.faker.helpers.multiple(
     rating: app.faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
     title: app.faker.commerce.productDescription(),
     reviewsCount: app.faker.number.int({ min: 0, max: 9999999 }),
-    images: app.faker.helpers.maybe(getRandomProductImages, { probability: 0.95 }),
+    images: app.faker.helpers.maybe(getRandomProductImages, {
+      probability: 0.95,
+    }),
   }),
   {
     count: { min: 2000, max: 5000 },
