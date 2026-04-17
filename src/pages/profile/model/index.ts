@@ -1,4 +1,8 @@
-import { computed, makeObservable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
+import {
+  loadProfileRatingProducts,
+  loadProfileViewedProducts,
+} from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type {
   ProfileMenuSection,
@@ -8,6 +12,10 @@ import type {
 } from './types';
 
 export class ProfilePageVM extends PageVM<ProfilePageContext> {
+  protected contextKey = 'profile-page';
+  ratingProducts: ProfileRatingCard[] = [];
+  viewedProducts: ProfileViewedCard[] = [];
+
   get menuSections(): ProfileMenuSection[] {
     return [
       {
@@ -52,91 +60,41 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
   }
 
   get ratingCards(): ProfileRatingCard[] {
-    return [
-      { id: '1', title: 'Слайм лизун очиститель для салона автомобиля' },
-      { id: '2', title: 'Трусы брифы, боксеры мужские трусы, 1 шт' },
-      {
-        id: '3',
-        title: 'Чай Шу Пуэр Бодрейший №2 китайский черный прессованный',
-      },
-    ];
+    return this.ratingProducts;
   }
 
   get viewedCards(): ProfileViewedCard[] {
-    return [
-      {
-        id: '1',
-        brand: 'TECNO',
-        title: 'Ноутбук Megabook K16',
-        imageSrc:
-          'https://images.unsplash.com/photo-1517336714739-489689fd1ca8?auto=format&fit=crop&w=640&q=80',
-        price: '58 859 ₽',
-        badge: { label: 'Распродажа' },
-      },
-      {
-        id: '2',
-        brand: 'DIGMA',
-        title: 'Ноутбук Pro',
-        imageSrc:
-          'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=640&q=80',
-        price: '51 069 ₽',
-        originalPrice: '76 000 ₽',
-        discount: '-33%',
-        badge: { label: 'Распродажа' },
-      },
-      {
-        id: '3',
-        brand: 'MONERIS',
-        title: 'Монитор 27" 165Hz',
-        imageSrc:
-          'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=640&q=80',
-        price: '9 275 ₽',
-        originalPrice: '24 999 ₽',
-        discount: '-63%',
-        badge: { label: 'Распродажа' },
-      },
-      {
-        id: '4',
-        brand: 'MONERIS',
-        title: 'AMD RYZEN 7-8845HS',
-        imageSrc:
-          'https://images.unsplash.com/photo-1624705002806-5d72df19c3ac?auto=format&fit=crop&w=640&q=80',
-        price: '59 110 ₽',
-        originalPrice: '284 485 ₽',
-        discount: '-79%',
-        badge: { label: 'Распродажа' },
-      },
-      {
-        id: '5',
-        brand: 'MONERIS',
-        title: 'NVIDIA RTX3050 8Gb',
-        imageSrc:
-          'https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=640&q=80',
-        price: '57 639 ₽',
-        originalPrice: '102 888 ₽',
-        discount: '-43%',
-        badge: { label: 'Распродажа' },
-      },
-      {
-        id: '6',
-        brand: 'new balance',
-        title: 'Кроссовки 530',
-        imageSrc:
-          'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=640&q=80',
-        price: '3 538 ₽',
-        originalPrice: '26 999 ₽',
-        discount: '-86%',
-        badge: { label: 'Распродажа' },
-      },
-    ];
+    return this.viewedProducts;
+  }
+
+  private loadProfileProducts = async () => {
+    const [ratingProducts, viewedProducts] = await Promise.all([
+      loadProfileRatingProducts(),
+      loadProfileViewedProducts(),
+    ]);
+
+    this.ratingProducts = ratingProducts;
+    this.viewedProducts = viewedProducts;
   }
 
   protected willMount(): void {
     makeObservable(this, {
+      ratingProducts: observable.ref,
+      viewedProducts: observable.ref,
       menuSections: computed.struct,
       ratingCards: computed.struct,
       viewedCards: computed.struct,
     });
+
+    if (this.ctx?.profile) {
+      this.globals.stores.appInfo.setTitle(
+        `${this.ctx.profile.firstName} ${this.ctx.profile.lastName} - Профиль`,
+      );
+    }
+
+    if (this.globals.isClient) {
+      void this.loadProfileProducts();
+    }
   }
 
   async loadContext(): Promise<ProfilePageContext> {
@@ -146,10 +104,5 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       key: 'profile-page',
       profile,
     }
-  }
-
-  async mount() {
-    await super.mount();
-    this.globals.stores.appInfo.setTitle(`${this.ctx.profile.firstName} ${this.ctx.profile.lastName} - Профиль`);
   }
 }

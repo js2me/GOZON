@@ -25,6 +25,22 @@ export interface ProfileDC {
   male: boolean;
 }
 
+export interface ProfileRatingProductDC {
+  id: string;
+  title: string;
+}
+
+export interface ProfileViewedProductDC {
+  id: string;
+  brand: string;
+  title: string;
+  imageSrc: string;
+  price: string;
+  originalPrice?: string;
+  discount?: string;
+  badge?: { label: string } | null;
+}
+
 export const loadProducts = async ({
   limit,
   offset,
@@ -39,5 +55,19 @@ export const loadProducts = async ({
 
 export const loadProfile = async (): Promise<ProfileDC> => {
   const response = await fetch('/api/profile');
+  return response.json();
+};
+
+export const loadProfileRatingProducts = async (): Promise<
+  ProfileRatingProductDC[]
+> => {
+  const response = await fetch('/api/profile/rating-products');
+  return response.json();
+};
+
+export const loadProfileViewedProducts = async (): Promise<
+  ProfileViewedProductDC[]
+> => {
+  const response = await fetch('/api/profile/viewed-products');
   return response.json();
 };

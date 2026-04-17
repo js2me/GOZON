@@ -47,6 +47,19 @@ async function main() {
       ssrApi,
     });
 
+    if (req.path === '/profile') {
+      return ssrApi.getProfile().then((profile) => {
+        Object.assign(globals.ctx, {
+          key: 'profile-page',
+          profile,
+        });
+        globals.stores.appInfo.setTitle(
+          `${profile.firstName} ${profile.lastName} - Профиль`,
+        );
+        return renderHtml(globals, req, res);
+      });
+    }
+
     return renderHtml(globals, req, res);
   });
 

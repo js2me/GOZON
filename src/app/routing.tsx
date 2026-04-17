@@ -5,11 +5,13 @@ import { NotFoundPage } from '../pages/not-found/ui/page';
 import { ProfilePage } from '../pages/profile/ui/page';
 
 export const Routing = observer(({ globals }: { globals: Globals }) => {
-  if (globals.router.history.location.pathname === '/') {
+  const pathname = globals.router.history.location.pathname;
+
+  if (pathname === '/') {
     return <HomePage />;
   }
 
-  if (globals.router.history.location.pathname === '/profile') {
+  if (pathname === '/profile') {
     return <ProfilePage />;
   }
 

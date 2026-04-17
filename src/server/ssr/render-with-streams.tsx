@@ -23,9 +23,6 @@ export const renderWithStreams = (
 
   const ssrData = waitFullMount(() => {
     const snapshot = globals.toSnapshot();
-
-    console.log('snapshot', snapshot)
-
     return JSON.stringify(snapshot).replace(
       /</g,
       '\\u003c',
