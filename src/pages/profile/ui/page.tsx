@@ -1,4 +1,4 @@
-import { Button, Link } from '@heroui/react';
+import { Button, Link, Skeleton } from '@heroui/react';
 import { X } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
 import { ItemCard } from '../../../widgets/item-card';
@@ -98,6 +98,19 @@ export const ProfilePage = withViewModel(ProfilePageVM, ({ model }) => {
               Оцените покупки
             </h2>
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+              {model.shouldShowRatingSkeletons
+                ? ['rating-skeleton-1', 'rating-skeleton-2', 'rating-skeleton-3'].map((skeletonId) => (
+                  <article
+                    className="relative min-h-[222px] rounded-3xl bg-profile-card-muted p-5"
+                    key={skeletonId}
+                  >
+                    <Skeleton className="mx-auto mt-2 mb-4 size-17 rounded-2xl" />
+                    <Skeleton className="mx-auto h-6 w-4/5 rounded-xl" />
+                    <Skeleton className="mx-auto mt-2 h-6 w-3/5 rounded-xl" />
+                    <Skeleton className="mx-auto mt-4 h-5 w-1/2 rounded-xl" />
+                  </article>
+                ))
+                : null}
               {model.ratingCards.map((item) => (
                 <article
                   key={item.id}
@@ -126,6 +139,23 @@ export const ProfilePage = withViewModel(ProfilePageVM, ({ model }) => {
               Вы смотрели
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+              {model.shouldShowViewedSkeletons
+                ? [
+                  'viewed-skeleton-1',
+                  'viewed-skeleton-2',
+                  'viewed-skeleton-3',
+                  'viewed-skeleton-4',
+                  'viewed-skeleton-5',
+                  'viewed-skeleton-6',
+                ].map((skeletonId) => (
+                  <ItemCard
+                    activeSlide={0}
+                    className="rounded-2xl shadow-sm"
+                    key={skeletonId}
+                    loading
+                  />
+                ))
+                : null}
               {model.viewedCards.map((item) => (
                 <ItemCard
                   activeSlide={0}

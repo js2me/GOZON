@@ -7,7 +7,13 @@ import type {
 } from '../../shared/api/api';
 import { allProducts } from '../data/products';
 
-export const handleApiRequest = (req: Request, res: Response) => {
+const delay = async (ms: number) => {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+export const handleApiRequest = async (req: Request, res: Response) => {
   const path = req.path;
 
   if (path === '/api/products') {
@@ -48,6 +54,8 @@ export const handleApiRequest = (req: Request, res: Response) => {
   }
 
   if (path === '/api/profile/rating-products') {
+    await delay(100);
+
     const ratingProducts: ProfileRatingProductDC[] = allProducts
       .slice(0, 3)
       .map((product) => ({
@@ -60,6 +68,8 @@ export const handleApiRequest = (req: Request, res: Response) => {
   }
 
   if (path === '/api/profile/viewed-products') {
+    await delay(100);
+
     const viewedProducts: ProfileViewedProductDC[] = allProducts
       .slice(3, 9)
       .map((product) => {

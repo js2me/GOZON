@@ -15,6 +15,8 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
   protected contextKey = 'profile-page';
   ratingProducts: ProfileRatingCard[] = [];
   viewedProducts: ProfileViewedCard[] = [];
+  isRatingLoading = true;
+  isViewedLoading = true;
 
   get menuSections(): ProfileMenuSection[] {
     return [
@@ -67,23 +69,42 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     return this.viewedProducts;
   }
 
-  private loadProfileProducts = async () => {
-    const [ratingProducts, viewedProducts] = await Promise.all([
-      loadProfileRatingProducts(),
-      loadProfileViewedProducts(),
-    ]);
+  get shouldShowRatingSkeletons(): boolean {
+    return this.isRatingLoading && this.ratingProducts.length === 0;
+  }
 
-    this.ratingProducts = ratingProducts;
-    this.viewedProducts = viewedProducts;
+  get shouldShowViewedSkeletons(): boolean {
+    return this.isViewedLoading && this.viewedProducts.length === 0;
+  }
+
+  private loadProfileProducts = async () => {
+    this.isRatingLoading = true;
+    this.isViewedLoading = true;
+    try {
+      const [ratingProducts, viewedProducts] = await Promise.all([
+        loadProfileRatingProducts(),
+        loadProfileViewedProducts(),
+      ]);
+
+      this.ratingProducts = ratingProducts;
+      this.viewedProducts = viewedProducts;
+    } finally {
+      this.isRatingLoading = false;
+      this.isViewedLoading = false;
+    }
   }
 
   protected willMount(): void {
     makeObservable(this, {
       ratingProducts: observable.ref,
       viewedProducts: observable.ref,
+      isRatingLoading: observable.ref,
+      isViewedLoading: observable.ref,
       menuSections: computed.struct,
       ratingCards: computed.struct,
       viewedCards: computed.struct,
+      shouldShowRatingSkeletons: computed,
+      shouldShowViewedSkeletons: computed,
     });
 
     if (this.ctx?.profile) {
