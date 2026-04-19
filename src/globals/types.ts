@@ -5,6 +5,6 @@ import type { AppInfoParams } from './stores/app-info';
 
 export type GlobalsCreateParams = Pick<AppInfoParams, 'appName'> & {
   router?: RouterParams;
-  ssrApi?: SsrApi;
-  ctx?: AnyObject
+  db?: SsrApi;
+  pageContexts?: AnyObject;
 };

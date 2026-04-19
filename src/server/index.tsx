@@ -45,7 +45,7 @@ async function main() {
           initialEntries: [req.path],
         },
       },
-      ssrApi,
+      db: ssrApi,
     });
 
     return renderHtml(globals, req, res);

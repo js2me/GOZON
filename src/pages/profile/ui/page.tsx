@@ -3,8 +3,14 @@ import { X } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
 import { ItemCard } from '../../../widgets/item-card';
 import { ProfilePageVM } from '../model';
+import { use } from 'react';
+import { when } from 'mobx';
 
 export const ProfilePage = withViewModel(ProfilePageVM, ({ model }) => {
+  if (model.globals.isServer) {
+    use(when(() => !!model.ctx));
+  }
+
   return (
     <main className="w-full bg-base-bg pt-6 pb-10">
       <section className="mx-auto flex w-full max-w-[1416px] gap-6 px-4">
@@ -180,5 +186,5 @@ export const ProfilePage = withViewModel(ProfilePageVM, ({ model }) => {
     </main>
   );
 }, {
-  fallback: () => "FALLBACK :("
+  fallback: () => null,
 });

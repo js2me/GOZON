@@ -1,33 +1,25 @@
 import type { Request, Response } from 'express';
 import { renderToPipeableStream } from 'react-dom/server';
 import { PassThrough, Readable } from 'stream';
-import { asyncTemplate } from 'yummies/async';
+import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
 import type { Globals } from '../../globals';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 
 export const renderWithStreams = (
   globals: Globals,
-  req: Request,
+  _req: Request,
   res: Response,
   clientScript: string,
   styleHref: string,
 ) => {
-
-  const waitFullMount = (op: () => any) => {
-    return async () => {
-      await globals.stores.viewModels.waitUnitMountAllViews();
-      return op();
-    }
-  }
-
-  const ssrData = waitFullMount(() => {
+  const ssrData = async () => {
     const snapshot = globals.toSnapshot();
     return JSON.stringify(snapshot).replace(
       /</g,
       '\\u003c',
-    )
-  })
+    );
+  };
 
   res.status(200);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -35,7 +27,7 @@ export const renderWithStreams = (
 
   const appStream = new PassThrough();
 
-  const template = asyncTemplate`<!doctype html>
+  const template = html`<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -54,8 +46,7 @@ export const renderWithStreams = (
   Readable.from(template).pipe(res);
 
   const { pipe } = renderToPipeableStream(<App globals={globals} />, {
-    async onShellReady() {
-      await globals.stores.viewModels.waitUnitMountAllViews();
+    onShellReady() {
       pipe(appStream);
     },
   });

@@ -117,7 +117,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   }
 
-  protected async loadContext(): Promise<ProfilePageContext> {
+  async loadContext(): Promise<ProfilePageContext> {
     const profile = await this.globals.db.getProfile();
 
     return {
