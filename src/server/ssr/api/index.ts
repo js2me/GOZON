@@ -57,6 +57,11 @@ export function createSsrApi(req: express.Request): SsrApi {
   cleanupExpiredSsrApiCache(now);
   const ssrApi: SsrApi = {
     getProfile: createGetProfile(sessionId),
+    getSystemInfo: () => {
+      return {
+        date: new Date().toISOString(),
+      }
+    }
   };
 
   ssrApiBySessionId.set(sessionId, {
