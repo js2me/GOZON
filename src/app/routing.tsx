@@ -8,10 +8,10 @@ import { Layout } from '../widgets/layout';
 
 export const Routing = observer(({ globals }: { globals: Globals }) => {
   return (
-    <RouteViewGroup layout={Layout}>
+    <RouteViewGroup layout={Layout} otherwise={globals.router.routes.notFound}>
       <RouteView route={globals.router.routes.home} view={HomePage} />
       <RouteView route={globals.router.routes.profile} view={ProfilePage} />
-      <NotFoundPage />
+      <RouteView route={globals.router.routes.notFound} view={NotFoundPage} />
     </RouteViewGroup>
   )
 });

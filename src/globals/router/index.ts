@@ -5,7 +5,7 @@ import {
   type MemoryHistoryOptions,
   type WithObservableHistoryParams,
 } from 'mobx-location-history';
-import { createRoute, routeConfig, Router as RouterLib } from 'mobx-route';
+import { createRoute, createVirtualRoute, routeConfig, Router as RouterLib } from 'mobx-route';
 
 export interface RouterParams {
   history?: WithObservableHistoryParams<MemoryHistoryOptions>;
@@ -13,7 +13,8 @@ export interface RouterParams {
 
 const defineRoutes = () => ({
   home: createRoute('/', { exact: true }),
-  profile: createRoute('/profile', { exact: true })
+  profile: createRoute('/profile', { exact: true }),
+  notFound: createVirtualRoute(),
 })
 
 export class Router extends RouterLib<ReturnType<typeof defineRoutes>> {
