@@ -13,7 +13,6 @@ export class Globals {
   readonly router: Router;
   readonly stores: { appInfo: AppInfoStore; viewModels: ViewModelsStore };
   readonly db!: SsrApi;
-  set = new Set<string>();
 
   constructor(private params: GlobalsCreateParams) {
     this.isClient = typeof window !== 'undefined';
