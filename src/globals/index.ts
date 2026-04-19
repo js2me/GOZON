@@ -19,7 +19,7 @@ export class Globals {
     this.isClient = typeof window !== 'undefined';
     this.isServer = !this.isClient;
     this.db = params.ssrApi!;
-    this.ctx = params.ctx??{};
+    this.ctx = params.ctx ?? {};
     this.router = new Router(params.router);
     this.stores = {
       appInfo: new AppInfoStore({
@@ -28,6 +28,7 @@ export class Globals {
       }),
       viewModels: new VMStore(this, {
         vmConfig: {
+          useReactIds: true,
           observable: {
             viewModels: {
               useDecorators: false,

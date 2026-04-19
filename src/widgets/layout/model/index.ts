@@ -25,12 +25,12 @@ export class LayoutVM extends VM {
   get navItems(): LayoutNavItem[] {
     return [
       {
-        href: '/',
+        href: this.globals.router.routes.home.createUrl(),
         icon: House,
         label: 'Главная',
       },
       {
-        href: '/profile',
+        href: this.globals.router.routes.profile.createUrl(),
         icon: UserIcon,
         label: 'Профиль',
       },

@@ -12,7 +12,6 @@ import type {
 } from './types';
 
 export class ProfilePageVM extends PageVM<ProfilePageContext> {
-  protected contextKey = 'profile-page';
   ratingProducts: ProfileRatingCard[] = [];
   viewedProducts: ProfileViewedCard[] = [];
   isRatingLoading = true;
@@ -118,11 +117,10 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   }
 
-  async loadContext(): Promise<ProfilePageContext> {
+  protected async loadContext(): Promise<ProfilePageContext> {
     const profile = await this.globals.db.getProfile();
 
     return {
-      key: 'profile-page',
       profile,
     }
   }

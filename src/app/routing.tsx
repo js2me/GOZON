@@ -3,17 +3,15 @@ import type { Globals } from '../globals';
 import { HomePage } from '../pages/home/ui/page';
 import { NotFoundPage } from '../pages/not-found/ui/page';
 import { ProfilePage } from '../pages/profile/ui/page';
+import { RouteView, RouteViewGroup } from 'mobx-route/react';
+import { Layout } from '../widgets/layout';
 
 export const Routing = observer(({ globals }: { globals: Globals }) => {
-  const pathname = globals.router.history.location.pathname;
-
-  if (pathname === '/') {
-    return <HomePage />;
-  }
-
-  if (pathname === '/profile') {
-    return <ProfilePage />;
-  }
-
-  return <NotFoundPage />;
+  return (
+    <RouteViewGroup layout={Layout}>
+      <RouteView route={globals.router.routes.home} view={HomePage} />
+      <RouteView route={globals.router.routes.profile} view={ProfilePage} />
+      <NotFoundPage />
+    </RouteViewGroup>
+  )
 });

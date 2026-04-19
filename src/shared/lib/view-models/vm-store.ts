@@ -2,9 +2,8 @@ import { when } from 'mobx';
 import {
   type AnyViewModel,
   mergeVMConfigs,
-  type ViewModelCreateConfig,
-  ViewModelStoreBase,
-  type ViewModelStoreConfig,
+  type ViewModelCreateConfig, ViewModelStoreBase,
+  type ViewModelStoreConfig
 } from 'mobx-view-model';
 import type { Globals } from '../../../globals';
 
@@ -19,7 +18,8 @@ export class VMStore extends ViewModelStoreBase {
   // с помощью такого метода мы можем дождаться полноценного маунта всех VM
   async waitUnitMountAllViews() {
     await when(() => {
-      return !this.mountingViews.size;
+      const vms = Array.from(this.viewModels.values());
+      return vms.every(it => 'isMounted' in it ? it.isMounted : true)
     });
   }
 
