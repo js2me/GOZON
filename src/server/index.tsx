@@ -26,6 +26,8 @@ async function main() {
   }
 
   app.use('/dist', express.static(app.distDir));
+  // Files in src/public are available at /filename (and at /public/filename for compatibility)
+  app.use(express.static(app.publicDir));
   app.use('/public', express.static(app.publicDir));
   app.use(
     '/api/assets',

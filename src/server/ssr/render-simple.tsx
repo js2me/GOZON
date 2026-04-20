@@ -30,7 +30,8 @@ export const renderSimple = (
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${documentTitle}</title>
-${headMeta ? `${headMeta}\n` : ''}    <link rel="icon" type="image/png" href="/public/logo.png" />
+${headMeta ? `${headMeta}\n` : ''}
+<link rel="icon" type="image/png" href="/logo.png" />
     <link rel="stylesheet" href="${styleHref}" />
   </head>
   <body>

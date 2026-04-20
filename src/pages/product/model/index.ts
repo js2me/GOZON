@@ -4,7 +4,7 @@ import type { ProductDC } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
 
-const FALLBACK_PRODUCT_IMAGE = '/public/vite.svg';
+const FALLBACK_PRODUCT_IMAGE = '/vite.svg';
 
 export class ProductPageVM extends PageVM<ProductPageContext | null> {
   activeImageIndex = 0;
