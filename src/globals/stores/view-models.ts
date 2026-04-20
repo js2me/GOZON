@@ -1,8 +1,8 @@
 import { computed, makeObservable, observable, when } from 'mobx';
 import {
-  type AnyViewModel,
-  mergeVMConfigs,
-  type ViewModelCreateConfig, ViewModelStoreBase
+    type AnyViewModel,
+    mergeVMConfigs,
+    type ViewModelCreateConfig, ViewModelStoreBase
 } from 'mobx-view-model';
 import { Globals } from '..';
 import { PageVM } from '../../shared/lib/view-models/page-vm';
@@ -58,7 +58,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
 
     if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
       this.loadingContexts.add(vm.id);
-      vm.loadContext().then(ctx => {
+      vm.init().then(ctx => {
         this.loadedContexts[vm.id] = ctx;
       }).finally(() => {
         this.loadingContexts.delete(vm.id);

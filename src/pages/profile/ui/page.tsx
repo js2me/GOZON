@@ -87,7 +87,7 @@ export const ProfilePage = withViewModel(ProfilePageVM, ({ model }) => {
                   239,89 ₽
                 </p>
               </div>
-              <Button className="rounded-xl bg-profile-button px-10 font-semibold text-[17px] text-white">
+              <Button className="rounded-xl bg-brand px-10 font-semibold text-[17px] text-white">
                 Пополнить
               </Button>
             </article>

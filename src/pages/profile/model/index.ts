@@ -1,14 +1,14 @@
 import { computed, makeObservable, observable } from 'mobx';
 import {
-  loadProfileRatingProducts,
-  loadProfileViewedProducts,
+    loadProfileRatingProducts,
+    loadProfileViewedProducts,
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type {
-  ProfileMenuSection,
-  ProfilePageContext,
-  ProfileRatingCard,
-  ProfileViewedCard,
+    ProfileMenuSection,
+    ProfilePageContext,
+    ProfileRatingCard,
+    ProfileViewedCard,
 } from './types';
 
 export class ProfilePageVM extends PageVM<ProfilePageContext> {
@@ -117,7 +117,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   }
 
-  async loadContext(): Promise<ProfilePageContext> {
+  async init(): Promise<ProfilePageContext> {
     const profile = await this.globals.db.getProfile();
 
     return {

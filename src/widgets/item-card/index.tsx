@@ -105,7 +105,7 @@ const renderDots = (slidesCount: number, activeSlide: number) => {
             key={index}
             className={cx(
               'block size-2 rounded-full transition-colors',
-              index === activeSlide ? 'bg-profile-button' : 'bg-white/80',
+              index === activeSlide ? 'bg-brand' : 'bg-white/80',
             )}
           />
         ))}

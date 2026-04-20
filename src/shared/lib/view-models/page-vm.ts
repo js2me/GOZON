@@ -8,9 +8,9 @@ export class PageVM<out TPageContext extends Maybe<AnyObject> = null> extends VM
   }
 
   /**
-   * Загружает с сервера необходимые данные для первой отрисовки страницыЮ
+   * Загружает с сервера необходимые данные для первой отрисовки страницы
    */
-  async loadContext(): Promise<TPageContext> {
+  async init(): Promise<TPageContext> {
     return {} as TPageContext
   }
 

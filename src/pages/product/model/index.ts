@@ -117,7 +117,7 @@ export class ProductPageVM extends PageVM<ProductPageContext> {
     return history.location?.pathname ?? history.pathname ?? history.path ?? '';
   }
 
-  async loadContext(): Promise<ProductPageContext> {
+  async init(): Promise<ProductPageContext> {
     const profile = await this.globals.db.getProfile();
     const productId = this.productId;
 

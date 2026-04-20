@@ -1,7 +1,7 @@
 import { PageVM } from '../../shared/lib/view-models/page-vm';
 
 export class NotFoundPageVM extends PageVM<{ label: string }> {
-  async loadContext() {
+  async init() {
     const systemInfo = this.globals.db.getSystemInfo();
 
     return {

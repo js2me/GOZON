@@ -41,7 +41,7 @@ export const ProductPage = withViewModel(
                   <button
                     className={`overflow-hidden rounded-xl border-2 transition-colors ${
                       index === model.activeImageIndex
-                        ? 'border-profile-button'
+                        ? 'border-brand'
                         : 'border-transparent'
                     }`}
                     key={`${product.id}-${img}-preview`}
@@ -112,7 +112,7 @@ export const ProductPage = withViewModel(
                   <button
                     className={`overflow-hidden rounded-lg border-2 ${
                       index === model.activeImageIndex
-                        ? 'border-profile-button'
+                        ? 'border-brand'
                         : 'border-slate-200'
                     }`}
                     key={`${product.id}-${image}-thumb`}
@@ -161,8 +161,8 @@ export const ProductPage = withViewModel(
             </section>
 
             <aside className="rounded-3xl bg-white p-5">
-              <div className="rounded-2xl bg-product-sale-bg px-4 py-3 text-[14px] text-product-sale-text">
-                <p className="inline-flex items-center gap-2 font-semibold">
+              <div className="rounded-2xl bg-product-sale-bg px-4 py-3 text-[14px] flex items-center text-product-sale-text">
+                <p className="inline-flex items-center gap-2 font-semibold my-auto">
                   <Percent className="size-4" />
                   Распродажа
                 </p>
@@ -186,12 +186,12 @@ export const ProductPage = withViewModel(
                 </p>
               </div>
 
-              <Button className="mt-5 h-12 w-full rounded-2xl bg-profile-button font-bold text-[17px] text-white">
+              <Button className="mt-5 h-12 w-full rounded-2xl bg-brand font-bold text-[17px] text-white">
                 В корзину
               </Button>
 
               <Button
-                className="mt-3 h-11 w-full rounded-2xl bg-product-buy-now-bg font-semibold text-[16px] text-profile-button"
+                className="mt-3 h-11 w-full rounded-2xl bg-product-buy-now-bg font-semibold text-[16px] text-brand"
                 variant="secondary"
               >
                 Купить сейчас

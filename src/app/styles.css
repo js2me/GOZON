@@ -10,13 +10,12 @@
   --color-profile-card-muted: #e9ebee;
   --color-profile-card-soft: #f4f5f7;
   --color-profile-icon-muted: #c5cbd3;
-  --color-profile-button: #1f66ff;
   --color-rating-star: #ff9e00;
   --color-product-sale-bg: #f7ecff;
   --color-product-sale-text: #ad3fcf;
-  --color-product-price-panel-bg: #f4f8ff;
-  --color-product-buy-now-bg: #e9f2ff;
-  --color-product-delivery-bg: #f8f9fb;
+  --color-product-price-panel-bg: #f8fff4;
+  --color-product-buy-now-bg: #e3ffe5;
+  --color-product-delivery-bg: #f8fbf9;
 }
 
 html,

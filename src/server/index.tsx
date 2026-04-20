@@ -39,7 +39,7 @@ async function main() {
 
     const ssrApi = createSsrApi(req);
     const globals = new Globals({
-      appName: app.isDev ? 'GOZON(dev)' : 'GOZON',
+      appName: 'GOZON',
       router: {
         history: {
           initialEntries: [req.path],
