@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable, when } from 'mobx';
 import {
   type AnyViewModel,
   mergeVMConfigs,
@@ -12,7 +12,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
   loadedContexts: AnyObject;
   loadingContexts;
 
-  constructor( 
+  constructor(
     private globals: Globals,
     pageContexts?: AnyObject,
   ) {
@@ -26,6 +26,11 @@ export class ViewModelsStore extends ViewModelStoreBase {
           viewModelStores: {
             useDecorators: false,
           },
+        },
+        suspendUntil: () => {
+          if (globals.isServer) {
+            return when(() => !this.loadingContexts.size)
+          }
         },
       },
     });
@@ -51,7 +56,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });
 
-    if (vm instanceof PageVM && !vm.ctx) {
+    if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
       this.loadingContexts.add(vm.id);
       vm.loadContext().then(ctx => {
         this.loadedContexts[vm.id] = ctx;

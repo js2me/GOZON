@@ -1,3 +1,4 @@
+import { reaction } from 'mobx';
 import {
   createBrowserHistory,
   createMemoryHistory,
@@ -17,7 +18,9 @@ const defineRoutes = () => ({
   notFound: createVirtualRoute(),
 })
 
-export class Router extends RouterLib<ReturnType<typeof defineRoutes>> {
+type RoutesMap = ReturnType<typeof defineRoutes>
+
+export class Router extends RouterLib<RoutesMap> {
   history;
 
   query;
@@ -35,7 +38,6 @@ export class Router extends RouterLib<ReturnType<typeof defineRoutes>> {
       queryParams: query,
     })
 
-
     super({
       routes: defineRoutes(),
       history,
@@ -44,6 +46,16 @@ export class Router extends RouterLib<ReturnType<typeof defineRoutes>> {
 
     this.query = query;
     this.history = history;
+
+    const routeKeys = (Object.keys(this.routes) as (keyof RoutesMap)[]).filter((key) => key !== 'notFound');
+
+    reaction(() => routeKeys.every(key => !this.routes[key].isOpening && !this.routes[key].isOpened), (isAllRoutesNotOpened) => {
+      if (isAllRoutesNotOpened) {
+        this.routes.notFound.open();
+      }
+    }, {
+      fireImmediately: true,
+    })
   }
 
   navigate() { }
