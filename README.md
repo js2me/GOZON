@@ -1,16 +1,7 @@
-# Example: Express + SSR + mobx-view-model
+![](./assets/brand-big-logo.png)   
 
-Аналог `examples/ssr-nextjs`, но без `next`:
-- SSR делает `express` + `react-dom/server`.
-- Гидрация на клиенте через `hydrateRoot`.
-- Тот же сценарий с `RootStore`, `withRootStoreProps`, `withViewModel`.
 
-## Run
+# GOZON - ненастоящий маркетплейс – миллионы товаров по выгодным ценам    
 
-```bash
-cd examples/ssr-expressjs
-pnpm install
-pnpm dev
-```
 
-Open [http://localhost:3011](http://localhost:3011).
+Этот проект некоммерческий пример работы MobX в режиме SSR + демонстрация работы MobX библиотек
