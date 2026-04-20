@@ -1,11 +1,17 @@
 export interface ProductDC {
   id: number;
+  shopId: number;
   title: string;
   price: number;
   originalPrice: number;
   rating: number;
   reviewsCount: number;
   images?: string[];
+}
+
+export interface ShopDC {
+  id: number;
+  name: string;
 }
 
 export interface LoadProductsParams {
@@ -23,6 +29,7 @@ export interface ProfileDC {
   lastName: string;
   dateBirth: string;
   male: boolean;
+  address: string;
 }
 
 export interface ProfileRatingProductDC {
@@ -50,6 +57,24 @@ export const loadProducts = async ({
     offset: String(offset),
   });
   const response = await fetch(`/api/products?${searchParams.toString()}`);
+  return response.json();
+};
+
+export const loadProductById = async (productId: number): Promise<ProductDC> => {
+  const response = await fetch(`/api/products/${productId}`);
+  if (!response.ok) {
+    throw new Error('Product not found');
+  }
+
+  return response.json();
+};
+
+export const loadShopById = async (shopId: number): Promise<ShopDC> => {
+  const response = await fetch(`/api/shops/${shopId}`);
+  if (!response.ok) {
+    throw new Error('Shop not found');
+  }
+
   return response.json();
 };
 

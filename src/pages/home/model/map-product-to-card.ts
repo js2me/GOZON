@@ -9,6 +9,7 @@ export function mapProductToCard(product: ProductDC): ProductCardInfo {
 
   return {
     id: product.id,
+    href: `/products/${product.id}`,
     title: product.title,
     imageSrc: product.images?.[0],
     price: `${product.price.toLocaleString('ru-RU')} ₽`,

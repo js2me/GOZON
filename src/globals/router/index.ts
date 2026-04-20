@@ -15,6 +15,7 @@ export interface RouterParams {
 const defineRoutes = () => ({
   home: createRoute('/', { exact: true }),
   profile: createRoute('/profile', { exact: true }),
+  product: createRoute('/products/:productId', { exact: true }),
   notFound: createVirtualRoute(),
 })
 

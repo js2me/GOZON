@@ -2,6 +2,7 @@ import type { ItemCardBadge, ItemCardMeta } from '../../../widgets/item-card';
 
 export interface ProductCardInfo {
   id: number;
+  href: string;
   title: string;
   imageSrc?: string;
   price: string;

@@ -1,6 +1,8 @@
 import type express from 'express';
 import type { SsrApi } from '../../api/types';
 import { createGetProfile } from './get-profile';
+import { createGetProductById } from './get-product-by-id';
+import { createGetShopById } from './get-shop-by-id';
 
 const SSR_API_CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 const ssrApiBySessionId = new Map<
@@ -57,6 +59,8 @@ export function createSsrApi(req: express.Request): SsrApi {
   cleanupExpiredSsrApiCache(now);
   const ssrApi: SsrApi = {
     getProfile: createGetProfile(sessionId),
+    getProductById: createGetProductById(),
+    getShopById: createGetShopById(),
     getSystemInfo: () => {
       return {
         date: new Date().toISOString(),

@@ -21,6 +21,7 @@ export async function getProfileFromDb(sessionId: string): Promise<ProfileDC> {
     lastName: app.faker.person.lastName(sex),
     dateBirth: dateBirth.toISOString().slice(0, 10),
     male: sex === 'male',
+    address: app.faker.location.streetAddress(),
   };
 
   profileBySessionId.set(sessionId, profile);

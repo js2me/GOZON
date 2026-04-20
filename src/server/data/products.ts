@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import type { ProductDC } from '../../shared/api/api';
 import { app } from '../app';
+import { allShops } from './shops';
 
 const productImagesDir = path.resolve(
   app.serverDir,
@@ -27,6 +28,7 @@ function getRandomProductImages(): string[] | undefined {
 export const allProducts = app.faker.helpers.multiple(
   (_, id): ProductDC => ({
     id,
+    shopId: allShops[id % allShops.length]?.id ?? 1,
     originalPrice: +app.faker.commerce.price({ min: 1, max: 10000 }),
     price: +app.faker.commerce.price({ min: 1, max: 10000 }),
     rating: app.faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
@@ -40,3 +42,7 @@ export const allProducts = app.faker.helpers.multiple(
     count: { min: 2000, max: 5000 },
   },
 );
+
+export function getProductById(productId: number): ProductDC | null {
+  return allProducts.find((product) => product.id === productId) ?? null;
+}

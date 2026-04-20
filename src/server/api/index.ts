@@ -1,11 +1,13 @@
 import type { Request, Response } from 'express';
 import type {
+  ProductDC,
   ProductsChunkDC,
   ProfileDC,
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
 import { allProducts } from '../data/products';
+import { getShopById } from '../data/shops';
 
 const delay = async (ms: number) => {
   await new Promise<void>((resolve) => {
@@ -15,6 +17,35 @@ const delay = async (ms: number) => {
 
 export const handleApiRequest = async (req: Request, res: Response) => {
   const path = req.path;
+
+  if (path.startsWith('/api/products/')) {
+    const productIdRaw = path.slice('/api/products/'.length);
+    const productId = Number(productIdRaw);
+    const product = allProducts.find((item) => item.id === productId) ?? null;
+
+    if (!Number.isInteger(productId) || !product) {
+      res.status(404).json({ error: 'Product not found' });
+      return;
+    }
+
+    const productDc: ProductDC = product;
+    res.status(200).send(JSON.stringify(productDc));
+    return;
+  }
+
+  if (path.startsWith('/api/shops/')) {
+    const shopIdRaw = path.slice('/api/shops/'.length);
+    const shopId = Number(shopIdRaw);
+    const shop = getShopById(shopId);
+
+    if (!Number.isInteger(shopId) || !shop) {
+      res.status(404).json({ error: 'Shop not found' });
+      return;
+    }
+
+    res.status(200).send(JSON.stringify(shop));
+    return;
+  }
 
   if (path === '/api/products') {
     const rawLimit = Number(req.query.limit);
@@ -45,6 +76,7 @@ export const handleApiRequest = async (req: Request, res: Response) => {
       lastName: 'Волков',
       dateBirth: '1996-09-05',
       male: true,
+      address: 'Высоковский пр-д, 20',
     };
 
     res.status(200).send(
