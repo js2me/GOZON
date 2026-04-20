@@ -5,6 +5,7 @@ import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
 import type { Globals } from '../../globals';
 import { REACT_REFRESH_PREAMBLE } from './constants';
+import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
 
 export const renderWithStreams = (
   globals: Globals,
@@ -21,6 +22,12 @@ export const renderWithStreams = (
     );
   };
 
+  const head = globals.ssr.head;
+  const documentTitle = escapeHtmlText(
+    head.title || globals.stores.appInfo.title,
+  );
+  const headMeta = renderHeadMetaTags(head);
+
   res.status(200);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', `max-age=${60 * 60 * 24 * 15}`);
@@ -32,7 +39,8 @@ export const renderWithStreams = (
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${globals.stores.appInfo.title}</title>
+    <title>${documentTitle}</title>
+${headMeta ? `${headMeta}\n` : ''}    <link rel="icon" type="image/png" href="/public/logo.png" />
     <link rel="stylesheet" href="${styleHref}" />
   </head>
   <body>

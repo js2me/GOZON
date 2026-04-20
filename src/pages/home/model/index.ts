@@ -105,10 +105,11 @@ export class HomePageVM extends PageVM {
     if (this.globals.isClient) {
       void this.loadProductsChunk();
     }
+  }
 
-    this.globals.stores.appInfo.setTitle(
-      `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`,
-    );
+  async init() {
+    this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`
+    return null;
   }
 
   // async mount() {

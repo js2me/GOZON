@@ -68,8 +68,10 @@ export function createSsrApi(req: express.Request): SSRApi {
       }
     },
     head: {
-      title: ''
-    }
+      title: '',
+      ogSiteName: 'GOZON',
+      ogLocale: 'ru_RU',
+    },
   };
 
   ssrApiBySessionId.set(sessionId, {

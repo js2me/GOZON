@@ -122,7 +122,16 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       const product = await this.globals.ssr.getProductById(this.productId);
       const shop = await this.globals.ssr.getShopById(product!.shopId);
 
-      this.globals.ssr.head.title = `${product!.title} - GOZON`
+      const pageTitle = `${product!.title} - GOZON`;
+      const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
+      const head = this.globals.ssr.head;
+
+      head.title = pageTitle;
+      head.ogTitle = product!.title;
+      head.ogDescription = `${product!.title} — ${priceLabel}`;
+      head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
+      head.ogUrl = `/products/${product!.id}`;
+      head.ogType = 'product';
 
       return { product, profile, shop };
     } catch {
