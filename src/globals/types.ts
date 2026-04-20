@@ -1,10 +1,10 @@
 import { AnyObject } from 'yummies/types';
-import type { SsrApi } from '../server/api/types';
+import type { SSRApi } from '../server/api/types';
 import type { RouterParams } from './router';
 import type { AppInfoParams } from './stores/app-info';
 
 export type GlobalsCreateParams = Pick<AppInfoParams, 'appName'> & {
   router?: RouterParams;
-  db?: SsrApi;
+  ssr?: SSRApi;
   pageContexts?: AnyObject;
 };

@@ -1,5 +1,5 @@
 import type express from 'express';
-import type { SsrApi } from '../../api/types';
+import type { SSRApi } from '../../api/types';
 import { createGetProfile } from './get-profile';
 import { createGetProductById } from './get-product-by-id';
 import { createGetShopById } from './get-shop-by-id';
@@ -7,7 +7,7 @@ import { createGetShopById } from './get-shop-by-id';
 const SSR_API_CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 const ssrApiBySessionId = new Map<
   string,
-  { value: SsrApi; expiresAt: number }
+  { value: SSRApi; expiresAt: number }
 >();
 
 function getSessionId(req: express.Request): string {
@@ -25,7 +25,7 @@ function getSessionId(req: express.Request): string {
   return `${req.ip}:${userAgent}`;
 }
 
-function getCachedSsrApi(sessionId: string): SsrApi | null {
+function getCachedSsrApi(sessionId: string): SSRApi | null {
   const now = Date.now();
   const cacheEntry = ssrApiBySessionId.get(sessionId);
   if (!cacheEntry) {
@@ -48,7 +48,7 @@ function cleanupExpiredSsrApiCache(now: number) {
   }
 }
 
-export function createSsrApi(req: express.Request): SsrApi {
+export function createSsrApi(req: express.Request): SSRApi {
   const sessionId = getSessionId(req);
   const cachedSsrApi = getCachedSsrApi(sessionId);
   if (cachedSsrApi) {
@@ -57,7 +57,8 @@ export function createSsrApi(req: express.Request): SsrApi {
 
   const now = Date.now();
   cleanupExpiredSsrApiCache(now);
-  const ssrApi: SsrApi = {
+
+  const ssrApi: SSRApi = {
     getProfile: createGetProfile(sessionId),
     getProductById: createGetProductById(),
     getShopById: createGetShopById(),
@@ -65,6 +66,9 @@ export function createSsrApi(req: express.Request): SsrApi {
       return {
         date: new Date().toISOString(),
       }
+    },
+    head: {
+      title: ''
     }
   };
 

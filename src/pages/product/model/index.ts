@@ -6,7 +6,7 @@ import type { ProductPageContext } from './types';
 
 const FALLBACK_PRODUCT_IMAGE = '/public/vite.svg';
 
-export class ProductPageVM extends PageVM<ProductPageContext> {
+export class ProductPageVM extends PageVM<ProductPageContext | null> {
   activeImageIndex = 0;
 
   get product(): ProductDC | null {
@@ -101,10 +101,6 @@ export class ProductPageVM extends PageVM<ProductPageContext> {
       deliveryAddress: computed,
       shopName: computed,
     });
-
-    if (this.product?.title) {
-      this.globals.stores.appInfo.setTitle(`${this.product.title} - GOZON`);
-    }
   }
 
   private getCurrentPathname(): string {
@@ -117,18 +113,20 @@ export class ProductPageVM extends PageVM<ProductPageContext> {
     return history.location?.pathname ?? history.pathname ?? history.path ?? '';
   }
 
-  async init(): Promise<ProductPageContext> {
-    const profile = await this.globals.db.getProfile();
-    const productId = this.productId;
-
-    assert.defined(productId, 'Product id is required for product page');
-
+  async init(): Promise<ProductPageContext | null> {
     try {
-      const product = await this.globals.db.getProductById(productId);
-      const shop = await this.globals.db.getShopById(product!.shopId);
+      const profile = await this.globals.ssr.getProfile();
+
+      assert.defined(this.productId, 'Product id is required for product page');
+
+      const product = await this.globals.ssr.getProductById(this.productId);
+      const shop = await this.globals.ssr.getShopById(product!.shopId);
+
+      this.globals.ssr.head.title = `${product!.title} - GOZON`
+
       return { product, profile, shop };
     } catch {
-      return { product: null, profile, shop: null };
+      return null;
     }
   }
 }

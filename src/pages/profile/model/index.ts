@@ -118,7 +118,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
   }
 
   async init(): Promise<ProfilePageContext> {
-    const profile = await this.globals.db.getProfile();
+    const profile = await this.globals.ssr.getProfile();
 
     return {
       profile,
