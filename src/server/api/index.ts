@@ -6,7 +6,7 @@ import type {
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
-import { addProductToCart, getCartDC } from '../data/cart';
+import { addProductToCart, getCartDC, removeCartItem, replaceCart } from '../data/cart';
 import { allProducts } from '../data/products';
 import { getShopById } from '../data/shops';
 
@@ -16,16 +16,42 @@ const delay = async (ms: number) => {
   });
 };
 
-export const handleApiRequest = async (
+const handleCartApiRequest = (
   req: Request,
   res: Response,
   sessionId: string,
-) => {
+): boolean => {
   const path = req.path;
 
   if (path === '/api/cart' && req.method === 'GET') {
     res.status(200).json(getCartDC(sessionId));
-    return;
+    return true;
+  }
+
+  if (path === '/api/cart' && req.method === 'PUT') {
+    const rawBody = req.body as {
+      items?: Array<{ productId?: unknown; quantity?: unknown }>;
+    };
+    const rawItems = rawBody.items;
+    if (!Array.isArray(rawItems)) {
+      res.status(400).json({ error: 'Invalid cart payload' });
+      return true;
+    }
+
+    const result = replaceCart(
+      sessionId,
+      rawItems.map((item) => ({
+        productId: Number(item.productId),
+        quantity: Number(item.quantity),
+      })),
+    );
+    if (!result.ok) {
+      res.status(400).json({ error: 'Invalid cart payload' });
+      return true;
+    }
+
+    res.status(200).json(getCartDC(sessionId));
+    return true;
   }
 
   if (path === '/api/cart/items' && req.method === 'POST') {
@@ -33,16 +59,47 @@ export const handleApiRequest = async (
     const productId = Number(raw.productId);
     if (!Number.isInteger(productId)) {
       res.status(400).json({ error: 'Invalid productId' });
-      return;
+      return true;
     }
 
     const result = addProductToCart(sessionId, productId);
     if (!result.ok) {
       res.status(404).json({ error: 'Product not found' });
-      return;
+      return true;
     }
 
     res.status(200).json(getCartDC(sessionId));
+    return true;
+  }
+
+  if (path.startsWith('/api/cart/items/') && req.method === 'DELETE') {
+    const itemId = decodeURIComponent(path.slice('/api/cart/items/'.length));
+    if (!itemId) {
+      res.status(400).json({ error: 'Invalid itemId' });
+      return true;
+    }
+
+    const result = removeCartItem(sessionId, itemId);
+    if (!result.ok) {
+      res.status(404).json({ error: 'Cart item not found' });
+      return true;
+    }
+
+    res.status(200).json(getCartDC(sessionId));
+    return true;
+  }
+
+  return false;
+};
+
+export const handleApiRequest = async (
+  req: Request,
+  res: Response,
+  sessionId: string,
+) => {
+  const path = req.path;
+
+  if (handleCartApiRequest(req, res, sessionId)) {
     return;
   }
 

@@ -10,7 +10,6 @@ import { ProductCheckboxCard } from './components/product-checkbox-card';
 export const CartPage = withViewModel(
   CartPageVM,
   ({ model }) => {
-    const s = model.summary;
     const promo = model.promo;
     const isEmpty = !model.isLoading && model.localItems.length === 0;
 
@@ -126,7 +125,7 @@ export const CartPage = withViewModel(
                   </p>
                 </Card>
 
-                <CartSummaryCard isLoading={model.isLoading} summary={s} />
+                <CartSummaryCard />
 
                 <Card className="p-0">
                   <button

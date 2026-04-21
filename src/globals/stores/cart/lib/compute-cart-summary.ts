@@ -1,4 +1,5 @@
-import type { CartItemPriceDC, CartItemQuantityDC, CartSummaryDC } from '../api/api';
+import type { CartItemPriceDC, CartItemQuantityDC } from '../../../../shared/api/api';
+import type { CartSummary } from '../types';
 
 interface CartSummaryInputItem {
   isSelected: boolean;
@@ -9,7 +10,7 @@ interface CartSummaryInputItem {
 /** Итоги считаются только по выбранным позициям. */
 export function computeCartSummary<TItem extends CartSummaryInputItem>(
   items: TItem[],
-): CartSummaryDC {
+): CartSummary {
   const selected = items.filter((i) => i.isSelected);
   const totalCount = items.reduce((s, i) => s + i.quantity.current, 0);
   const totalSelectedCount = selected.reduce(

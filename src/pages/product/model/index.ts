@@ -204,6 +204,10 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     await this.globals.stores.cart.addProduct(this.productId);
   };
 
+  goToCart = () => {
+    this.globals.router.routes.cart.open();
+  };
+
   toggleFavorite = () => {
     if (!this.productId) {
       return;

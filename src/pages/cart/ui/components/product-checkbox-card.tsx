@@ -2,12 +2,12 @@ import { Link } from '@heroui/react';
 import { Heart, Minus, Plus, Trash2 } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
-import type { CartItemVM } from '../../../../globals/stores/cart';
+import type { CartItemBenefit, CartItemInfo } from '../../../../globals/stores/cart/types';
 import type { CartPageVM } from '../../model';
 import { cva } from 'yummies/css';
 
 interface ProductCheckboxCardProps {
-  item: CartItemVM;
+  item: CartItemInfo;
 }
 
 const badgeCx = cva('rounded-md px-2 py-0.5 font-medium text-[11px] leading-tight', {
@@ -20,6 +20,17 @@ const badgeCx = cva('rounded-md px-2 py-0.5 font-medium text-[11px] leading-tigh
     },
   },
 });
+
+function getBadgeLabel(type: CartItemBenefit): string {
+  switch (type) {
+    case 'sale':
+      return 'Распродажа';
+    case 'installment':
+      return '0% до 140 дней';
+    case 'postpay':
+      return 'Постоплата';
+  }
+}
 
 function formatMoney(value: number): string {
   return `${value.toLocaleString('ru-RU')} ₽`;
@@ -49,9 +60,9 @@ export const ProductCheckboxCard = observer(({ item }: ProductCheckboxCardProps)
             {item.title}
           </Link>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {item.badges.map((b) => (
-              <span className={badgeCx({ colorType: b.colorType })} key={`${item.id}-${b.label}`}>
-                {b.label}
+            {item.types.map((type) => (
+              <span className={badgeCx({ colorType: type })} key={`${item.id}-${type}`}>
+                {getBadgeLabel(type)}
               </span>
             ))}
           </div>

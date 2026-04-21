@@ -1,31 +1,20 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
-import type { CartDC, CartItemDC, CartPromoDC } from '../../shared/api/api';
-import { loadCart, postAddToCart } from '../../shared/api/api';
-import { computeCartSummary } from '../../shared/lib/compute-cart-summary';
-
-export type CartBadgeColorType = 'sale' | 'installment' | 'postpay';
-export type CartItemStockStatus = 'ok' | 'limited' | 'out';
-
-export interface CartItemBadgeVM {
-  label: string;
-  colorType: CartBadgeColorType;
-}
-
-export interface CartItemVM extends CartItemDC {
-  productHref: string;
-  isSelected: boolean;
-  badges: CartItemBadgeVM[];
-  stockStatus: CartItemStockStatus;
-}
+import type { CartDC, CartPromoDC } from '../../../shared/api/api';
+import { deleteCartItem, loadCart, postAddToCart, putCart } from '../../../shared/api/api';
+import type { Router } from '../../router';
+import { computeCartSummary } from './lib/compute-cart-summary';
+import type { CartItemBenefit, CartItemInfo } from './types';
+export type {
+  CartItemBenefit,
+  CartItemStockStatus,
+  CartItemInfo,
+} from './types';
 
 export class CartStore {
-  data: CartDC | null = null;
-  isLoading = true;
-  addingProductIds = observable.set<number>();
-  selectedItemIds = observable.set<string>();
-  loadError: string | null = null;
+  private readonly router: Router;
 
-  constructor() {
+  constructor(router: Router) {
+    this.router = router;
     makeObservable(this, {
       data: observable.ref,
       isLoading: observable.ref,
@@ -38,18 +27,26 @@ export class CartStore {
     });
   }
 
-  get items(): CartItemVM[] {
+  data: CartDC | null = null;
+  isLoading = true;
+  addingProductIds = observable.set<number>();
+  selectedItemIds = observable.set<string>();
+  loadError: string | null = null;
+  private cartSyncRequestId = 0;
+
+  get items(): CartItemInfo[] {
     const rawItems = this.data?.items ?? [];
-    return rawItems.map((item, index): CartItemVM => {
-      const badges: CartItemBadgeVM[] = [];
+
+    return rawItems.map((item, index): CartItemInfo => {
+      const types: CartItemBenefit[] = [];
       const hasSale = item.price.original > item.price.current;
       if (hasSale) {
-        badges.push({ label: 'Распродажа', colorType: 'sale' });
+        types.push('sale');
       }
       if (index % 2 === 0) {
-        badges.push({ label: '0% до 140 дней', colorType: 'installment' });
+        types.push('installment');
       }
-      badges.push({ label: 'Постоплата', colorType: 'postpay' });
+      types.push('postpay');
 
       const isSelected = this.selectedItemIds.has(item.id);
       const stockStatus =
@@ -59,8 +56,10 @@ export class CartStore {
 
       return {
         ...item,
-        productHref: `/products/${item.productId}`,
-        badges,
+        productHref: this.router.routes.product.createUrl({
+          productId: item.productId,
+        }),
+        types,
         isSelected,
         stockStatus,
       };
@@ -121,6 +120,7 @@ export class CartStore {
       runInAction(() => {
         this.setData(data);
       });
+      void this.syncCart();
     } finally {
       runInAction(() => {
         this.addingProductIds.delete(productId);
@@ -179,6 +179,7 @@ export class CartStore {
         };
       }),
     };
+    this.syncCart();
   };
 
   increment = (id: string) => {
@@ -197,7 +198,7 @@ export class CartStore {
     this.changeQuantity(id, item.quantity.current - 1);
   };
 
-  removeItem = (id: string) => {
+  removeItem = async (id: string) => {
     if (!this.data) {
       return;
     }
@@ -207,11 +208,17 @@ export class CartStore {
       return;
     }
 
-    this.data = {
-      ...this.data,
-      items: this.data.items.filter((item) => item.id !== id),
-    };
-    this.selectedItemIds.delete(id);
+    try {
+      const data = await deleteCartItem(id);
+      runInAction(() => {
+        this.setData(data);
+      });
+      void this.syncCart();
+    } catch {
+      runInAction(() => {
+        this.loadError = 'Не удалось удалить товар из корзины';
+      });
+    }
   };
 
   private setData(data: CartDC) {
@@ -226,4 +233,33 @@ export class CartStore {
       this.selectedItemIds.add(data.items[0].id);
     }
   }
+
+  private syncCart = async () => {
+    if (!this.data) {
+      return;
+    }
+
+    const requestId = ++this.cartSyncRequestId;
+    const payload = this.data.items.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity.current,
+    }));
+
+    try {
+      const data = await putCart(payload);
+      runInAction(() => {
+        if (requestId !== this.cartSyncRequestId) {
+          return;
+        }
+        this.setData(data);
+      });
+    } catch {
+      runInAction(() => {
+        if (requestId !== this.cartSyncRequestId) {
+          return;
+        }
+        this.loadError = 'Не удалось синхронизировать корзину';
+      });
+    }
+  };
 }

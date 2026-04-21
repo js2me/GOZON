@@ -86,16 +86,6 @@ export interface CartItemDC {
   quantity: CartItemQuantityDC;
 }
 
-export interface CartSummaryDC {
-  totalCount: number;
-  totalSelectedCount: number;
-  totalWeight: string;
-  basePrice: number;
-  totalDiscount: number;
-  finalPriceWithLoyalty: number;
-  finalPriceStandard: number;
-}
-
 export interface CartPromoDC {
   saleDeadline: string;
   itemsPriceIncreasingCount: number;
@@ -105,6 +95,11 @@ export interface CartPromoDC {
 export interface CartDC {
   items: CartItemDC[];
   promo: CartPromoDC;
+}
+
+export interface SyncCartItemPayload {
+  productId: number;
+  quantity: number;
 }
 
 export const loadProducts = async ({
@@ -167,6 +162,32 @@ export const postAddToCart = async (productId: number): Promise<CartDC> => {
   });
   if (!response.ok) {
     throw new Error('Failed to add to cart');
+  }
+
+  return response.json();
+};
+
+export const deleteCartItem = async (itemId: string): Promise<CartDC> => {
+  const response = await fetch(`/api/cart/items/${encodeURIComponent(itemId)}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to remove cart item');
+  }
+
+  return response.json();
+};
+
+export const putCart = async (items: SyncCartItemPayload[]): Promise<CartDC> => {
+  const response = await fetch('/api/cart', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to sync cart');
   }
 
   return response.json();

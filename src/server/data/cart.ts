@@ -40,20 +40,9 @@ function mapProductToCartItem(
   };
 }
 
-/** Демо-корзина при пустой сессии: 36 шт., выбрана первая позиция. */
-function defaultDemoLines(): SessionCartLine[] {
-  const p = allProducts;
-  return [
-    { productId: p[0]!.id, quantity: 1 },
-    { productId: p[1]!.id, quantity: 5 },
-    { productId: p[2]!.id, quantity: 10 },
-    { productId: p[3]!.id, quantity: 20 },
-  ];
-}
-
 export function getCartDC(sessionId: string): CartDC {
   const stored = cartBySessionId.get(sessionId) ?? [];
-  const lines = stored.length > 0 ? stored : defaultDemoLines();
+  const lines = stored.length > 0 ? stored : [];
 
   const items: CartItemDC[] = [];
   for (let index = 0; index < lines.length; index++) {
@@ -96,5 +85,48 @@ export function addProductToCart(
   }
 
   cartBySessionId.set(sessionId, items);
+  return { ok: true };
+}
+
+export function removeCartItem(
+  sessionId: string,
+  itemId: string,
+): { ok: true } | { ok: false; reason: 'not_found' } {
+  const cart = getCartDC(sessionId);
+  const item = cart.items.find((cartItem) => cartItem.id === itemId);
+  if (!item) {
+    return { ok: false, reason: 'not_found' };
+  }
+
+  const prev = cartBySessionId.get(sessionId) ?? [];
+  const next = prev.filter((line) => line.productId !== item.productId);
+  cartBySessionId.set(sessionId, next);
+  return { ok: true };
+}
+
+export function replaceCart(
+  sessionId: string,
+  lines: SessionCartLine[],
+): { ok: true } | { ok: false; reason: 'invalid_payload' } {
+  const normalized: SessionCartLine[] = [];
+
+  for (const line of lines) {
+    if (!Number.isInteger(line.productId) || !Number.isInteger(line.quantity)) {
+      return { ok: false, reason: 'invalid_payload' };
+    }
+    if (line.quantity <= 0) {
+      continue;
+    }
+    const product = allProducts.find((item) => item.id === line.productId);
+    if (!product) {
+      return { ok: false, reason: 'invalid_payload' };
+    }
+    normalized.push({
+      productId: line.productId,
+      quantity: line.quantity,
+    });
+  }
+
+  cartBySessionId.set(sessionId, normalized);
   return { ok: true };
 }

@@ -1,22 +1,18 @@
 import { Skeleton } from '@heroui/react';
-import type { CartSummaryDC } from '../../../../shared/api/api';
 import { Card } from '../../../../shared/ui/card';
 import { declension } from 'yummies/text';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
 import { CartPageVM } from '../../model';
 
-interface CartSummaryCardProps {
-  isLoading: boolean;
-  summary: CartSummaryDC;
-}
-
 function formatMoney(value: number): string {
   return `${value.toLocaleString('ru-RU')} ₽`;
 }
 
-export const CartSummaryCard = observer(({ isLoading, summary }: CartSummaryCardProps) => {
+export const CartSummaryCard = observer(() => {
   const model = useViewModel(CartPageVM);
+
+  const { summary, isLoading } = model;
 
   return (
     <Card className="p-5">
@@ -42,7 +38,7 @@ export const CartSummaryCard = observer(({ isLoading, summary }: CartSummaryCard
             <div className="flex justify-between gap-4">
               <span className="text-slate-700">Скидка</span>
               <span className="shrink-0 font-medium text-cart-accent tabular-nums">
-                − {formatMoney(summary.totalDiscount)}
+                {formatMoney(summary.totalDiscount)}
               </span>
             </div>
             <button

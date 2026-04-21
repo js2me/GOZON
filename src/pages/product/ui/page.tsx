@@ -197,8 +197,8 @@ export const ProductPage = withViewModel(
               <div className="mt-5 flex items-center gap-3">
                 <Button
                   className="h-12 flex-1 rounded-2xl bg-brand font-bold text-[17px] text-white"
-                  isDisabled={model.isAddingToCart || model.isInCart}
-                  onClick={model.addToCart}
+                  isDisabled={model.isAddingToCart}
+                  onClick={model.isInCart ? model.goToCart : model.addToCart}
                 >
                   <span className="flex min-w-[120px] flex-1 justify-center">
                     {model.isAddingToCart

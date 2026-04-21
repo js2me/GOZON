@@ -2,7 +2,7 @@ import { assert } from 'yummies/assert';
 import type { AnyObject, Maybe } from 'yummies/types';
 import { Router } from './router';
 import { AppInfoStore } from './stores/app-info';
-import { CartStore } from './stores/cart';
+import { CartStore } from './stores/cart/index';
 import { FavoritesStore } from './stores/favorites';
 import type { GlobalsCreateParams } from './types';
 import { ViewModelsStore } from './stores/view-models';
@@ -28,7 +28,7 @@ export class Globals {
         router: this.router,
         appName: params.appName,
       }),
-      cart: new CartStore(),
+      cart: new CartStore(this.router),
       favorites: new FavoritesStore(),
       viewModels: new ViewModelsStore(this, params.pageContexts),
     };
