@@ -1,3 +1,13 @@
+export interface ProductCharacteristicDC {
+  label: string;
+  value: string;
+}
+
+export interface ProductCategoryDC {
+  id: string;
+  title: string;
+}
+
 export interface ProductDC {
   id: number;
   shopId: number;
@@ -6,6 +16,13 @@ export interface ProductDC {
   originalPrice: number;
   rating: number;
   reviewsCount: number;
+  questionsCount: number;
+  returnPeriodDays: number;
+  deliveryText: string;
+  hasPriceDropBadge: boolean;
+  categoriesPath: ProductCategoryDC[];
+  characteristics: ProductCharacteristicDC[];
+  colorText: string;
   images?: string[];
 }
 
@@ -48,6 +65,48 @@ export interface ProfileViewedProductDC {
   badge?: { label: string } | null;
 }
 
+export interface CartItemPriceDC {
+  current: number;
+  original: number;
+  currency: '₽';
+}
+
+export interface CartItemQuantityDC {
+  current: number;
+  maxAvailable: number;
+}
+
+export interface CartItemDC {
+  id: string;
+  productId: number;
+  title: string;
+  imageUrl: string;
+  variant: string;
+  price: CartItemPriceDC;
+  quantity: CartItemQuantityDC;
+}
+
+export interface CartSummaryDC {
+  totalCount: number;
+  totalSelectedCount: number;
+  totalWeight: string;
+  basePrice: number;
+  totalDiscount: number;
+  finalPriceWithLoyalty: number;
+  finalPriceStandard: number;
+}
+
+export interface CartPromoDC {
+  saleDeadline: string;
+  itemsPriceIncreasingCount: number;
+}
+
+/** Полное состояние корзины — один ответ `GET /api/cart`. */
+export interface CartDC {
+  items: CartItemDC[];
+  promo: CartPromoDC;
+}
+
 export const loadProducts = async ({
   limit,
   offset,
@@ -60,7 +119,9 @@ export const loadProducts = async ({
   return response.json();
 };
 
-export const loadProductById = async (productId: number): Promise<ProductDC> => {
+export const loadProductById = async (
+  productId: number,
+): Promise<ProductDC> => {
   const response = await fetch(`/api/products/${productId}`);
   if (!response.ok) {
     throw new Error('Product not found');
@@ -94,5 +155,28 @@ export const loadProfileViewedProducts = async (): Promise<
   ProfileViewedProductDC[]
 > => {
   const response = await fetch('/api/profile/viewed-products');
+  return response.json();
+};
+
+export const postAddToCart = async (productId: number): Promise<CartDC> => {
+  const response = await fetch('/api/cart/items', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId }),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to add to cart');
+  }
+
+  return response.json();
+};
+
+export const loadCart = async (): Promise<CartDC> => {
+  const response = await fetch('/api/cart', { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error('Cart load failed');
+  }
+
   return response.json();
 };

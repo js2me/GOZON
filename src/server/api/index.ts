@@ -6,6 +6,7 @@ import type {
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
+import { addProductToCart, getCartDC } from '../data/cart';
 import { allProducts } from '../data/products';
 import { getShopById } from '../data/shops';
 
@@ -15,8 +16,35 @@ const delay = async (ms: number) => {
   });
 };
 
-export const handleApiRequest = async (req: Request, res: Response) => {
+export const handleApiRequest = async (
+  req: Request,
+  res: Response,
+  sessionId: string,
+) => {
   const path = req.path;
+
+  if (path === '/api/cart' && req.method === 'GET') {
+    res.status(200).json(getCartDC(sessionId));
+    return;
+  }
+
+  if (path === '/api/cart/items' && req.method === 'POST') {
+    const raw = req.body as { productId?: unknown };
+    const productId = Number(raw.productId);
+    if (!Number.isInteger(productId)) {
+      res.status(400).json({ error: 'Invalid productId' });
+      return;
+    }
+
+    const result = addProductToCart(sessionId, productId);
+    if (!result.ok) {
+      res.status(404).json({ error: 'Product not found' });
+      return;
+    }
+
+    res.status(200).json(getCartDC(sessionId));
+    return;
+  }
 
   if (path.startsWith('/api/products/')) {
     const productIdRaw = path.slice('/api/products/'.length);
@@ -64,9 +92,7 @@ export const handleApiRequest = async (req: Request, res: Response) => {
       hasMore,
     };
 
-    res.status(200).send(
-      JSON.stringify(productsChunk),
-    );
+    res.status(200).send(JSON.stringify(productsChunk));
     return;
   }
 
@@ -79,9 +105,7 @@ export const handleApiRequest = async (req: Request, res: Response) => {
       address: 'Высоковский пр-д, 20',
     };
 
-    res.status(200).send(
-      JSON.stringify(profile),
-    );
+    res.status(200).send(JSON.stringify(profile));
     return;
   }
 
@@ -106,7 +130,8 @@ export const handleApiRequest = async (req: Request, res: Response) => {
       .slice(3, 9)
       .map((product) => {
         const discountPercent = Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) * 100,
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100,
         );
 
         return {

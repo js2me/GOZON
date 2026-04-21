@@ -2,10 +2,11 @@ import '../app/bootstrap/server';
 
 import http from 'node:http';
 import express from 'express';
-import path from 'path';
+import path from 'node:path';
 import { Globals } from '../globals';
 import { handleApiRequest } from './api';
 import { app } from './app';
+import { getOrCreateSessionId } from './session';
 import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
 
@@ -25,6 +26,8 @@ async function main() {
     app.use(vite.middlewares);
   }
 
+  app.use(express.json());
+
   app.use('/dist', express.static(app.distDir));
   // Files in src/public are available at /filename (and at /public/filename for compatibility)
   app.use(express.static(app.publicDir));
@@ -34,12 +37,14 @@ async function main() {
     express.static(path.resolve(app.serverDir, 'data/assets')),
   );
 
-  app.get('*', (req, res) => {
+  app.all('*', (req, res) => {
+    const sessionId = getOrCreateSessionId(req, res);
+
     if (req.path.startsWith('/api')) {
-      return handleApiRequest(req, res);
+      return handleApiRequest(req, res, sessionId);
     }
 
-    const ssrApi = createSsrApi(req);
+    const ssrApi = createSsrApi(sessionId);
     const globals = new Globals({
       appName: 'GOZON',
       router: {

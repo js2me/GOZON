@@ -106,12 +106,6 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       shouldShowViewedSkeletons: computed,
     });
 
-    if (this.ctx?.profile) {
-      this.globals.stores.appInfo.setTitle(
-        `${this.ctx.profile.firstName} ${this.ctx.profile.lastName} - Профиль`,
-      );
-    }
-
     if (this.globals.isClient) {
       void this.loadProfileProducts();
     }
@@ -119,6 +113,8 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
 
   async init(): Promise<ProfilePageContext> {
     const profile = await this.globals.ssr.getProfile();
+
+    this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`
 
     return {
       profile,

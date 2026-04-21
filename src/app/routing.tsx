@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import type { Globals } from '../globals';
+import { CartPage } from '../pages/cart/ui/page';
 import { HomePage } from '../pages/home/ui/page';
 import { NotFoundPage } from '../pages/not-found/ui/page';
 import { ProfilePage } from '../pages/profile/ui/page';
@@ -12,6 +13,7 @@ export const Routing = observer(({ globals }: { globals: Globals }) => {
     <RouteViewGroup layout={Layout}>
       <RouteView route={globals.router.routes.home} view={HomePage} />
       <RouteView route={globals.router.routes.profile} view={ProfilePage} />
+      <RouteView route={globals.router.routes.cart} view={CartPage} />
       <RouteView route={globals.router.routes.product} view={ProductPage} />
       <RouteView route={globals.router.routes.notFound} view={NotFoundPage} />
     </RouteViewGroup>

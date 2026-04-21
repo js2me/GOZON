@@ -40,7 +40,7 @@ export class LayoutVM extends VM {
         label: 'Заказы',
       },
       {
-        href: '/cart',
+        href: this.globals.router.routes.cart.createUrl(),
         icon: CartIcon,
         label: 'Корзина',
       },

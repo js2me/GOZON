@@ -2,6 +2,8 @@ import { assert } from 'yummies/assert';
 import type { AnyObject, Maybe } from 'yummies/types';
 import { Router } from './router';
 import { AppInfoStore } from './stores/app-info';
+import { CartStore } from './stores/cart';
+import { FavoritesStore } from './stores/favorites';
 import type { GlobalsCreateParams } from './types';
 import { ViewModelsStore } from './stores/view-models';
 
@@ -10,7 +12,12 @@ export class Globals {
   readonly isServer: boolean;
 
   readonly router: Router;
-  readonly stores: { appInfo: AppInfoStore; viewModels: ViewModelsStore };
+  readonly stores: {
+    appInfo: AppInfoStore;
+    cart: CartStore;
+    favorites: FavoritesStore;
+    viewModels: ViewModelsStore;
+  };
 
   constructor(private params: GlobalsCreateParams) {
     this.isClient = typeof window !== 'undefined';
@@ -21,6 +28,8 @@ export class Globals {
         router: this.router,
         appName: params.appName,
       }),
+      cart: new CartStore(),
+      favorites: new FavoritesStore(),
       viewModels: new ViewModelsStore(this, params.pageContexts),
     };
   }

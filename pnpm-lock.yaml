@@ -41,6 +41,9 @@ importers:
       mobx-view-model-react:
         specifier: ^10.2.0
         version: 10.2.0(mobx-react-lite@4.1.1(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      mobx-web-api:
+        specifier: ^1.13.0
+        version: 1.13.0(mobx@6.15.0)(react@19.2.5)
       react:
         specifier: ^19.1.0
         version: 19.2.5
@@ -2261,6 +2264,11 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  mobx-web-api@1.13.0:
+    resolution: {integrity: sha512-UG8fNjRiU2r8bops3RW9thavQfx/HYGjI/JkNPsdrSrxuNWayK1QK9/AybiFkEUq93mN0z05iiH16Akib2kuIw==}
+    peerDependencies:
+      mobx: ^6.13.6
 
   mobx@6.15.0:
     resolution: {integrity: sha512-UczzB+0nnwGotYSgllfARAqWCJ5e/skuV2K/l+Zyck/H6pJIhLXuBnz+6vn2i211o7DtbE78HQtsYEKICHGI+g==}
@@ -5202,6 +5210,13 @@ snapshots:
     transitivePeerDependencies:
       - mobx-react-lite
       - react-dom
+
+  mobx-web-api@1.13.0(mobx@6.15.0)(react@19.2.5):
+    dependencies:
+      mobx: 6.15.0
+      yummies: 7.19.2(mobx@6.15.0)(react@19.2.5)
+    transitivePeerDependencies:
+      - react
 
   mobx@6.15.0: {}
 

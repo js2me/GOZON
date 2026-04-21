@@ -4,28 +4,20 @@ import type { Router } from '../../router';
 export interface AppInfoParams {
   router: Router;
   appName?: string;
+  bankName?: string;
   title?: string;
 }
 
 export class AppInfoStore {
   appName: string;
-  title: string;
+  bankName: string;
 
   constructor(private params: AppInfoParams) {
     this.appName = params.appName ?? 'GOZ0N';
-    this.title = this.appName;
+    this.bankName = params.bankName ?? this.appName;
 
     makeObservable(this, {
       appName: observable,
-      title: observable,
     });
-  }
-
-  setTitle(title: string) {
-    if (typeof window === 'undefined') {
-      this.title = title;
-    } else {
-      globalThis.document.title = title;
-    }
   }
 }

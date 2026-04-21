@@ -6,6 +6,7 @@ import { App } from '../../app';
 import type { Globals } from '../../globals';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
+import { app } from '../app';
 
 export const renderWithStreams = (
   globals: Globals,
@@ -24,13 +25,16 @@ export const renderWithStreams = (
 
   const head = globals.ssr.head;
   const documentTitle = escapeHtmlText(
-    head.title || globals.stores.appInfo.title,
+    head.title || globals.stores.appInfo.appName,
   );
   const headMeta = renderHeadMetaTags(head);
 
   res.status(200);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', `max-age=${60 * 60 * 24 * 15}`);
+
+  if (!app.isDev) {
+    res.setHeader('Cache-Control', `max-age=${60 * 60 * 24 * 15}`);
+  }
 
   const appStream = new PassThrough();
 

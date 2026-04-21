@@ -28,6 +28,7 @@
     "mobx-route": "^0.29.1",
     "mobx-view-model": "^10.2.0",
     "mobx-view-model-react": "^10.2.0",
+    "mobx-web-api": "^1.13.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-virtuoso": "^4.15.0",

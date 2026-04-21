@@ -20,7 +20,7 @@ export const renderSimple = (
 
   const head = globals.ssr.head;
   const documentTitle = escapeHtmlText(
-    head.title || globals.stores.appInfo.title,
+    head.title || globals.stores.appInfo.appName,
   );
   const headMeta = renderHeadMetaTags(head);
 

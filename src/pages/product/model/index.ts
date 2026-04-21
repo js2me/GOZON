@@ -1,6 +1,10 @@
 import { computed, makeObservable, observable } from 'mobx';
 import { assert } from 'yummies/assert';
-import type { ProductDC } from '../../../shared/api/api';
+import type {
+  ProductCategoryDC,
+  ProductCharacteristicDC,
+  ProductDC,
+} from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
 
@@ -58,13 +62,23 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     }
 
     const discount = Math.round(
-      ((this.product.originalPrice - this.product.price) / this.product.originalPrice) * 100,
+      ((this.product.originalPrice - this.product.price) /
+        this.product.originalPrice) *
+      100,
     );
     if (discount <= 0) {
       return '';
     }
 
     return `-${discount}%`;
+  }
+
+  get saleBadgeText(): string {
+    if (!this.discountText) {
+      return '';
+    }
+
+    return `Распродажа ${this.discountText}`;
   }
 
   get reviewsText(): string {
@@ -75,6 +89,14 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     return this.product.reviewsCount.toLocaleString('ru-RU');
   }
 
+  get questionsText(): string {
+    if (!this.product) {
+      return '';
+    }
+
+    return this.product.questionsCount.toLocaleString('ru-RU');
+  }
+
   get deliveryAddress(): string {
     return this.ctx?.profile?.address ?? 'Высоковский пр-д, 20';
   }
@@ -83,8 +105,152 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     return this.ctx?.shop?.name ?? '';
   }
 
+  get deliveryText(): string {
+    return this.product?.deliveryText ?? 'Доставим завтра';
+  }
+
+  get colorText(): string {
+    return this.product?.colorText ?? 'Не указан';
+  }
+
+  get showPriceDropBadge(): boolean {
+    return Boolean(this.product?.hasPriceDropBadge);
+  }
+
+  get returnPeriodText(): string {
+    const days = this.product?.returnPeriodDays;
+    if (!days || days <= 0) {
+      return 'Можно вернуть товар';
+    }
+
+    return `Можно вернуть в течение ${days} дней`;
+  }
+
+  get characteristics(): ProductCharacteristicDC[] {
+    return this.product?.characteristics ?? [];
+  }
+
+  get categoriesPath(): ProductCategoryDC[] {
+    return this.product?.categoriesPath ?? [];
+  }
+
+  get isAddingToCart(): boolean {
+    if (!this.productId) {
+      return false;
+    }
+    return this.globals.stores.cart.isAddingProduct(this.productId);
+  }
+
+  get isInCart(): boolean {
+    if (!this.productId) {
+      return false;
+    }
+    return this.globals.stores.cart.hasProduct(this.productId);
+  }
+
+  get isFavorite(): boolean {
+    if (!this.productId) {
+      return false;
+    }
+    return this.globals.stores.favorites.hasProduct(this.productId);
+  }
+
+  get cartItemId(): string | null {
+    if (!this.productId) {
+      return null;
+    }
+
+    const item = this.globals.stores.cart.items.find(
+      (cartItem) => cartItem.productId === this.productId,
+    );
+    return item?.id ?? null;
+  }
+
+  get cartQuantity(): number {
+    if (!this.cartItemId) {
+      return 0;
+    }
+
+    const item = this.globals.stores.cart.items.find(
+      (cartItem) => cartItem.id === this.cartItemId,
+    );
+    return item?.quantity.current ?? 0;
+  }
+
+  get canIncreaseCartQuantity(): boolean {
+    if (!this.cartItemId) {
+      return false;
+    }
+
+    const item = this.globals.stores.cart.items.find(
+      (cartItem) => cartItem.id === this.cartItemId,
+    );
+    if (!item) {
+      return false;
+    }
+
+    return item.quantity.current < item.quantity.maxAvailable;
+  }
+
   setActiveImage = (index: number) => {
     this.activeImageIndex = index;
+  };
+
+  addToCart = async () => {
+    if (!this.productId || this.isAddingToCart || this.isInCart) {
+      return;
+    }
+
+    await this.globals.stores.cart.addProduct(this.productId);
+  };
+
+  toggleFavorite = () => {
+    if (!this.productId) {
+      return;
+    }
+    this.globals.stores.favorites.toggleProduct(this.productId);
+  };
+
+  shareProduct = async () => {
+    if (!this.product || !this.globals.isClient) {
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/products/${this.product.id}`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: this.product.title,
+        text: this.product.title,
+        url: shareUrl,
+      });
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+    }
+  };
+
+  incrementCartQuantity = () => {
+    if (!this.cartItemId) {
+      return;
+    }
+
+    this.globals.stores.cart.increment(this.cartItemId);
+  };
+
+  decrementCartQuantity = () => {
+    if (!this.cartItemId) {
+      return;
+    }
+
+    if (this.cartQuantity <= 1) {
+      this.globals.stores.cart.removeItem(this.cartItemId);
+      return;
+    }
+
+    this.globals.stores.cart.decrement(this.cartItemId);
   };
 
   protected willMount(): void {
@@ -97,10 +263,29 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       priceText: computed,
       originalPriceText: computed,
       discountText: computed,
+      saleBadgeText: computed,
       reviewsText: computed,
+      questionsText: computed,
       deliveryAddress: computed,
       shopName: computed,
+      deliveryText: computed,
+      colorText: computed,
+      showPriceDropBadge: computed,
+      returnPeriodText: computed,
+      characteristics: computed.struct,
+      categoriesPath: computed.struct,
+      isAddingToCart: computed,
+      isInCart: computed,
+      isFavorite: computed,
+      cartItemId: computed,
+      cartQuantity: computed,
+      canIncreaseCartQuantity: computed,
     });
+
+    if (this.globals.isClient) {
+      void this.globals.stores.cart.load();
+      this.globals.stores.favorites.load();
+    }
   }
 
   private getCurrentPathname(): string {
@@ -122,7 +307,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       const product = await this.globals.ssr.getProductById(this.productId);
       const shop = await this.globals.ssr.getShopById(product!.shopId);
 
-      const pageTitle = `${product!.title} - GOZON`;
+      const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
       const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
       const head = this.globals.ssr.head;
 
