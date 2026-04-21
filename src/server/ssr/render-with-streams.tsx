@@ -13,7 +13,7 @@ export const renderWithStreams = (
   _req: Request,
   res: Response,
   clientScript: string,
-  styleHref: string,
+  styleHref?: string,
 ) => {
   const ssrData = async () => {
     const snapshot = globals.toSnapshot();
@@ -45,8 +45,7 @@ export const renderWithStreams = (
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${documentTitle}</title>
 ${headMeta ? `${headMeta}\n` : ''}    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="stylesheet" href="${styleHref}" />
-  </head>
+${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}  </head>
   <body>
     <div id="root">${appStream}</div>
     ${REACT_REFRESH_PREAMBLE}

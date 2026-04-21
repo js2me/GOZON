@@ -7,4 +7,11 @@ export default defineConfig({
   appType: 'custom',
   // Matches src/server/app.ts publicDir so dev warnings and /logo.png align with Express
   publicDir: 'src/public',
+  build: {
+    outDir: 'dist',
+    manifest: true,
+    rollupOptions: {
+      input: 'src/client.tsx',
+    },
+  },
 });

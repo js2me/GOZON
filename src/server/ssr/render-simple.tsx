@@ -7,10 +7,10 @@ import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
 
 export const renderSimple = (
   globals: Globals,
-  req: Request,
+  _req: Request,
   res: Response,
   clientScript: string,
-  styleHref: string,
+  styleHref?: string,
 ) => {
   const appHtml = renderToString(<App globals={globals} />);
   const dataJson = JSON.stringify(globals.toSnapshot()).replace(
@@ -32,7 +32,7 @@ export const renderSimple = (
     <title>${documentTitle}</title>
 ${headMeta ? `${headMeta}\n` : ''}
 <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="stylesheet" href="${styleHref}" />
+${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}
   </head>
   <body>
     <div id="root">${appHtml}</div>

@@ -1,4 +1,5 @@
 import './app/bootstrap/client';
+import './app/styles.css';
 
 const hydrateApp = async () => {
   const [reactDomClientModule, { App }, { Globals }] = await Promise.all([

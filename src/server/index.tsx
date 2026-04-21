@@ -29,6 +29,7 @@ async function main() {
   app.use(express.json());
 
   app.use('/dist', express.static(app.distDir));
+  app.use('/assets', express.static(path.resolve(app.distDir, 'assets')));
   // Files in src/public are available at /filename (and at /public/filename for compatibility)
   app.use(express.static(app.publicDir));
   app.use('/public', express.static(app.publicDir));
