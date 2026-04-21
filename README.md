@@ -16,3 +16,10 @@
 - mobx-view-model
 - mobx-location-history
 - mobx-route
+
+## Как запустить ?  
+
+1. Нужно установить NodeJS
+2. Нужно установить pnpm \ npm
+3. `pnpm i` или `npm install`   
+4. `pnpm dev` или `pnpm start` или `npm run dev` etc  
