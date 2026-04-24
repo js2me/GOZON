@@ -5,9 +5,7 @@ export function CartEmpty() {
         <span className="font-bold text-[120px] text-gray-200 leading-none">
           0
         </span>
-        <h2 className="font-semibold text-3xl text-gray-800">
-          Корзина пуста
-        </h2>
+        <h2 className="font-semibold text-3xl text-gray-800">Корзина пуста</h2>
         <p className="max-w-md text-gray-500">
           Добавьте товары в корзину, чтобы продолжить оформление заказа.
         </p>

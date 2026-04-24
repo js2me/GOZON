@@ -105,7 +105,7 @@ const renderDots = (slidesCount: number, activeSlide: number) => {
             key={index}
             className={cx(
               'block size-2 rounded-full transition-colors',
-              index === activeSlide ? 'bg-brand' : 'bg-white/80',
+              index === activeSlide ? 'bg-brand' : 'bg-contrast-bg/80',
             )}
           />
         ))}
@@ -127,7 +127,7 @@ const FavoriteIcon = ({ isFavorite }: { isFavorite: boolean }) => {
         <path
           clipRule="evenodd"
           d="M12 22c-.316-.02-.56-.147-.848-.278a23.5 23.5 0 0 1-4.781-2.942C3.777 16.705 1 13.449 1 9a6 6 0 0 1 6-6 6.18 6.18 0 0 1 5 2.568A6.18 6.18 0 0 1 17 3a6 6 0 0 1 6 6c0 4.448-2.78 7.705-5.375 9.78a23.6 23.6 0 0 1-4.78 2.942c-.543.249-.732.278-.845.278"
-          fill="#F8104B"
+          fill="var(--color-favorite-heart-fill)"
           fillRule="evenodd"
         />
       </svg>
@@ -135,14 +135,20 @@ const FavoriteIcon = ({ isFavorite }: { isFavorite: boolean }) => {
   }
 
   return (
-    <svg aria-hidden="true" fill="none" height="24" viewBox="0 0 24 24" width="24">
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height="24"
+      viewBox="0 0 24 24"
+      width="24"
+    >
       <path
         d="M7 5a4 4 0 0 0-4 4c0 3.552 2.218 6.296 4.621 8.22A21.5 21.5 0 0 0 12 19.91a21.6 21.6 0 0 0 4.377-2.69C18.78 15.294 21 12.551 21 9a4 4 0 0 0-4-4c-1.957 0-3.652 1.396-4.02 3.2a1 1 0 0 1-1.96 0C10.652 6.396 8.957 5 7 5"
-        fill="white"
+        fill="var(--color-white)"
       />
       <path
         d="M12 22c-.316-.02-.56-.147-.848-.278a23.5 23.5 0 0 1-4.781-2.942C3.777 16.705 1 13.449 1 9a6 6 0 0 1 6-6 6.18 6.18 0 0 1 5 2.568A6.18 6.18 0 0 1 17 3a6 6 0 0 1 6 6c0 4.448-2.78 7.705-5.375 9.78a23.6 23.6 0 0 1-4.78 2.942c-.543.249-.732.278-.845.278M7 5a4 4 0 0 0-4 4c0 3.552 2.218 6.296 4.621 8.22A21.5 21.5 0 0 0 12 19.91a21.6 21.6 0 0 0 4.377-2.69C18.78 15.294 21 12.551 21 9a4 4 0 0 0-4-4c-1.957 0-3.652 1.396-4.02 3.2a1 1 0 0 1-1.96 0C10.652 6.396 8.957 5 7 5"
-        fill="black"
+        fill="var(--color-black)"
       />
     </svg>
   );
@@ -189,7 +195,7 @@ export const ItemCard = ({
     return (
       <article
         className={cx(
-          'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-white p-2',
+          'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-contrast-bg p-2',
           className,
         )}
       >
@@ -214,7 +220,7 @@ export const ItemCard = ({
   return (
     <article
       className={cx(
-        'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-white p-2 [container-type:inline-size]',
+        'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-contrast-bg p-2 [container-type:inline-size]',
         className,
       )}
     >
@@ -235,7 +241,7 @@ export const ItemCard = ({
               style={{ objectFit: imageFit }}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,#f4f7fb_0%,#e9eef5_100%)] font-medium text-slate-400 text-sm">
+            <div className="flex h-full w-full items-center justify-center bg-item-placeholder font-medium text-slate-400 text-sm">
               Нет изображения
             </div>
           )}

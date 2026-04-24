@@ -1,4 +1,7 @@
-import type { CartItemPriceDC, CartItemQuantityDC } from '../../../../shared/api/api';
+import type {
+  CartItemPriceDC,
+  CartItemQuantityDC,
+} from '../../../../shared/api/api';
 import type { CartSummary } from '../types';
 
 interface CartSummaryInputItem {

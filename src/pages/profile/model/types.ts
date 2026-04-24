@@ -1,7 +1,9 @@
-import { ProfileDC } from '../../../shared/api/api';
+import type { ProfileDC } from '../../../shared/api/api';
 import type { ItemCardBadge } from '../../../widgets/item-card';
 
-export interface ProfilePageContext { profile: ProfileDC }
+export interface ProfilePageContext {
+  profile: ProfileDC;
+}
 
 export interface ProfileMenuItem {
   label: string;

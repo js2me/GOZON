@@ -13,6 +13,9 @@ export interface ProductCardInfo {
   rating?: string;
   reviewsCount?: string;
   reviewsLabel?: string;
+  isFavorite?: boolean;
+  favoriteLabel?: string;
+  onFavoriteClick?: () => void;
 }
 
 export type ProductRow = {

@@ -138,7 +138,8 @@ export const CartPage = withViewModel(
                       </span>
                       <span>
                         <span className="block font-semibold text-[14px] text-slate-900">
-                          С кредитной {model.globals.stores.appInfo.bankName} Картой
+                          С кредитной {model.globals.stores.appInfo.bankName}{' '}
+                          Картой
                         </span>
                         <span className="text-[12px] text-slate-500">
                           Рассрочка 0% на срок до 12 месяцев

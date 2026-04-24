@@ -1,13 +1,19 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import type { CartDC, CartPromoDC } from '../../../shared/api/api';
-import { deleteCartItem, loadCart, postAddToCart, putCart } from '../../../shared/api/api';
+import {
+  deleteCartItem,
+  loadCart,
+  postAddToCart,
+  putCart,
+} from '../../../shared/api/api';
 import type { Router } from '../../router';
 import { computeCartSummary } from './lib/compute-cart-summary';
 import type { CartItemBenefit, CartItemInfo } from './types';
+
 export type {
   CartItemBenefit,
-  CartItemStockStatus,
   CartItemInfo,
+  CartItemStockStatus,
 } from './types';
 
 export class CartStore {
@@ -19,11 +25,13 @@ export class CartStore {
       data: observable.ref,
       isLoading: observable.ref,
       loadError: observable.ref,
+      cartSyncInFlight: observable,
       items: computed,
       promo: computed,
       summary: computed,
       allSelected: computed,
       headerCount: computed,
+      isSyncing: computed,
     });
   }
 
@@ -32,7 +40,12 @@ export class CartStore {
   addingProductIds = observable.set<number>();
   selectedItemIds = observable.set<string>();
   loadError: string | null = null;
+  cartSyncInFlight = 0;
   private cartSyncRequestId = 0;
+
+  get isSyncing(): boolean {
+    return this.cartSyncInFlight > 0;
+  }
 
   get items(): CartItemInfo[] {
     const rawItems = this.data?.items ?? [];
@@ -239,6 +252,10 @@ export class CartStore {
       return;
     }
 
+    runInAction(() => {
+      this.cartSyncInFlight++;
+    });
+
     const requestId = ++this.cartSyncRequestId;
     const payload = this.data.items.map((item) => ({
       productId: item.productId,
@@ -259,6 +276,10 @@ export class CartStore {
           return;
         }
         this.loadError = 'Не удалось синхронизировать корзину';
+      });
+    } finally {
+      runInAction(() => {
+        this.cartSyncInFlight--;
       });
     }
   };

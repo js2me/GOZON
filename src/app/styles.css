@@ -3,12 +3,43 @@
 @theme {
   --color-brand: #00910a;
   --color-brand-accent: #F91155;
+  --color-danger-badge: #ff335f;
   --color-base-bg: #F5F7FA;
+  --color-base-text: #111827;
   --color-contrast-bg: #FFF;
   --color-cart-page-bg: #f5f5f7;
   --color-cart-accent: #f50057;
   --color-cart-bank-benefit: #00c853;
   --color-cart-badge-muted: #5c6bc0;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-800: #1f2937;
+  --color-red-600: #dc2626;
+  --color-orange-50: #fff7ed;
+  --color-orange-500: #f97316;
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-600: #7c3aed;
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-pink-50: #fdf2f8;
+  --color-pink-200: #fbcfe8;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
   --color-profile-link: #2f73ff;
   --color-profile-panel-bg: #f1f3f5;
   --color-profile-card-muted: #e9ebee;
@@ -20,9 +51,84 @@
   --color-product-price-panel-bg: #f8fff4;
   --color-product-buy-now-bg: #e3ffe5;
   --color-product-delivery-bg: #f8fbf9;
+  --color-product-favorite-bg: #dfe8f2;
+  --color-product-favorite-bg-hover: #d1deeb;
+  --color-category-tile-grid-stripe: rgb(255 255 255 / 35%);
+  --color-favorite-heart-fill: #f8104b;
+  --shadow-surface: 0 4px 24px rgb(15 23 42 / 6%);
+  --background-image-category-tile: linear-gradient(
+    135deg,
+    #eef1f5 0%,
+    #e4e9ef 50%,
+    #eef1f5 100%
+  );
+  --background-image-item-placeholder: linear-gradient(
+    180deg,
+    #f4f7fb 0%,
+    #e9eef5 100%
+  );
 }
 
 html,
 body {
 	background-color: var(--color-base-bg);
+  color: var(--color-base-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-danger-badge: #ff4d73;
+    --color-base-bg: #0f1115;
+    --color-base-text: #e5e7eb;
+    --color-contrast-bg: #171a21;
+    --color-cart-page-bg: #11151c;
+    --color-profile-panel-bg: #1a202a;
+    --color-profile-card-muted: #242b36;
+    --color-profile-card-soft: #1e242f;
+    --color-profile-icon-muted: #7a8394;
+    --color-product-sale-bg: #2a1f33;
+    --color-product-sale-text: #d48af1;
+    --color-product-price-panel-bg: #16231b;
+    --color-product-buy-now-bg: #163220;
+    --color-product-delivery-bg: #16201a;
+    --color-product-favorite-bg: #233244;
+    --color-product-favorite-bg-hover: #2d4259;
+    --color-slate-50: #111827;
+    --color-slate-100: #1f2937;
+    --color-slate-200: #334155;
+    --color-slate-300: #475569;
+    --color-slate-400: #64748b;
+    --color-slate-500: #94a3b8;
+    --color-slate-600: #cbd5e1;
+    --color-slate-700: #dbe2ea;
+    --color-slate-800: #e2e8f0;
+    --color-slate-900: #f1f5f9;
+    --color-slate-950: #f8fafc;
+    --color-gray-200: #e5e7eb;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #c7d2e0;
+    --color-gray-800: #e5e7eb;
+    --color-rating-star: #ffb020;
+    --color-category-tile-grid-stripe: rgb(255 255 255 / 8%);
+    --color-favorite-heart-fill: #ff5f8b;
+    --shadow-surface: 0 8px 32px rgb(2 6 23 / 45%);
+    --background-image-category-tile: linear-gradient(
+      135deg,
+      #1b2430 0%,
+      #253142 50%,
+      #1b2430 100%
+    );
+    --background-image-item-placeholder: linear-gradient(
+      180deg,
+      #1f2835 0%,
+      #29384a 100%
+    );
+  }
+
+  html,
+  body {
+    background-color: var(--color-base-bg);
+    color: var(--color-base-text);
+    color-scheme: dark;
+  }
 }

@@ -1,21 +1,21 @@
 import { Link } from '@heroui/react';
 
-export const ProductNotFound = () => {
+export const CategoryNotFound = () => {
   return (
     <main className="w-full bg-base-bg py-8">
       <section className="mx-auto w-full max-w-[1416px] px-4">
         <div className="rounded-3xl bg-contrast-bg p-10 text-center">
           <h1 className="font-bold text-[22px] text-slate-900">
-            Товар не найден
+            Категория не найдена
           </h1>
           <p className="mt-3 text-slate-500">
-            Проверьте ссылку или вернитесь на главную страницу.
+            Проверьте адрес или выберите раздел в каталоге.
           </p>
           <Link
             className="mt-5 inline-flex text-profile-link no-underline"
             href="/"
           >
-            Перейти к каталогу
+            На главную
           </Link>
         </div>
       </section>

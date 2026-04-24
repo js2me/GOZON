@@ -1,14 +1,15 @@
 import { computed, makeObservable, observable } from 'mobx';
 import {
-    loadProfileRatingProducts,
-    loadProfileViewedProducts,
+  loadProfile,
+  loadProfileRatingProducts,
+  loadProfileViewedProducts,
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type {
-    ProfileMenuSection,
-    ProfilePageContext,
-    ProfileRatingCard,
-    ProfileViewedCard,
+  ProfileMenuSection,
+  ProfilePageContext,
+  ProfileRatingCard,
+  ProfileViewedCard,
 } from './types';
 
 export class ProfilePageVM extends PageVM<ProfilePageContext> {
@@ -91,7 +92,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       this.isRatingLoading = false;
       this.isViewedLoading = false;
     }
-  }
+  };
 
   protected willMount(): void {
     makeObservable(this, {
@@ -111,13 +112,17 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   }
 
-  async init(): Promise<ProfilePageContext> {
-    const profile = await this.globals.ssr.getProfile();
+  async init(isClient = false): Promise<ProfilePageContext> {
+    const profile = isClient
+      ? await loadProfile()
+      : await this.globals.ssr.getProfile();
 
-    this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`
+    if (!isClient) {
+      this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
+    }
 
     return {
       profile,
-    }
+    };
   }
 }

@@ -13,12 +13,37 @@ import {
 import { withViewModel } from 'mobx-view-model-react';
 import { cx } from 'yummies/css';
 import { declension } from 'yummies/text';
+import { ActionButton } from '../../../shared/ui/action-button';
+import { ClientOnly } from '../../../shared/ui/client-only';
 import { ProductPageVM } from '../model';
 import { ProductNotFound } from './components/product-not-found';
 
 export const ProductPage = withViewModel(
   ProductPageVM,
   ({ model }) => {
+    if (model.isPageContextLoading && !model.product) {
+      return (
+        <main className="w-full bg-base-bg pt-4 pb-10">
+          <section className="mx-auto w-full max-w-[1416px] px-4">
+            <div className="mb-3 h-5 w-2/3 max-w-md animate-pulse rounded-lg bg-slate-200" />
+            <div className="grid grid-cols-[80px_minmax(0,1fr)_minmax(420px,1fr)_390px] gap-5">
+              <aside className="mb-auto rounded-3xl bg-contrast-bg p-2">
+                <div className="h-16 w-full animate-pulse rounded-xl bg-slate-200" />
+              </aside>
+              <div className="h-[620px] animate-pulse rounded-3xl bg-slate-200" />
+              <div className="rounded-3xl bg-contrast-bg px-5 py-6">
+                <div className="h-8 w-3/4 animate-pulse rounded-lg bg-slate-200" />
+                <div className="mt-4 h-40 animate-pulse rounded-xl bg-slate-200" />
+              </div>
+              <aside className="rounded-3xl bg-contrast-bg p-5">
+                <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+              </aside>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
     if (!model.product) {
       return <ProductNotFound />;
     }
@@ -33,25 +58,32 @@ export const ProductPage = withViewModel(
               const isLastCategory = index === model.categoriesPath.length - 1;
               return (
                 <div className="contents" key={category.id}>
-                  <span className={isLastCategory ? 'font-medium text-slate-700' : ''}>
+                  <span
+                    className={
+                      isLastCategory ? 'font-medium text-slate-700' : ''
+                    }
+                  >
                     {category.title}
                   </span>
                   <ChevronRight className="size-3.5" />
                 </div>
               );
             })}
-            <span className="font-medium text-slate-700">{product.title.slice(0, 16)}</span>
+            <span className="font-medium text-slate-700">
+              {product.title.slice(0, 16)}
+            </span>
           </div>
 
           <div className="grid grid-cols-[80px_minmax(0,1fr)_minmax(420px,1fr)_390px] gap-5">
-            <aside className="rounded-3xl bg-white p-2 mb-auto">
+            <aside className="mb-auto rounded-3xl bg-contrast-bg p-2">
               <div className="flex flex-col gap-2">
                 {model.images.map((img, index) => (
                   <button
-                    className={`overflow-hidden rounded-xl border-2 transition-colors ${index === model.activeImageIndex
-                      ? 'border-brand'
-                      : 'border-transparent'
-                      }`}
+                    className={`overflow-hidden rounded-xl border-2 transition-colors ${
+                      index === model.activeImageIndex
+                        ? 'border-brand'
+                        : 'border-transparent'
+                    }`}
                     key={`${product.id}-${img}-preview`}
                     onClick={() => model.setActiveImage(index)}
                     type="button"
@@ -66,7 +98,7 @@ export const ProductPage = withViewModel(
               </div>
             </aside>
 
-            <section className="rounded-3xl bg-white p-3">
+            <section className="rounded-3xl bg-contrast-bg p-3">
               <div className="relative overflow-hidden rounded-3xl bg-slate-100">
                 <img
                   alt={model.product.title}
@@ -79,7 +111,7 @@ export const ProductPage = withViewModel(
               </div>
             </section>
 
-            <section className="rounded-3xl bg-white px-5 py-6">
+            <section className="rounded-3xl bg-contrast-bg px-5 py-6">
               <div className="mb-2 flex items-center gap-4 text-[13px] text-slate-500">
                 <span>Артикул: {model.product.id}</span>
                 <Link className="text-slate-500 no-underline" href="#">
@@ -107,7 +139,11 @@ export const ProductPage = withViewModel(
                 <span className="text-slate-500">·</span>
                 <span className="font-medium text-slate-600">
                   {model.reviewsText}{' '}
-                  {declension(model.product.reviewsCount, ['отзыв', 'отзыва', 'отзывов'])}
+                  {declension(model.product.reviewsCount, [
+                    'отзыв',
+                    'отзыва',
+                    'отзывов',
+                  ])}
                 </span>
                 <span className="text-slate-500">·</span>
                 <span className="font-medium text-slate-600">
@@ -122,10 +158,11 @@ export const ProductPage = withViewModel(
               <div className="mt-4 flex gap-2">
                 {model.images.map((image, index) => (
                   <button
-                    className={`overflow-hidden rounded-lg border-2 ${index === model.activeImageIndex
-                      ? 'border-brand'
-                      : 'border-slate-200'
-                      }`}
+                    className={`overflow-hidden rounded-lg border-2 ${
+                      index === model.activeImageIndex
+                        ? 'border-brand'
+                        : 'border-slate-200'
+                    }`}
                     key={`${product.id}-${image}-thumb`}
                     onClick={() => model.setActiveImage(index)}
                     type="button"
@@ -164,7 +201,7 @@ export const ProductPage = withViewModel(
               </dl>
             </section>
 
-            <aside className="rounded-3xl bg-white p-5">
+            <aside className="rounded-3xl bg-contrast-bg p-5">
               {model.saleBadgeText ? (
                 <div className="flex items-center rounded-2xl bg-product-sale-bg px-4 py-3 text-[14px] text-product-sale-text">
                   <p className="my-auto inline-flex items-center gap-2 font-semibold">
@@ -194,68 +231,93 @@ export const ProductPage = withViewModel(
                 ) : null}
               </div>
 
-              <div className="mt-5 flex items-center gap-3">
-                <Button
-                  className="h-12 flex-1 rounded-2xl bg-brand font-bold text-[17px] text-white"
-                  isDisabled={model.isAddingToCart}
-                  onClick={model.isInCart ? model.goToCart : model.addToCart}
-                >
-                  <span className="flex min-w-[120px] flex-1 justify-center">
-                    {model.isAddingToCart
-                      ? 'Добавляем…'
-                      : model.isInCart
-                        ? 'В корзине'
-                        : 'В корзину'}
-                  </span>
-                  {!model.isInCart && <span
-                    className="block font-medium text-white/95 leading-tight"
-                    style={{ fontSize: '15px' }}
+              <ClientOnly
+                fallback={
+                  <div
+                    aria-hidden
+                    className="mt-5 flex h-12 items-center gap-3"
                   >
-                    {model.deliveryText}
-                  </span>}
-                </Button>
-
-                <div
-                  className={cx(
-                    'overflow-hidden transition-all duration-300 ease-out',
-                    model.isInCart ? 'w-[255px] opacity-100' : 'w-0 opacity-0',
-                  )}
-                >
-                  <div className="flex h-12 items-center justify-between rounded-2xl bg-slate-100 px-4">
-                    <button
-                      className="inline-flex size-8 items-center justify-center rounded-full text-brand transition-colors hover:bg-slate-200 disabled:text-slate-400"
-                      onClick={model.decrementCartQuantity}
-                      type="button"
-                    >
-                      <Minus className="size-5" />
-                    </button>
-                    <span
-                      className="font-semibold text-slate-900 tabular-nums leading-none"
-                      style={{ fontSize: '34px' }}
-                    >
-                      {model.cartQuantity}
-                    </span>
-                    <button
-                      className="inline-flex size-8 items-center justify-center rounded-full text-brand transition-colors hover:bg-slate-200 disabled:text-slate-400"
-                      disabled={!model.canIncreaseCartQuantity}
-                      onClick={model.incrementCartQuantity}
-                      type="button"
-                    >
-                      <Plus className="size-5" />
-                    </button>
+                    <div className="h-12 min-h-12 flex-1 rounded-2xl bg-slate-200/70" />
+                    <div className="h-12 w-0 min-w-0 shrink-0 overflow-hidden opacity-0" />
+                    <div className="size-12 shrink-0 rounded-2xl bg-slate-200/70" />
                   </div>
-                </div>
+                }
+              >
+                <div className="mt-5 flex items-center gap-3">
+                  <Button
+                    className="h-12 flex-1 rounded-2xl bg-brand font-bold text-[17px] text-white"
+                    isDisabled={model.isAddingToCart}
+                    onClick={model.isInCart ? model.goToCart : model.addToCart}
+                  >
+                    <span className="flex min-w-[120px] flex-1 justify-center">
+                      {model.isAddingToCart
+                        ? 'Добавляем…'
+                        : model.isInCart
+                          ? 'В корзине'
+                          : 'В корзину'}
+                    </span>
+                    {!model.isInCart && (
+                      <span
+                        className="block font-medium text-white/95 leading-tight"
+                        style={{ fontSize: '15px' }}
+                      >
+                        {model.deliveryText}
+                      </span>
+                    )}
+                  </Button>
 
-                <button
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#dfe8f2] text-brand transition-colors hover:bg-[#d1deeb]"
-                  onClick={model.toggleFavorite}
-                  type="button"
-                >
-                  <Heart
-                    className={`size-6 ${model.isFavorite ? 'fill-brand text-brand' : ''}`}
+                  <div
+                    className={cx(
+                      'overflow-hidden transition-all duration-300 ease-out',
+                      model.isInCart
+                        ? 'w-[255px] opacity-100'
+                        : 'w-0 opacity-0',
+                    )}
+                  >
+                    <div className="flex h-12 items-center justify-between rounded-2xl bg-slate-100 px-4">
+                      <ActionButton
+                        action={model.decrementCartQuantity}
+                        icon={<Minus className="size-5" />}
+                        loading={model.isCartLoading}
+                        size="m"
+                        view="brand"
+                      />
+                      <span
+                        className="font-semibold text-slate-900 tabular-nums leading-none"
+                        style={{ fontSize: '34px' }}
+                      >
+                        {model.cartQuantity}
+                      </span>
+                      <ActionButton
+                        action={model.incrementCartQuantity}
+                        disabled={!model.canIncreaseCartQuantity}
+                        icon={<Plus className="size-5" />}
+                        loading={model.isCartLoading}
+                        size="m"
+                        view="brand"
+                      />
+                    </div>
+                  </div>
+
+                  <ActionButton
+                    action={model.toggleFavorite}
+                    ariaLabel={
+                      model.isFavorite
+                        ? 'Убрать из избранного'
+                        : 'Добавить в избранное'
+                    }
+                    icon={
+                      <Heart
+                        className="size-6 text-brand"
+                        fill={model.isFavorite ? 'currentColor' : 'none'}
+                      />
+                    }
+                    loading={model.isFavoritesLoading}
+                    size="l"
+                    view="surface"
                   />
-                </button>
-              </div>
+                </div>
+              </ClientOnly>
 
               <Button
                 className="mt-3 h-11 w-full rounded-2xl bg-product-buy-now-bg font-semibold text-[16px] text-brand"
@@ -266,8 +328,9 @@ export const ProductPage = withViewModel(
 
               <div className="mt-5 space-y-3 rounded-2xl bg-product-delivery-bg p-4 text-[14px] text-slate-700">
                 <p>{model.deliveryAddress}</p>
-                <p>Курьерской службой партнера</p>
-                <p>Пункты выдачи партнера</p>
+                {model.deliveryVariants.map(({ variant, label }) => (
+                  <p key={variant}>{label}</p>
+                ))}
                 <p>{model.returnPeriodText}</p>
               </div>
 

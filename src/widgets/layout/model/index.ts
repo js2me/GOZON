@@ -65,18 +65,7 @@ export class LayoutVM extends VM {
         href: '/business',
         label: 'Для бизнеса',
       },
-      {
-        href: '/fashion',
-        label: 'Одежда',
-      },
-      {
-        href: '/electronics',
-        label: 'Электроника',
-      },
-      {
-        href: '/home',
-        label: 'Дом и сад',
-      },
+      ...this.globals.stores.category.mainCategories,
     ];
   }
 

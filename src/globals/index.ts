@@ -3,9 +3,10 @@ import type { AnyObject, Maybe } from 'yummies/types';
 import { Router } from './router';
 import { AppInfoStore } from './stores/app-info';
 import { CartStore } from './stores/cart/index';
+import { CategoryStore } from './stores/category';
 import { FavoritesStore } from './stores/favorites';
-import type { GlobalsCreateParams } from './types';
 import { ViewModelsStore } from './stores/view-models';
+import type { GlobalsCreateParams } from './types';
 
 export class Globals {
   readonly isClient: boolean;
@@ -14,6 +15,7 @@ export class Globals {
   readonly router: Router;
   readonly stores: {
     appInfo: AppInfoStore;
+    category: CategoryStore;
     cart: CartStore;
     favorites: FavoritesStore;
     viewModels: ViewModelsStore;
@@ -28,12 +30,13 @@ export class Globals {
         router: this.router,
         appName: params.appName,
       }),
+      category: new CategoryStore(this.router, params.mainCategories ?? []),
       cart: new CartStore(this.router),
       favorites: new FavoritesStore(),
       viewModels: new ViewModelsStore(this, params.pageContexts),
     };
   }
-  
+
   get ssr() {
     assert.defined(this.params.ssr, 'is not ssr');
     return this.params.ssr;

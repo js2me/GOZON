@@ -1,8 +1,9 @@
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
-import type { ProductDC } from '../../shared/api/api';
+import { type ProductDC, ProductDeliveryVariant } from '../../shared/api/api';
 import { app } from '../app';
+import { CATEGORY_IDS } from './categories';
 import { allShops } from './shops';
 
 const productImagesDir = path.resolve(
@@ -55,7 +56,11 @@ function getCharacteristics() {
 }
 
 function getCategoriesPath() {
-  const root = app.faker.helpers.arrayElement(['Одежда', 'Обувь', 'Аксессуары']);
+  const root = app.faker.helpers.arrayElement([
+    'Одежда',
+    'Обувь',
+    'Аксессуары',
+  ]);
   const middle = app.faker.helpers.arrayElement([
     'Мужская одежда',
     'Женская одежда',
@@ -73,6 +78,7 @@ function getCategoriesPath() {
 export const allProducts = app.faker.helpers.multiple(
   (_, id): ProductDC => ({
     id,
+    categoryId: app.faker.helpers.arrayElement([...CATEGORY_IDS]),
     shopId: allShops[id % allShops.length]?.id ?? 1,
     originalPrice: +app.faker.commerce.price({ min: 1, max: 10000 }),
     price: +app.faker.commerce.price({ min: 1, max: 10000 }),
@@ -86,6 +92,13 @@ export const allProducts = app.faker.helpers.multiple(
       'Доставим послезавтра',
       'Доставка за 2-3 дня',
     ]),
+    deliveryVariants: app.faker.helpers.arrayElements(
+      [
+        ProductDeliveryVariant.PartnerCourier,
+        ProductDeliveryVariant.PartnerPickupPoints,
+      ],
+      { min: 1, max: 2 },
+    ),
     hasPriceDropBadge: app.faker.datatype.boolean(0.7),
     categoriesPath: getCategoriesPath(),
     characteristics: getCharacteristics(),
@@ -106,4 +119,43 @@ export const allProducts = app.faker.helpers.multiple(
 
 export function getProductById(productId: number): ProductDC | null {
   return allProducts.find((product) => product.id === productId) ?? null;
+}
+
+export type ProductSortOption = 'popular' | 'price_asc' | 'price_desc';
+
+export interface QueryProductsFilters {
+  categoryId?: string;
+  saleOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: ProductSortOption;
+}
+
+export function queryProducts(filters: QueryProductsFilters): ProductDC[] {
+  const list = allProducts.filter((p) => {
+    if (filters.categoryId && p.categoryId !== filters.categoryId) {
+      return false;
+    }
+    if (filters.saleOnly && !(p.originalPrice > p.price)) {
+      return false;
+    }
+    if (filters.minPrice != null && p.price < filters.minPrice) {
+      return false;
+    }
+    if (filters.maxPrice != null && p.price > filters.maxPrice) {
+      return false;
+    }
+    return true;
+  });
+
+  const sort = filters.sort ?? 'popular';
+  const sorted = [...list];
+  if (sort === 'price_asc') {
+    sorted.sort((a, b) => a.price - b.price);
+  } else if (sort === 'price_desc') {
+    sorted.sort((a, b) => b.price - a.price);
+  } else {
+    sorted.sort((a, b) => b.reviewsCount - a.reviewsCount);
+  }
+  return sorted;
 }

@@ -1,9 +1,10 @@
 import '../app/bootstrap/server';
 
 import http from 'node:http';
-import express from 'express';
 import path from 'node:path';
+import express from 'express';
 import { Globals } from '../globals';
+import { getMainCategories } from './data/categories';
 import { handleApiRequest } from './api';
 import { app } from './app';
 import { getOrCreateSessionId } from './session';
@@ -48,6 +49,7 @@ async function main() {
     const ssrApi = createSsrApi(sessionId);
     const globals = new Globals({
       appName: 'GOZON',
+      mainCategories: getMainCategories(),
       router: {
         history: {
           initialEntries: [req.path],

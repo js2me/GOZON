@@ -14,9 +14,7 @@ export const NotFoundPage = withViewModel(NotFoundPageVM, ({ model }) => {
         <p className="max-w-md text-gray-500">
           К сожалению, запрашиваемая страница не существует или была перемещена.
         </p>
-        <p className='text-gray-400 text-xs'>
-          {model.ctx.label}
-        </p>
+        <p className="text-gray-400 text-xs">{model.ctx.label}</p>
         <a
           href="/"
           className="mt-4 rounded-lg bg-brand px-6 py-3 text-white transition-opacity hover:opacity-85"

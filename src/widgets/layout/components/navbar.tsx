@@ -20,7 +20,7 @@ export const Navbar = observer(() => {
           <span className="relative flex items-center justify-center">
             <Icon className="size-6" />
             {badge ? (
-              <span className="absolute -top-2 -right-4 inline-flex min-w-5 items-center justify-center rounded-full bg-[#ff335f] px-1.5 font-bold text-[10px] text-white leading-5">
+              <span className="absolute -top-2 -right-4 inline-flex min-w-5 items-center justify-center rounded-full bg-danger-badge px-1.5 font-bold text-[10px] text-white leading-5">
                 {badge}
               </span>
             ) : null}

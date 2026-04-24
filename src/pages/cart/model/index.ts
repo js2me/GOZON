@@ -55,7 +55,9 @@ export class CartPageVM extends PageVM<null> {
   };
 
   toggleFavorite = (id: string) => {
-    const item = this.globals.stores.cart.items.find((cartItem) => cartItem.id === id);
+    const item = this.globals.stores.cart.items.find(
+      (cartItem) => cartItem.id === id,
+    );
     if (!item) {
       return;
     }
@@ -63,7 +65,9 @@ export class CartPageVM extends PageVM<null> {
   };
 
   isFavorite = (id: string): boolean => {
-    const item = this.globals.stores.cart.items.find((cartItem) => cartItem.id === id);
+    const item = this.globals.stores.cart.items.find(
+      (cartItem) => cartItem.id === id,
+    );
     if (!item) {
       return false;
     }
@@ -87,8 +91,10 @@ export class CartPageVM extends PageVM<null> {
     }
   }
 
-  async init(): Promise<null> {
-    this.globals.ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
+  async init(isClient = false): Promise<null> {
+    if (!isClient) {
+      this.globals.ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
+    }
     return null;
   }
 }

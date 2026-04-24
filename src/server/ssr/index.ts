@@ -1,6 +1,6 @@
-import type { Request, Response } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Request, Response } from 'express';
 import type { Globals } from '../../globals';
 import { app } from '../app';
 import { renderSimple } from './render-simple';

@@ -1,14 +1,24 @@
 import { computed, makeObservable, observable } from 'mobx';
 import { assert } from 'yummies/assert';
-import type {
-  ProductCategoryDC,
-  ProductCharacteristicDC,
-  ProductDC,
+import { typeGuard } from 'yummies/type-guard';
+import {
+  type ProductCategoryDC,
+  type ProductCharacteristicDC,
+  type ProductDC,
+  ProductDeliveryVariant,
+  loadProductById,
+  loadProfile,
+  loadShopById,
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
 
 const FALLBACK_PRODUCT_IMAGE = '/vite.svg';
+
+const deliveryVariantLabels: Record<ProductDeliveryVariant, string> = {
+  [ProductDeliveryVariant.PartnerCourier]: 'Курьерской службой партнера',
+  [ProductDeliveryVariant.PartnerPickupPoints]: 'Пункты выдачи партнера',
+};
 
 export class ProductPageVM extends PageVM<ProductPageContext | null> {
   activeImageIndex = 0;
@@ -31,13 +41,10 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get productId(): number | null {
-    const path = this.getCurrentPathname();
-    const match = path.match(/^\/products\/(\d+)\/?$/);
-    if (!match?.[1]) {
-      return null;
-    }
-
-    return Number(match[1]);
+    const productId = Number(
+      this.globals.router.routes.product.params?.productId,
+    );
+    return typeGuard.isNumber(productId) ? productId : null;
   }
 
   get priceText(): string {
@@ -64,7 +71,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     const discount = Math.round(
       ((this.product.originalPrice - this.product.price) /
         this.product.originalPrice) *
-      100,
+        100,
     );
     if (discount <= 0) {
       return '';
@@ -99,6 +106,20 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
 
   get deliveryAddress(): string {
     return this.ctx?.profile?.address ?? 'Высоковский пр-д, 20';
+  }
+
+  get deliveryVariants(): {
+    variant: ProductDeliveryVariant;
+    label: string;
+  }[] {
+    const variants = this.product?.deliveryVariants;
+    if (!variants?.length) {
+      return [];
+    }
+    return variants.map((variant) => ({
+      variant,
+      label: deliveryVariantLabels[variant] ?? String(variant),
+    }));
   }
 
   get shopName(): string {
@@ -142,17 +163,32 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get isInCart(): boolean {
-    if (!this.productId) {
+    if (!this.productId || this.globals.isServer) {
       return false;
     }
     return this.globals.stores.cart.hasProduct(this.productId);
   }
 
   get isFavorite(): boolean {
-    if (!this.productId) {
+    if (!this.productId || this.globals.isServer) {
       return false;
     }
     return this.globals.stores.favorites.hasProduct(this.productId);
+  }
+
+  get isFavoritesLoading(): boolean {
+    if (!this.globals.isClient || this.globals.isServer) {
+      return false;
+    }
+    return this.globals.stores.favorites.isLoading;
+  }
+
+  get isCartLoading(): boolean {
+    if (!this.globals.isClient || this.globals.isServer) {
+      return false;
+    }
+    const cart = this.globals.stores.cart;
+    return cart.isLoading || cart.isSyncing;
   }
 
   get cartItemId(): string | null {
@@ -271,6 +307,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       reviewsText: computed,
       questionsText: computed,
       deliveryAddress: computed,
+      deliveryVariants: computed,
       shopName: computed,
       deliveryText: computed,
       colorText: computed,
@@ -281,6 +318,8 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       isAddingToCart: computed,
       isInCart: computed,
       isFavorite: computed,
+      isFavoritesLoading: computed,
+      isCartLoading: computed,
       cartItemId: computed,
       cartQuantity: computed,
       canIncreaseCartQuantity: computed,
@@ -292,22 +331,20 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     }
   }
 
-  private getCurrentPathname(): string {
-    const history = this.globals.router.history as {
-      location?: { pathname?: string };
-      pathname?: string;
-      path?: string;
-    };
-
-    return history.location?.pathname ?? history.pathname ?? history.path ?? '';
-  }
-
-  async init(): Promise<ProductPageContext | null> {
+  async init(isClient = false): Promise<ProductPageContext | null> {
     try {
-      const profile = await this.globals.ssr.getProfile();
-
       assert.defined(this.productId, 'Product id is required for product page');
 
+      if (isClient) {
+        const product = await loadProductById(this.productId);
+        const [shop, profile] = await Promise.all([
+          loadShopById(product.shopId),
+          loadProfile(),
+        ]);
+        return { product, profile, shop };
+      }
+
+      const profile = await this.globals.ssr.getProfile();
       const product = await this.globals.ssr.getProductById(this.productId);
       const shop = await this.globals.ssr.getShopById(product!.shopId);
 

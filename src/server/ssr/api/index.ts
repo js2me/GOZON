@@ -1,4 +1,5 @@
 import type { SSRApi } from '../../api/types';
+import { createGetCategoryById } from './get-category-by-id';
 import { createGetProductById } from './get-product-by-id';
 import { createGetProfile } from './get-profile';
 import { createGetShopById } from './get-shop-by-id';
@@ -45,6 +46,7 @@ export function createSsrApi(sessionId: string): SSRApi {
     getProfile: createGetProfile(sessionId),
     getProductById: createGetProductById(),
     getShopById: createGetShopById(),
+    getCategoryById: createGetCategoryById(),
     getSystemInfo: () => {
       return {
         date: new Date().toISOString(),

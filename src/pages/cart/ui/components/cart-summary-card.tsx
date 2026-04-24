@@ -1,8 +1,8 @@
 import { Skeleton } from '@heroui/react';
-import { Card } from '../../../../shared/ui/card';
-import { declension } from 'yummies/text';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
+import { declension } from 'yummies/text';
+import { Card } from '../../../../shared/ui/card';
 import { CartPageVM } from '../../model';
 
 function formatMoney(value: number): string {
@@ -24,7 +24,11 @@ export const CartSummaryCard = observer(() => {
             <p className="font-bold text-[17px] text-slate-900">Ваша корзина</p>
             <span className="shrink-0 text-[13px] text-slate-500">
               {summary.totalSelectedCount}{' '}
-              {declension(summary.totalSelectedCount, ['товар', 'товара', 'товаров'])}{' '}
+              {declension(summary.totalSelectedCount, [
+                'товар',
+                'товара',
+                'товаров',
+              ])}{' '}
               • {summary.totalWeight}
             </span>
           </div>
@@ -54,16 +58,20 @@ export const CartSummaryCard = observer(() => {
                 {formatMoney(summary.finalPriceWithLoyalty)}
               </span>
             </div>
-            <p className="mt-0.5 text-[12px] text-slate-500">С {model.globals.stores.appInfo.bankName} Банком</p>
+            <p className="mt-0.5 text-[12px] text-slate-500">
+              С {model.globals.stores.appInfo.bankName} Банком
+            </p>
             <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-[15px] text-slate-500 tabular-nums line-through">
                 {formatMoney(summary.finalPriceStandard)}
               </span>
             </div>
-            <p className="text-[12px] text-slate-400">Без {model.globals.stores.appInfo.bankName} Банка</p>
+            <p className="text-[12px] text-slate-400">
+              Без {model.globals.stores.appInfo.bankName} Банка
+            </p>
           </div>
         </>
       )}
     </Card>
   );
-})
+});

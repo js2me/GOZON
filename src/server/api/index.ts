@@ -6,8 +6,19 @@ import type {
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
-import { addProductToCart, getCartDC, removeCartItem, replaceCart } from '../data/cart';
-import { allProducts } from '../data/products';
+import {
+  addProductToCart,
+  getCartDC,
+  removeCartItem,
+  replaceCart,
+} from '../data/cart';
+import { getCategoryById } from '../data/categories';
+import { getFavoritesDC, replaceFavorites } from '../data/favorites';
+import {
+  allProducts,
+  type ProductSortOption,
+  queryProducts,
+} from '../data/products';
 import { getShopById } from '../data/shops';
 
 const delay = async (ms: number) => {
@@ -92,6 +103,111 @@ const handleCartApiRequest = (
   return false;
 };
 
+const handleFavoritesApiRequest = (
+  req: Request,
+  res: Response,
+  sessionId: string,
+): boolean => {
+  const path = req.path;
+
+  if (path === '/api/favorites' && req.method === 'GET') {
+    res.status(200).json(getFavoritesDC(sessionId));
+    return true;
+  }
+
+  if (path === '/api/favorites' && req.method === 'PUT') {
+    const rawBody = req.body as { productIds?: unknown };
+    const rawIds = rawBody.productIds;
+    if (!Array.isArray(rawIds)) {
+      res.status(400).json({ error: 'Invalid favorites payload' });
+      return true;
+    }
+
+    const result = replaceFavorites(
+      sessionId,
+      rawIds.map((id) => Number(id)),
+    );
+    if (!result.ok) {
+      res.status(400).json({ error: 'Invalid favorites payload' });
+      return true;
+    }
+
+    res.status(200).json(getFavoritesDC(sessionId));
+    return true;
+  }
+
+  return false;
+};
+
+const handleCategoryApiRequest = (path: string, res: Response): boolean => {
+  if (!path.startsWith('/api/categories/')) {
+    return false;
+  }
+
+  const categoryIdRaw = path.slice('/api/categories/'.length);
+  const categoryId = decodeURIComponent(categoryIdRaw);
+  if (!categoryId) {
+    res.status(404).json({ error: 'Category not found' });
+    return true;
+  }
+
+  const category = getCategoryById(categoryId);
+  if (!category) {
+    res.status(404).json({ error: 'Category not found' });
+    return true;
+  }
+
+  res.status(200).send(JSON.stringify(category));
+  return true;
+};
+
+const handleProductsListApiRequest = (req: Request, res: Response): boolean => {
+  if (req.path !== '/api/products') {
+    return false;
+  }
+
+  const rawLimit = Number(req.query.limit);
+  const rawOffset = Number(req.query.offset);
+  const limit = Number.isFinite(rawLimit)
+    ? Math.max(1, Math.min(Math.trunc(rawLimit), 100))
+    : 20;
+  const offset = Number.isFinite(rawOffset)
+    ? Math.max(0, Math.trunc(rawOffset))
+    : 0;
+
+  const categoryId =
+    typeof req.query.categoryId === 'string' ? req.query.categoryId : undefined;
+  const saleOnlyRaw = req.query.saleOnly;
+  const saleOnly =
+    saleOnlyRaw === '1' || saleOnlyRaw === 'true' || saleOnlyRaw === 'yes';
+  const rawMin = Number(req.query.minPrice);
+  const rawMax = Number(req.query.maxPrice);
+  const minPrice = Number.isFinite(rawMin) ? Math.max(0, rawMin) : undefined;
+  const maxPrice = Number.isFinite(rawMax) ? Math.max(0, rawMax) : undefined;
+
+  const sortRaw = req.query.sort;
+  const sort: ProductSortOption =
+    sortRaw === 'price_asc' || sortRaw === 'price_desc' ? sortRaw : 'popular';
+
+  const filtered = queryProducts({
+    categoryId,
+    saleOnly: saleOnly || undefined,
+    minPrice,
+    maxPrice,
+    sort,
+  });
+
+  const items = filtered.slice(offset, offset + limit);
+  const hasMore = offset + items.length < filtered.length;
+  const productsChunk: ProductsChunkDC = {
+    items,
+    hasMore,
+  };
+
+  res.status(200).send(JSON.stringify(productsChunk));
+  return true;
+};
+
 export const handleApiRequest = async (
   req: Request,
   res: Response,
@@ -100,6 +216,10 @@ export const handleApiRequest = async (
   const path = req.path;
 
   if (handleCartApiRequest(req, res, sessionId)) {
+    return;
+  }
+
+  if (handleFavoritesApiRequest(req, res, sessionId)) {
     return;
   }
 
@@ -132,24 +252,11 @@ export const handleApiRequest = async (
     return;
   }
 
-  if (path === '/api/products') {
-    const rawLimit = Number(req.query.limit);
-    const rawOffset = Number(req.query.offset);
-    const limit = Number.isFinite(rawLimit)
-      ? Math.max(1, Math.min(Math.trunc(rawLimit), 100))
-      : 20;
-    const offset = Number.isFinite(rawOffset)
-      ? Math.max(0, Math.trunc(rawOffset))
-      : 0;
+  if (handleCategoryApiRequest(path, res)) {
+    return;
+  }
 
-    const items = allProducts.slice(offset, offset + limit);
-    const hasMore = offset + items.length < allProducts.length;
-    const productsChunk: ProductsChunkDC = {
-      items,
-      hasMore,
-    };
-
-    res.status(200).send(JSON.stringify(productsChunk));
+  if (handleProductsListApiRequest(req, res)) {
     return;
   }
 

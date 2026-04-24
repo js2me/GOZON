@@ -1,66 +1,112 @@
-import { makeObservable, observable } from 'mobx';
-
-const STORAGE_KEY = 'gozon:favorites';
+import { computed, makeObservable, observable, runInAction } from 'mobx';
+import { storageData } from 'mobx-web-api';
+import { loadFavorites, putFavorites } from '../../shared/api/api';
 
 export class FavoritesStore {
-  productIds = observable.set<number>();
+  private readonly storedProductIdsState = storageData.key<number[]>(
+    'favoriteProductIds',
+    [],
+    'session',
+  );
+  private productIds: number[] = [];
+  private isReady = false;
+
+  private isLoaded = false;
+  private loadingPromise: Promise<void> | null = null;
+  private syncInFlight = 0;
+  /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
+  private initialLoadPending = true;
 
   constructor() {
-    makeObservable(this, {
-      productIds: observable,
+    this.productIds = [...this.storedProductIdsState.value];
+
+    makeObservable<
+      this,
+      | 'productIds'
+      | 'isReady'
+      | 'loadingPromise'
+      | 'syncInFlight'
+      | 'initialLoadPending'
+    >(this, {
+      productIds: observable.ref,
+      isReady: observable.ref,
+      loadingPromise: observable.ref,
+      syncInFlight: observable,
+      initialLoadPending: observable,
+      isLoading: computed,
     });
   }
 
+  get isLoading(): boolean {
+    return this.initialLoadPending || this.syncInFlight > 0;
+  }
+
   hasProduct = (productId: number): boolean => {
-    return this.productIds.has(productId);
+    if (!this.isReady) {
+      return false;
+    }
+    return this.productIds.includes(productId);
   };
 
   toggleProduct = (productId: number) => {
-    if (this.productIds.has(productId)) {
-      this.productIds.delete(productId);
+    this.isReady = true;
+
+    if (this.productIds.includes(productId)) {
+      this.setProductIds(this.productIds.filter((it) => it !== productId));
     } else {
-      this.productIds.add(productId);
+      this.setProductIds([...this.productIds, productId]);
     }
-    this.persist();
+
+    this.syncWithServer();
   };
 
-  load = () => {
-    if (typeof window === 'undefined') {
+  load = async () => {
+    if (this.isLoaded) {
+      this.isReady = true;
+      runInAction(() => {
+        this.initialLoadPending = false;
+      });
+      return;
+    }
+    if (this.loadingPromise) {
+      await this.loadingPromise;
       return;
     }
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return;
+    this.loadingPromise = (async () => {
+      try {
+        const { productIds } = await loadFavorites();
+        this.setProductIds(productIds);
+        this.isLoaded = true;
+      } catch {
+        // keep empty in-memory state if server is temporarily unavailable
+      } finally {
+        runInAction(() => {
+          this.isReady = true;
+          this.loadingPromise = null;
+          this.initialLoadPending = false;
+        });
       }
+    })();
 
-      const parsed = JSON.parse(raw) as unknown;
-      if (!Array.isArray(parsed)) {
-        return;
-      }
-
-      this.productIds.clear();
-      for (const id of parsed) {
-        const numericId = Number(id);
-        if (Number.isInteger(numericId)) {
-          this.productIds.add(numericId);
-        }
-      }
-    } catch {
-      // ignore broken localStorage data
-    }
+    await this.loadingPromise;
   };
 
-  private persist() {
-    if (typeof window === 'undefined') {
-      return;
-    }
+  private async syncWithServer() {
+    this.syncInFlight++;
+    const snapshot = Array.from(this.productIds);
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(this.productIds)));
+      const { productIds } = await putFavorites(snapshot);
+      this.setProductIds(productIds);
     } catch {
-      // ignore storage errors
+    } finally {
+      this.syncInFlight--;
     }
+  }
+
+  private setProductIds(productIds: number[]) {
+    this.productIds = productIds;
+    this.storedProductIdsState.value = productIds;
   }
 }

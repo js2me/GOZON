@@ -46,10 +46,7 @@ export function renderHeadMetaTags(head: HeadApi): string {
   const twitterImage = head.twitterImage ?? head.ogImage;
 
   const shouldEmitTwitter =
-    head.twitterCard ||
-    twitterTitle ||
-    twitterDescription ||
-    twitterImage;
+    head.twitterCard || twitterTitle || twitterDescription || twitterImage;
 
   if (shouldEmitTwitter) {
     const twitterCard = head.twitterCard ?? 'summary_large_image';

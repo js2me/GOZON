@@ -18,15 +18,34 @@ export class HomePageVM extends PageVM {
   firstPageProducts: ProductCardInfo[] = [];
   firstPageHasMoreProducts = true;
 
+  private toCardWithFavoriteState = (
+    product: ProductCardInfo,
+  ): ProductCardInfo => {
+    const isFavorite = this.globals.stores.favorites.hasProduct(product.id);
+
+    return {
+      ...product,
+      isFavorite,
+      favoriteLabel: isFavorite
+        ? 'Убрать из избранного'
+        : 'Добавить в избранное',
+      onFavoriteClick: () => {
+        this.globals.stores.favorites.toggleProduct(product.id);
+      },
+    };
+  };
+
   get virtualProductRows(): ProductRow[] {
     const productRows: ProductRow[] = Array.from(
       { length: Math.ceil(this.products.length / ITEMS_PER_ROW) },
       (_, rowIndex) =>
         ({
-          items: this.products.slice(
-            rowIndex * ITEMS_PER_ROW,
-            rowIndex * ITEMS_PER_ROW + ITEMS_PER_ROW,
-          ),
+          items: this.products
+            .slice(
+              rowIndex * ITEMS_PER_ROW,
+              rowIndex * ITEMS_PER_ROW + ITEMS_PER_ROW,
+            )
+            .map(this.toCardWithFavoriteState),
         }) satisfies ProductRow,
     );
     const rows = [...productRows];
@@ -103,12 +122,15 @@ export class HomePageVM extends PageVM {
     });
 
     if (this.globals.isClient) {
+      this.globals.stores.favorites.load();
       void this.loadProductsChunk();
     }
   }
 
-  async init() {
-    this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`
+  async init(isClient = false) {
+    if (!isClient) {
+      this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
+    }
     return null;
   }
 

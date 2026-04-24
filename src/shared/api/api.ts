@@ -3,6 +3,12 @@ export interface ProductCharacteristicDC {
   value: string;
 }
 
+/** Варианты доставки с бэка (строковый enum в JSON). */
+export enum ProductDeliveryVariant {
+  PartnerCourier = 'partner_courier',
+  PartnerPickupPoints = 'partner_pickup_points',
+}
+
 export interface ProductCategoryDC {
   id: string;
   title: string;
@@ -10,6 +16,8 @@ export interface ProductCategoryDC {
 
 export interface ProductDC {
   id: number;
+  /** Каталоговая категория (страница `/category/:categoryId`). */
+  categoryId: string;
   shopId: number;
   title: string;
   price: number;
@@ -19,6 +27,7 @@ export interface ProductDC {
   questionsCount: number;
   returnPeriodDays: number;
   deliveryText: string;
+  deliveryVariants: ProductDeliveryVariant[];
   hasPriceDropBadge: boolean;
   categoriesPath: ProductCategoryDC[];
   characteristics: ProductCharacteristicDC[];
@@ -31,9 +40,51 @@ export interface ShopDC {
   name: string;
 }
 
+export interface CategorySubNavItemDC {
+  id: string;
+  label: string;
+}
+
+export interface CategoryTileDC {
+  id: string;
+  title: string;
+  imageSrc: string;
+}
+
+export interface CategoryBrandDC {
+  id: string;
+  name: string;
+}
+
+export interface CategorySidebarItemDC {
+  id: string;
+  title: string;
+  active?: boolean;
+}
+
+export interface CategoryPageDC {
+  id: string;
+  title: string;
+  subNav: CategorySubNavItemDC[];
+  /** Доп. пункты для выпадающего «Ещё». */
+  subNavMore?: CategorySubNavItemDC[];
+  gridTiles: CategoryTileDC[];
+  brands: CategoryBrandDC[];
+  sidebarCategories: CategorySidebarItemDC[];
+}
+
+export type ProductSortParam = 'popular' | 'price_asc' | 'price_desc';
+
 export interface LoadProductsParams {
   limit: number;
   offset: number;
+  /** Фильтр по категории маркетплейса. */
+  categoryId?: string;
+  /** Только товары со скидкой (цена ниже оригинальной). */
+  saleOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: ProductSortParam;
 }
 
 export interface ProductsChunkDC {
@@ -102,15 +153,48 @@ export interface SyncCartItemPayload {
   quantity: number;
 }
 
-export const loadProducts = async ({
-  limit,
-  offset,
-}: LoadProductsParams): Promise<ProductsChunkDC> => {
+export interface FavoritesDC {
+  productIds: number[];
+}
+
+export const loadProducts = async (
+  params: LoadProductsParams,
+): Promise<ProductsChunkDC> => {
   const searchParams = new URLSearchParams({
-    limit: String(limit),
-    offset: String(offset),
+    limit: String(params.limit),
+    offset: String(params.offset),
   });
+  if (params.categoryId) {
+    searchParams.set('categoryId', params.categoryId);
+  }
+  if (params.saleOnly) {
+    searchParams.set('saleOnly', '1');
+  }
+  if (params.minPrice != null && Number.isFinite(params.minPrice)) {
+    searchParams.set('minPrice', String(params.minPrice));
+  }
+  if (params.maxPrice != null && Number.isFinite(params.maxPrice)) {
+    searchParams.set('maxPrice', String(params.maxPrice));
+  }
+  if (params.sort && params.sort !== 'popular') {
+    searchParams.set('sort', params.sort);
+  }
   const response = await fetch(`/api/products?${searchParams.toString()}`);
+  return response.json();
+};
+
+export const loadCategoryById = async (
+  categoryId: string,
+): Promise<CategoryPageDC | null> => {
+  const response = await fetch(
+    `/api/categories/${encodeURIComponent(categoryId)}`,
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error('Category load failed');
+  }
   return response.json();
 };
 
@@ -168,10 +252,13 @@ export const postAddToCart = async (productId: number): Promise<CartDC> => {
 };
 
 export const deleteCartItem = async (itemId: string): Promise<CartDC> => {
-  const response = await fetch(`/api/cart/items/${encodeURIComponent(itemId)}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
+  const response = await fetch(
+    `/api/cart/items/${encodeURIComponent(itemId)}`,
+    {
+      method: 'DELETE',
+      credentials: 'include',
+    },
+  );
   if (!response.ok) {
     throw new Error('Failed to remove cart item');
   }
@@ -179,7 +266,9 @@ export const deleteCartItem = async (itemId: string): Promise<CartDC> => {
   return response.json();
 };
 
-export const putCart = async (items: SyncCartItemPayload[]): Promise<CartDC> => {
+export const putCart = async (
+  items: SyncCartItemPayload[],
+): Promise<CartDC> => {
   const response = await fetch('/api/cart', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -197,6 +286,31 @@ export const loadCart = async (): Promise<CartDC> => {
   const response = await fetch('/api/cart', { credentials: 'include' });
   if (!response.ok) {
     throw new Error('Cart load failed');
+  }
+
+  return response.json();
+};
+
+export const loadFavorites = async (): Promise<FavoritesDC> => {
+  const response = await fetch('/api/favorites', { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error('Favorites load failed');
+  }
+
+  return response.json();
+};
+
+export const putFavorites = async (
+  productIds: number[],
+): Promise<FavoritesDC> => {
+  const response = await fetch('/api/favorites', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productIds }),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to sync favorites');
   }
 
   return response.json();

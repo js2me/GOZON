@@ -4,9 +4,9 @@ import { PassThrough, Readable } from 'stream';
 import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
 import type { Globals } from '../../globals';
+import { app } from '../app';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
-import { app } from '../app';
 
 export const renderWithStreams = (
   globals: Globals,
@@ -17,10 +17,7 @@ export const renderWithStreams = (
 ) => {
   const ssrData = async () => {
     const snapshot = globals.toSnapshot();
-    return JSON.stringify(snapshot).replace(
-      /</g,
-      '\\u003c',
-    );
+    return JSON.stringify(snapshot).replace(/</g, '\\u003c');
   };
 
   const head = globals.ssr.head;

@@ -1,12 +1,13 @@
 import { computed, makeObservable, observable, when } from 'mobx';
 import {
-    type AnyViewModel,
-    mergeVMConfigs,
-    type ViewModelCreateConfig, ViewModelStoreBase
+  type AnyViewModel,
+  mergeVMConfigs,
+  type ViewModelCreateConfig,
+  ViewModelStoreBase,
 } from 'mobx-view-model';
-import { Globals } from '..';
+import type { AnyObject } from 'yummies/types';
 import { PageVM } from '../../shared/lib/view-models/page-vm';
-import { AnyObject } from 'yummies/types';
+import type { Globals } from '..';
 
 export class ViewModelsStore extends ViewModelStoreBase {
   loadedContexts: AnyObject;
@@ -29,23 +30,23 @@ export class ViewModelsStore extends ViewModelStoreBase {
         },
         suspendUntil: () => {
           if (globals.isServer) {
-            return when(() => !this.loadingContexts.size)
+            return when(() => !this.loadingContexts.size);
           }
         },
       },
     });
 
     this.loadingContexts = observable.set<string>();
-    this.loadedContexts = { ...pageContexts }
+    this.loadedContexts = { ...pageContexts };
 
     makeObservable(this, {
       isContextLoaded: computed,
-      loadedContexts: observable.shallow
+      loadedContexts: observable.shallow,
     });
   }
 
   get isContextLoaded() {
-    return !this.loadingContexts.size
+    return !this.loadingContexts.size;
   }
 
   createViewModel<VM extends AnyViewModel>(
@@ -58,11 +59,13 @@ export class ViewModelsStore extends ViewModelStoreBase {
 
     if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
       this.loadingContexts.add(vm.id);
-      vm.init().then(ctx => {
-        this.loadedContexts[vm.id] = ctx;
-      }).finally(() => {
-        this.loadingContexts.delete(vm.id);
-      })
+      vm.init(false)
+        .then((ctx) => {
+          this.loadedContexts[vm.id] = ctx;
+        })
+        .finally(() => {
+          this.loadingContexts.delete(vm.id);
+        });
     }
 
     return vm;
