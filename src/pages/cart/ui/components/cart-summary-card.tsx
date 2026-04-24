@@ -2,6 +2,7 @@ import { Skeleton } from '@heroui/react';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
 import { declension } from 'yummies/text';
+import { ActionButton } from '../../../../shared/ui/action-button';
 import { Card } from '../../../../shared/ui/card';
 import { CartPageVM } from '../../model';
 
@@ -45,12 +46,11 @@ export const CartSummaryCard = observer(() => {
                 {formatMoney(summary.totalDiscount)}
               </span>
             </div>
-            <button
-              className="text-left text-[13px] text-brand hover:underline"
-              type="button"
-            >
-              Подробнее
-            </button>
+            <ActionButton
+              action={() => {}}
+              text="Подробнее"
+              view="cartDetailsLink"
+            />
           </div>
           <div className="mt-5 border-slate-100 border-t pt-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">

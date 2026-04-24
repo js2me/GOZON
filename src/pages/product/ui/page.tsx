@@ -1,4 +1,4 @@
-import { Button, Link } from '@heroui/react';
+import { Link } from '@heroui/react';
 import {
   Check,
   ChevronRight,
@@ -78,22 +78,19 @@ export const ProductPage = withViewModel(
             <aside className="mb-auto rounded-3xl bg-contrast-bg p-2">
               <div className="flex flex-col gap-2">
                 {model.images.map((img, index) => (
-                  <button
-                    className={`overflow-hidden rounded-xl border-2 transition-colors ${
-                      index === model.activeImageIndex
-                        ? 'border-brand'
-                        : 'border-transparent'
-                    }`}
+                  <ActionButton
+                    action={() => model.setActiveImage(index)}
+                    className="w-full"
                     key={`${product.id}-${img}-preview`}
-                    onClick={() => model.setActiveImage(index)}
-                    type="button"
+                    selected={index === model.activeImageIndex}
+                    view="productThumbRail"
                   >
                     <img
                       alt=""
                       className="h-[64px] w-full object-cover"
                       src={img}
                     />
-                  </button>
+                  </ActionButton>
                 ))}
               </div>
             </aside>
@@ -117,14 +114,13 @@ export const ProductPage = withViewModel(
                 <Link className="text-slate-500 no-underline" href="#">
                   В сравнение
                 </Link>
-                <button
-                  className="inline-flex items-center gap-1"
-                  onClick={() => void model.shareProduct()}
-                  type="button"
-                >
-                  <Share2 className="size-4" />
-                  <span>Поделиться</span>
-                </button>
+                <ActionButton
+                  action={() => void model.shareProduct()}
+                  icon={Share2}
+                  iconClassName="size-4"
+                  text="Поделиться"
+                  view="productShare"
+                />
               </div>
 
               <h1 className="font-bold text-[28px] text-slate-900 leading-[1.1]">
@@ -157,22 +153,18 @@ export const ProductPage = withViewModel(
 
               <div className="mt-4 flex gap-2">
                 {model.images.map((image, index) => (
-                  <button
-                    className={`overflow-hidden rounded-lg border-2 ${
-                      index === model.activeImageIndex
-                        ? 'border-brand'
-                        : 'border-slate-200'
-                    }`}
+                  <ActionButton
+                    action={() => model.setActiveImage(index)}
                     key={`${product.id}-${image}-thumb`}
-                    onClick={() => model.setActiveImage(index)}
-                    type="button"
+                    selected={index === model.activeImageIndex}
+                    view="productThumbSwatch"
                   >
                     <img
                       alt=""
                       className="h-18 w-16 object-cover"
                       src={image}
                     />
-                  </button>
+                  </ActionButton>
                 ))}
               </div>
 
@@ -244,27 +236,20 @@ export const ProductPage = withViewModel(
                 }
               >
                 <div className="mt-5 flex items-center gap-3">
-                  <Button
-                    className="h-12 flex-1 rounded-2xl bg-brand font-bold text-[17px] text-white"
-                    isDisabled={model.isAddingToCart}
-                    onClick={model.isInCart ? model.goToCart : model.addToCart}
-                  >
-                    <span className="flex min-w-[120px] flex-1 justify-center">
-                      {model.isAddingToCart
+                  <ActionButton
+                    action={model.isInCart ? model.goToCart : model.addToCart}
+                    disabled={model.isAddingToCart}
+                    className="min-w-[120px] flex-1"
+                    extraText={!model.isInCart ? model.deliveryText : undefined}
+                    size="l"
+                    text={
+                      model.isAddingToCart
                         ? 'Добавляем…'
                         : model.isInCart
                           ? 'В корзине'
-                          : 'В корзину'}
-                    </span>
-                    {!model.isInCart && (
-                      <span
-                        className="block font-medium text-white/95 leading-tight"
-                        style={{ fontSize: '15px' }}
-                      >
-                        {model.deliveryText}
-                      </span>
-                    )}
-                  </Button>
+                          : 'В корзину'
+                    }
+                  />
 
                   <div
                     className={cx(
@@ -277,21 +262,18 @@ export const ProductPage = withViewModel(
                     <div className="flex h-12 items-center justify-between rounded-2xl bg-slate-100 px-4">
                       <ActionButton
                         action={model.decrementCartQuantity}
-                        icon={<Minus className="size-5" />}
+                        icon={Minus}
                         loading={model.isCartLoading}
                         size="m"
                         view="brand"
                       />
-                      <span
-                        className="font-semibold text-slate-900 tabular-nums leading-none"
-                        style={{ fontSize: '34px' }}
-                      >
+                      <span className="font-semibold text-2xl text-slate-900 tabular-nums leading-none">
                         {model.cartQuantity}
                       </span>
                       <ActionButton
                         action={model.incrementCartQuantity}
                         disabled={!model.canIncreaseCartQuantity}
-                        icon={<Plus className="size-5" />}
+                        icon={Plus}
                         loading={model.isCartLoading}
                         size="m"
                         view="brand"
@@ -306,25 +288,21 @@ export const ProductPage = withViewModel(
                         ? 'Убрать из избранного'
                         : 'Добавить в избранное'
                     }
-                    icon={
-                      <Heart
-                        className="size-6 text-brand"
-                        fill={model.isFavorite ? 'currentColor' : 'none'}
-                      />
-                    }
+                    icon={Heart}
                     loading={model.isFavoritesLoading}
+                    selected={model.isFavorite}
                     size="l"
-                    view="surface"
+                    view="favoriteBrand"
                   />
                 </div>
               </ClientOnly>
 
-              <Button
-                className="mt-3 h-11 w-full rounded-2xl bg-product-buy-now-bg font-semibold text-[16px] text-brand"
-                variant="secondary"
-              >
-                Купить сейчас
-              </Button>
+              <ActionButton
+                action={() => {}}
+                className="mt-3"
+                text="Купить сейчас"
+                view="buyNow"
+              />
 
               <div className="mt-5 space-y-3 rounded-2xl bg-product-delivery-bg p-4 text-[14px] text-slate-700">
                 <p>{model.deliveryAddress}</p>

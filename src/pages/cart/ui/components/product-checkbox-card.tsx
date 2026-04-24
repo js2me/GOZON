@@ -7,6 +7,7 @@ import type {
   CartItemBenefit,
   CartItemInfo,
 } from '../../../../globals/stores/cart/types';
+import { ActionButton } from '../../../../shared/ui/action-button';
 import type { CartPageVM } from '../../model';
 
 interface ProductCheckboxCardProps {
@@ -45,7 +46,7 @@ function formatMoney(value: number): string {
 export const ProductCheckboxCard = observer(
   ({ item }: ProductCheckboxCardProps) => {
     const model = useViewModel<CartPageVM>();
-    const isFavorite = model.isFavorite(item.id);
+    const isFavorite = model.isFavorite(item.productId);
 
     return (
       <li className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 lg:flex-row lg:gap-5">
@@ -53,7 +54,7 @@ export const ProductCheckboxCard = observer(
           <input
             checked={item.isSelected}
             className="mt-1 size-4 shrink-0 rounded border-slate-300 accent-cart-bank-benefit"
-            onChange={() => model.toggleItem(item.id)}
+            onChange={() => model.toggleItem(item.productId)}
             type="checkbox"
           />
           <Link
@@ -77,7 +78,7 @@ export const ProductCheckboxCard = observer(
               {item.types.map((type) => (
                 <span
                   className={badgeCx({ colorType: type })}
-                  key={`${item.id}-${type}`}
+                  key={`${item.productId}-${type}`}
                 >
                   {getBadgeLabel(type)}
                 </span>
@@ -85,32 +86,31 @@ export const ProductCheckboxCard = observer(
             </div>
             <p className="mt-2 text-[13px] text-slate-500">{item.variant}</p>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-[13px] text-slate-500">
-              <button
-                aria-label={
+              <ActionButton
+                action={() => model.toggleFavorite(item.productId)}
+                ariaLabel={
                   isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'
                 }
-                className={`inline-flex items-center gap-1 transition-colors hover:text-cart-accent ${isFavorite ? 'text-cart-accent' : ''}`}
-                onClick={() => model.toggleFavorite(item.id)}
-                type="button"
-              >
-                <Heart
-                  className="size-4"
-                  fill={isFavorite ? 'currentColor' : 'none'}
-                />
-              </button>
-              <button
-                className="inline-flex items-center gap-1 transition-colors hover:text-cart-accent"
-                onClick={() => model.removeItem(item.id)}
-                type="button"
-              >
-                <Trash2 className="size-4" />
-              </button>
-              <button
-                className="font-medium text-brand transition-colors hover:underline"
-                type="button"
-              >
-                Купить
-              </button>
+                icon={
+                  <Heart
+                    className="size-4"
+                    fill={isFavorite ? 'currentColor' : 'none'}
+                  />
+                }
+                selected={isFavorite}
+                view="cartRowFavorite"
+              />
+              <ActionButton
+                action={() => model.removeItem(item.productId)}
+                icon={Trash2}
+                iconClassName="size-4"
+                view="cartRowTrash"
+              />
+              <ActionButton
+                action={() => {}}
+                text="Купить"
+                view="cartBuyLink"
+              />
             </div>
           </div>
         </div>
@@ -136,25 +136,23 @@ export const ProductCheckboxCard = observer(
 
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-              <button
-                className="flex size-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              <ActionButton
+                action={() => model.decrement(item.productId)}
                 disabled={item.quantity.current <= 1}
-                onClick={() => model.decrement(item.id)}
-                type="button"
-              >
-                <Minus className="size-4" />
-              </button>
+                icon={Minus}
+                iconClassName="size-4"
+                view="cartQty"
+              />
               <span className="min-w-[36px] text-center font-medium text-[14px] text-slate-900 tabular-nums">
                 {item.quantity.current}
               </span>
-              <button
-                className="flex size-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              <ActionButton
+                action={() => model.increment(item.productId)}
                 disabled={item.quantity.current >= item.quantity.maxAvailable}
-                onClick={() => model.increment(item.id)}
-                type="button"
-              >
-                <Plus className="size-4" />
-              </button>
+                icon={Plus}
+                iconClassName="size-4"
+                view="cartQty"
+              />
             </div>
             {item.stockStatus === 'limited' ? (
               <p className="max-w-[200px] text-right text-[11px] text-cart-accent">

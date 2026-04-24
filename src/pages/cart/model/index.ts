@@ -30,48 +30,36 @@ export class CartPageVM extends PageVM<null> {
     return this.globals.stores.cart.loadError;
   }
 
-  toggleItem = (id: string) => {
-    this.globals.stores.cart.toggleItem(id);
+  toggleItem = (productId: number) => {
+    this.globals.stores.cart.toggleItem(productId);
   };
 
   setAllSelected = (value: boolean) => {
     this.globals.stores.cart.setAllSelected(value);
   };
 
-  changeQuantity = (id: string, nextQty: number) => {
-    this.globals.stores.cart.changeQuantity(id, nextQty);
+  changeQuantity = (productId: number, nextQty: number) => {
+    this.globals.stores.cart.changeQuantity(productId, nextQty);
   };
 
-  increment = (id: string) => {
-    this.globals.stores.cart.increment(id);
+  increment = (productId: number) => {
+    this.globals.stores.cart.increment(productId);
   };
 
-  decrement = (id: string) => {
-    this.globals.stores.cart.decrement(id);
+  decrement = (productId: number) => {
+    this.globals.stores.cart.decrement(productId);
   };
 
-  removeItem = (id: string) => {
-    this.globals.stores.cart.removeItem(id);
+  removeItem = (productId: number) => {
+    this.globals.stores.cart.removeItem(productId);
   };
 
-  toggleFavorite = (id: string) => {
-    const item = this.globals.stores.cart.items.find(
-      (cartItem) => cartItem.id === id,
-    );
-    if (!item) {
-      return;
-    }
-    this.globals.stores.favorites.toggleProduct(item.productId);
+  toggleFavorite = (productId: number) => {
+    this.globals.stores.favorites.toggleProduct(productId);
   };
 
-  isFavorite = (id: string): boolean => {
-    const item = this.globals.stores.cart.items.find(
-      (cartItem) => cartItem.id === id,
-    );
-    if (!item) {
-      return false;
-    }
-    return this.globals.stores.favorites.hasProduct(item.productId);
+  isFavorite = (productId: number): boolean => {
+    return this.globals.stores.favorites.hasProduct(productId);
   };
 
   protected willMount(): void {

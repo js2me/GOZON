@@ -1,11 +1,11 @@
+import { debounce } from 'es-toolkit/function';
 import { computed, makeObservable, observable, runInAction } from 'mobx';
-import type { CartDC, CartPromoDC } from '../../../shared/api/api';
+import type { CartDC, CartItemDC, CartPromoDC } from '../../../shared/api/api';
+import { loadCart, loadProductById, putCart } from '../../../shared/api/api';
 import {
-  deleteCartItem,
-  loadCart,
-  postAddToCart,
-  putCart,
-} from '../../../shared/api/api';
+  cartPromoForLineCount,
+  mapProductToCartItem,
+} from '../../../shared/lib/cart-from-product';
 import type { Router } from '../../router';
 import { computeCartSummary } from './lib/compute-cart-summary';
 import type { CartItemBenefit, CartItemInfo } from './types';
@@ -22,12 +22,11 @@ export class CartStore {
   constructor(router: Router) {
     this.router = router;
     makeObservable(this, {
-      data: observable.ref,
+      promo: observable.ref,
       isLoading: observable.ref,
       loadError: observable.ref,
       cartSyncInFlight: observable,
       items: computed,
-      promo: computed,
       summary: computed,
       allSelected: computed,
       headerCount: computed,
@@ -35,20 +34,68 @@ export class CartStore {
     });
   }
 
-  data: CartDC | null = null;
+  /** Позиции корзины по `productId`; порядок — порядок вставки в карту. */
+  private itemsMap = observable.map<number, CartItemDC>();
+  promo: CartPromoDC | null = null;
   isLoading = true;
   addingProductIds = observable.set<number>();
-  selectedItemIds = observable.set<string>();
+  selectedProductIds = observable.set<number>();
   loadError: string | null = null;
   cartSyncInFlight = 0;
   private cartSyncRequestId = 0;
+
+  private readonly syncCart = debounce(async () => {
+    if (this.promo === null) {
+      return;
+    }
+
+    runInAction(() => {
+      this.cartSyncInFlight++;
+    });
+
+    const requestId = ++this.cartSyncRequestId;
+    const payload = this.getSyncPayload();
+
+    try {
+      const data = await putCart(payload);
+      runInAction(() => {
+        if (requestId !== this.cartSyncRequestId) {
+          return;
+        }
+        this.applyServerCart(data);
+      });
+    } catch {
+      runInAction(() => {
+        if (requestId !== this.cartSyncRequestId) {
+          return;
+        }
+        this.loadError = 'Не удалось синхронизировать корзину';
+      });
+    } finally {
+      runInAction(() => {
+        this.cartSyncInFlight--;
+      });
+    }
+  }, 350);
 
   get isSyncing(): boolean {
     return this.cartSyncInFlight > 0;
   }
 
+  private getOrderedRawItems(): CartItemDC[] {
+    return Array.from(this.itemsMap.values());
+  }
+
+  /** Тело для `PUT /api/cart` — по текущему порядку строк в `itemsMap`. */
+  private getSyncPayload() {
+    return this.getOrderedRawItems().map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity.current,
+    }));
+  }
+
   get items(): CartItemInfo[] {
-    const rawItems = this.data?.items ?? [];
+    const rawItems = this.getOrderedRawItems();
 
     return rawItems.map((item, index): CartItemInfo => {
       const types: CartItemBenefit[] = [];
@@ -61,7 +108,7 @@ export class CartStore {
       }
       types.push('postpay');
 
-      const isSelected = this.selectedItemIds.has(item.id);
+      const isSelected = this.selectedProductIds.has(item.productId);
       const stockStatus =
         item.quantity.maxAvailable <= item.quantity.current + 2
           ? 'limited'
@@ -79,10 +126,6 @@ export class CartStore {
     });
   }
 
-  get promo(): CartPromoDC | null {
-    return this.data?.promo ?? null;
-  }
-
   get summary() {
     return computeCartSummary(this.items);
   }
@@ -96,7 +139,7 @@ export class CartStore {
   }
 
   hasProduct = (productId: number): boolean => {
-    return this.items.some((item) => item.productId === productId);
+    return this.itemsMap.has(productId);
   };
 
   isAddingProduct = (productId: number): boolean => {
@@ -104,12 +147,13 @@ export class CartStore {
   };
 
   load = async () => {
+    this.syncCart.cancel();
     this.isLoading = true;
     this.loadError = null;
     try {
       const data = await loadCart();
       runInAction(() => {
-        this.setData(data);
+        this.applyServerCart(data);
       });
     } catch {
       runInAction(() => {
@@ -129,11 +173,38 @@ export class CartStore {
 
     this.addingProductIds.add(productId);
     try {
-      const data = await postAddToCart(productId);
+      const existing = this.itemsMap.get(productId);
+
+      if (existing) {
+        runInAction(() => {
+          this.itemsMap.set(productId, {
+            ...existing,
+            quantity: {
+              ...existing.quantity,
+              current: existing.quantity.current + 1,
+            },
+          });
+          this.promo = cartPromoForLineCount(this.itemsMap.size);
+        });
+        this.syncCart();
+        return;
+      }
+
+      const product = await loadProductById(productId);
+      const lineIndex = this.itemsMap.size;
+      const newItem = mapProductToCartItem(product, 1, lineIndex);
       runInAction(() => {
-        this.setData(data);
+        this.itemsMap.set(newItem.productId, newItem);
+        this.promo = cartPromoForLineCount(this.itemsMap.size);
+        this.reconcileSelection(
+          this.getOrderedRawItems().map((i) => i.productId),
+        );
       });
-      void this.syncCart();
+      this.syncCart();
+    } catch {
+      runInAction(() => {
+        this.loadError = 'Не удалось добавить товар в корзину';
+      });
     } finally {
       runInAction(() => {
         this.addingProductIds.delete(productId);
@@ -141,146 +212,101 @@ export class CartStore {
     }
   };
 
-  toggleItem = (id: string) => {
+  toggleItem = (productId: number) => {
     if (
-      !this.data ||
-      (!this.selectedItemIds.has(id) &&
-        !this.data.items.some((item) => item.id === id))
+      (!this.selectedProductIds.has(productId) &&
+        !this.itemsMap.has(productId)) ||
+      this.promo === null
     ) {
       return;
     }
-    if (this.selectedItemIds.has(id)) {
-      this.selectedItemIds.delete(id);
+    if (this.selectedProductIds.has(productId)) {
+      this.selectedProductIds.delete(productId);
       return;
     }
-    this.selectedItemIds.add(id);
+    this.selectedProductIds.add(productId);
   };
 
   setAllSelected = (value: boolean) => {
-    if (!this.data) {
+    if (this.promo === null) {
       return;
     }
 
     if (value) {
-      for (const item of this.data.items) {
-        this.selectedItemIds.add(item.id);
+      for (const item of this.itemsMap.values()) {
+        this.selectedProductIds.add(item.productId);
       }
       return;
     }
-    this.selectedItemIds.clear();
+    this.selectedProductIds.clear();
   };
 
-  changeQuantity = (id: string, nextQty: number) => {
-    if (!this.data) {
+  changeQuantity = (productId: number, nextQty: number) => {
+    const raw = this.itemsMap.get(productId);
+    if (!raw || this.promo === null) {
       return;
     }
 
-    this.data = {
-      ...this.data,
-      items: this.items.map((item) => {
-        if (item.id !== id) {
-          return item;
-        }
-
-        const clamped = Math.min(
-          Math.max(1, Math.trunc(nextQty)),
-          item.quantity.maxAvailable,
-        );
-        return {
-          ...item,
-          quantity: { ...item.quantity, current: clamped },
-        };
-      }),
-    };
+    const clamped = Math.min(
+      Math.max(1, Math.trunc(nextQty)),
+      raw.quantity.maxAvailable,
+    );
+    this.itemsMap.set(productId, {
+      ...raw,
+      quantity: { ...raw.quantity, current: clamped },
+    });
     this.syncCart();
   };
 
-  increment = (id: string) => {
-    const item = this.items.find((i) => i.id === id);
+  increment = (productId: number) => {
+    const item = this.items.find((i) => i.productId === productId);
     if (!item) {
       return;
     }
-    this.changeQuantity(id, item.quantity.current + 1);
+    this.changeQuantity(productId, item.quantity.current + 1);
   };
 
-  decrement = (id: string) => {
-    const item = this.items.find((i) => i.id === id);
+  decrement = (productId: number) => {
+    const item = this.items.find((i) => i.productId === productId);
     if (!item) {
       return;
     }
-    this.changeQuantity(id, item.quantity.current - 1);
+    this.changeQuantity(productId, item.quantity.current - 1);
   };
 
-  removeItem = async (id: string) => {
-    if (!this.data) {
-      return;
-    }
-
-    const hasItem = this.data.items.some((item) => item.id === id);
-    if (!hasItem) {
-      return;
-    }
-
-    try {
-      const data = await deleteCartItem(id);
-      runInAction(() => {
-        this.setData(data);
-      });
-      void this.syncCart();
-    } catch {
-      runInAction(() => {
-        this.loadError = 'Не удалось удалить товар из корзины';
-      });
-    }
-  };
-
-  private setData(data: CartDC) {
-    this.data = data;
-    const allowedIds = new Set(data.items.map((item) => item.id));
-    for (const id of this.selectedItemIds) {
-      if (!allowedIds.has(id)) {
-        this.selectedItemIds.delete(id);
-      }
-    }
-    if (!this.selectedItemIds.size && data.items[0]) {
-      this.selectedItemIds.add(data.items[0].id);
-    }
-  }
-
-  private syncCart = async () => {
-    if (!this.data) {
+  removeItem = (productId: number) => {
+    if (!this.itemsMap.has(productId) || this.promo === null) {
       return;
     }
 
     runInAction(() => {
-      this.cartSyncInFlight++;
+      this.itemsMap.delete(productId);
+      this.promo = cartPromoForLineCount(this.itemsMap.size);
+      this.reconcileSelection(
+        this.getOrderedRawItems().map((i) => i.productId),
+      );
     });
-
-    const requestId = ++this.cartSyncRequestId;
-    const payload = this.data.items.map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity.current,
-    }));
-
-    try {
-      const data = await putCart(payload);
-      runInAction(() => {
-        if (requestId !== this.cartSyncRequestId) {
-          return;
-        }
-        this.setData(data);
-      });
-    } catch {
-      runInAction(() => {
-        if (requestId !== this.cartSyncRequestId) {
-          return;
-        }
-        this.loadError = 'Не удалось синхронизировать корзину';
-      });
-    } finally {
-      runInAction(() => {
-        this.cartSyncInFlight--;
-      });
-    }
+    this.syncCart();
   };
+
+  private reconcileSelection(orderedProductIds: number[]) {
+    const allowed = new Set(orderedProductIds);
+    for (const pid of this.selectedProductIds) {
+      if (!allowed.has(pid)) {
+        this.selectedProductIds.delete(pid);
+      }
+    }
+    if (!this.selectedProductIds.size && orderedProductIds[0] !== undefined) {
+      this.selectedProductIds.add(orderedProductIds[0]);
+    }
+  }
+
+  private applyServerCart(data: CartDC) {
+    this.itemsMap.clear();
+    for (const item of data.items) {
+      this.itemsMap.set(item.productId, item);
+    }
+    this.promo = data.promo;
+    this.reconcileSelection(data.items.map((item) => item.productId));
+  }
 }

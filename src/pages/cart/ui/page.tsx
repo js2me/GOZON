@@ -1,6 +1,7 @@
-import { Button, Checkbox, Skeleton } from '@heroui/react';
+import { Checkbox, Skeleton } from '@heroui/react';
 import { ChevronRight, Flame, Share2, Trash2, Wallet } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
+import { ActionButton } from '../../../shared/ui/action-button';
 import { Card } from '../../../shared/ui/card';
 import { CartPageVM } from '../model';
 import { CartEmpty } from './components/cart-empty';
@@ -81,20 +82,20 @@ export const CartPage = withViewModel(
                         Выбрать все
                       </Checkbox>
                       <div className="flex items-center gap-4 text-slate-500">
-                        <button
-                          className="inline-flex items-center gap-1.5 text-[13px] transition-colors hover:text-slate-800"
-                          type="button"
-                        >
-                          <Share2 className="size-4" />
-                          Поделиться
-                        </button>
-                        <button
-                          aria-label="Удалить выбранное"
-                          className="text-slate-400 transition-colors hover:text-cart-accent"
-                          type="button"
-                        >
-                          <Trash2 className="size-5" />
-                        </button>
+                        <ActionButton
+                          action={() => {}}
+                          icon={Share2}
+                          iconClassName="size-4"
+                          text="Поделиться"
+                          view="cartShare"
+                        />
+                        <ActionButton
+                          action={() => {}}
+                          ariaLabel="Удалить выбранное"
+                          icon={Trash2}
+                          iconClassName="size-5"
+                          view="cartToolbarTrash"
+                        />
                       </div>
                     </Card>
 
@@ -104,7 +105,10 @@ export const CartPage = withViewModel(
                       </p>
                       <ul className="divide-y divide-slate-100">
                         {model.localItems.map((item) => (
-                          <ProductCheckboxCard item={item} key={item.id} />
+                          <ProductCheckboxCard
+                            item={item}
+                            key={item.productId}
+                          />
                         ))}
                       </ul>
                     </Card>
@@ -114,12 +118,11 @@ export const CartPage = withViewModel(
 
               <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
                 <Card>
-                  <Button
-                    className="h-12 w-full rounded-xl bg-cart-bank-benefit font-semibold text-[16px] text-white shadow-none"
-                    type="button"
-                  >
-                    Перейти к оформлению
-                  </Button>
+                  <ActionButton
+                    action={() => {}}
+                    text="Перейти к оформлению"
+                    view="cartCheckout"
+                  />
                   <p className="mt-2 text-center text-[12px] text-slate-500 leading-snug">
                     Способ доставки и оплаты можно выбрать на следующем шаге
                   </p>
@@ -128,26 +131,29 @@ export const CartPage = withViewModel(
                 <CartSummaryCard />
 
                 <Card className="p-0">
-                  <button
-                    className="flex w-full items-center justify-between gap-3 rounded-2xl p-4 text-left transition-colors hover:bg-slate-50"
-                    type="button"
+                  <ActionButton
+                    action={() => {}}
+                    className="rounded-2xl"
+                    view="cartWalletTrigger"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                        <Wallet className="size-5" />
-                      </span>
-                      <span>
-                        <span className="block font-semibold text-[14px] text-slate-900">
-                          С кредитной {model.globals.stores.appInfo.bankName}{' '}
-                          Картой
+                    <span className="flex w-full min-w-0 items-center justify-between gap-3">
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                          <Wallet className="size-5" />
                         </span>
-                        <span className="text-[12px] text-slate-500">
-                          Рассрочка 0% на срок до 12 месяцев
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-[14px] text-slate-900">
+                            С кредитной {model.globals.stores.appInfo.bankName}{' '}
+                            Картой
+                          </span>
+                          <span className="text-[12px] text-slate-500">
+                            Рассрочка 0% на срок до 12 месяцев
+                          </span>
                         </span>
                       </span>
+                      <ChevronRight className="size-5 shrink-0 text-slate-400" />
                     </span>
-                    <ChevronRight className="size-5 shrink-0 text-slate-400" />
-                  </button>
+                  </ActionButton>
                 </Card>
               </aside>
             </div>

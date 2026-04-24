@@ -1,9 +1,10 @@
-import { Button, Link } from '@heroui/react';
+import { Link } from '@heroui/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
 import { useRef } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { cx } from 'yummies/css';
+import { ActionButton } from '../../../shared/ui/action-button';
 import { CategoryPageVM } from '../model';
 import { CategoryNotFound } from './components/category-not-found';
 import { CategoryProductCardsRow } from './components/category-product-row';
@@ -50,13 +51,12 @@ export const CategoryPage = withViewModel(
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {c.subNav.map((item) => (
-              <button
-                className="rounded-full border border-slate-200 bg-contrast-bg px-4 py-2 font-semibold text-[11px] text-slate-800 uppercase tracking-wide shadow-sm transition-colors hover:border-slate-300"
+              <ActionButton
+                action={() => {}}
                 key={item.id}
-                type="button"
-              >
-                {item.label}
-              </button>
+                text={item.label}
+                view="categoryPill"
+              />
             ))}
             {c.subNavMore && c.subNavMore.length > 0 ? (
               <details className="group relative">
@@ -66,13 +66,13 @@ export const CategoryPage = withViewModel(
                 </summary>
                 <div className="absolute top-full left-0 z-20 mt-2 min-w-[220px] rounded-2xl border border-slate-100 bg-contrast-bg p-2 shadow-lg">
                   {c.subNavMore.map((item) => (
-                    <button
-                      className="block w-full rounded-xl px-3 py-2 text-left text-[13px] text-slate-800 hover:bg-slate-50"
+                    <ActionButton
+                      action={() => {}}
+                      className="w-full justify-start"
                       key={item.id}
-                      type="button"
-                    >
-                      {item.label}
-                    </button>
+                      text={item.label}
+                      view="categoryMenuItem"
+                    />
                   ))}
                 </div>
               </details>
@@ -126,14 +126,13 @@ export const CategoryPage = withViewModel(
               <h2 className="font-bold text-[20px] text-slate-900">
                 Популярные бренды
               </h2>
-              <button
-                aria-label="Показать ещё бренды"
-                className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-contrast-bg text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-                onClick={scrollBrands}
-                type="button"
-              >
-                <ChevronRight className="size-5" />
-              </button>
+              <ActionButton
+                action={scrollBrands}
+                ariaLabel="Показать ещё бренды"
+                icon={ChevronRight}
+                iconClassName="size-5"
+                view="categoryBrandNext"
+              />
             </div>
             <div
               className="flex gap-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -173,35 +172,28 @@ export const CategoryPage = withViewModel(
                     {item.title}
                   </Link>
                 ))}
-                <button
-                  className="mt-1 px-3 py-2 text-left text-[13px] text-profile-link"
-                  type="button"
-                >
-                  Смотреть все
-                </button>
+                <ActionButton
+                  action={() => {}}
+                  className="justify-start"
+                  text="Смотреть все"
+                  view="categoryNavMutedLink"
+                />
               </nav>
 
               <div className="mt-6 flex items-center justify-between gap-3">
                 <span className="font-semibold text-[14px] text-slate-900">
                   Распродажа
                 </span>
-                <button
-                  aria-checked={model.saleOnly}
-                  className={cx(
-                    'relative h-7 w-12 shrink-0 rounded-full transition-colors',
-                    model.saleOnly ? 'bg-brand' : 'bg-slate-300',
-                  )}
-                  onClick={() => model.setSaleOnly(!model.saleOnly)}
-                  role="switch"
-                  type="button"
-                >
-                  <span
-                    className={cx(
-                      'absolute top-0.5 left-0.5 size-6 rounded-full bg-slate-50 shadow transition-transform',
-                      model.saleOnly ? 'translate-x-5' : '',
-                    )}
-                  />
-                </button>
+                <ActionButton
+                  action={() => model.setSaleOnly(!model.saleOnly)}
+                  htmlAttributes={{
+                    'aria-checked': model.saleOnly,
+                    role: 'switch',
+                    type: 'button',
+                  }}
+                  selected={model.saleOnly}
+                  view="categorySwitch"
+                />
               </div>
 
               <div className="mt-6">
@@ -252,13 +244,11 @@ export const CategoryPage = withViewModel(
                     value={model.priceMaxInput}
                   />
                 </div>
-                <Button
-                  className="mt-3 h-10 w-full rounded-xl bg-brand font-semibold text-white"
-                  onClick={model.applyPriceFilter}
-                  type="button"
-                >
-                  Применить
-                </Button>
+                <ActionButton
+                  action={model.applyPriceFilter}
+                  text="Применить"
+                  view="categoryApply"
+                />
                 <div className="mt-3 flex flex-col gap-2">
                   {pricePresets.map((preset) => (
                     <label
@@ -291,23 +281,16 @@ export const CategoryPage = withViewModel(
                 <span className="font-semibold text-[14px] text-slate-900">
                   Рассрочка
                 </span>
-                <button
-                  aria-checked={model.installmentUi}
-                  className={cx(
-                    'relative h-7 w-12 shrink-0 rounded-full transition-colors',
-                    model.installmentUi ? 'bg-brand' : 'bg-slate-300',
-                  )}
-                  onClick={() => model.setInstallmentUi(!model.installmentUi)}
-                  role="switch"
-                  type="button"
-                >
-                  <span
-                    className={cx(
-                      'absolute top-0.5 left-0.5 size-6 rounded-full bg-slate-50 shadow transition-transform',
-                      model.installmentUi ? 'translate-x-5' : '',
-                    )}
-                  />
-                </button>
+                <ActionButton
+                  action={() => model.setInstallmentUi(!model.installmentUi)}
+                  htmlAttributes={{
+                    'aria-checked': model.installmentUi,
+                    role: 'switch',
+                    type: 'button',
+                  }}
+                  selected={model.installmentUi}
+                  view="categorySwitch"
+                />
               </div>
             </aside>
 

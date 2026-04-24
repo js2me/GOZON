@@ -2,6 +2,7 @@ import { Skeleton } from '@heroui/react';
 import { Flame, MessageCircle, Star, TrendingDown } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { cva, cx } from 'yummies/css';
+import { ActionButton } from '../../shared/ui/action-button';
 
 type ItemCardTone = 'accent' | 'success' | 'warning' | 'neutral';
 
@@ -252,16 +253,12 @@ export const ItemCard = ({
           ) : null}
         </LinkTag>
 
-        <button
-          aria-label={favoriteLabel}
-          className={cx(
-            'absolute top-2 right-2 z-10 inline-flex size-8 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105',
-          )}
-          onClick={onFavoriteClick}
-          type="button"
-        >
-          <FavoriteIcon isFavorite={isFavorite} />
-        </button>
+        <ActionButton
+          action={() => onFavoriteClick?.()}
+          ariaLabel={favoriteLabel}
+          icon={<FavoriteIcon isFavorite={isFavorite} />}
+          view="itemCardFavorite"
+        />
 
         {badge ? (
           <div className="absolute bottom-3 left-3 z-10">

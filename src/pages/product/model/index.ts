@@ -2,13 +2,13 @@ import { computed, makeObservable, observable } from 'mobx';
 import { assert } from 'yummies/assert';
 import { typeGuard } from 'yummies/type-guard';
 import {
+  loadProductById,
+  loadProfile,
+  loadShopById,
   type ProductCategoryDC,
   type ProductCharacteristicDC,
   type ProductDC,
   ProductDeliveryVariant,
-  loadProductById,
-  loadProfile,
-  loadShopById,
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
@@ -191,35 +191,24 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     return cart.isLoading || cart.isSyncing;
   }
 
-  get cartItemId(): string | null {
+  get cartQuantity(): number {
     if (!this.productId) {
-      return null;
+      return 0;
     }
 
     const item = this.globals.stores.cart.items.find(
       (cartItem) => cartItem.productId === this.productId,
     );
-    return item?.id ?? null;
-  }
-
-  get cartQuantity(): number {
-    if (!this.cartItemId) {
-      return 0;
-    }
-
-    const item = this.globals.stores.cart.items.find(
-      (cartItem) => cartItem.id === this.cartItemId,
-    );
     return item?.quantity.current ?? 0;
   }
 
   get canIncreaseCartQuantity(): boolean {
-    if (!this.cartItemId) {
+    if (!this.productId) {
       return false;
     }
 
     const item = this.globals.stores.cart.items.find(
-      (cartItem) => cartItem.id === this.cartItemId,
+      (cartItem) => cartItem.productId === this.productId,
     );
     if (!item) {
       return false;
@@ -273,24 +262,24 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   incrementCartQuantity = () => {
-    if (!this.cartItemId) {
+    if (!this.productId) {
       return;
     }
 
-    this.globals.stores.cart.increment(this.cartItemId);
+    this.globals.stores.cart.increment(this.productId);
   };
 
   decrementCartQuantity = () => {
-    if (!this.cartItemId) {
+    if (!this.productId) {
       return;
     }
 
     if (this.cartQuantity <= 1) {
-      this.globals.stores.cart.removeItem(this.cartItemId);
+      this.globals.stores.cart.removeItem(this.productId);
       return;
     }
 
-    this.globals.stores.cart.decrement(this.cartItemId);
+    this.globals.stores.cart.decrement(this.productId);
   };
 
   protected willMount(): void {
@@ -320,7 +309,6 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       isFavorite: computed,
       isFavoritesLoading: computed,
       isCartLoading: computed,
-      cartItemId: computed,
       cartQuantity: computed,
       canIncreaseCartQuantity: computed,
     });

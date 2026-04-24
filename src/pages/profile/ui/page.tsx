@@ -1,6 +1,7 @@
-import { Button, Link, Skeleton } from '@heroui/react';
+import { Link, Skeleton } from '@heroui/react';
 import { X } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
+import { ActionButton } from '../../../shared/ui/action-button';
 import { ItemCard } from '../../../widgets/item-card';
 import { ProfilePageVM } from '../model';
 
@@ -90,9 +91,11 @@ export const ProfilePage = withViewModel(
                     239,89 ₽
                   </p>
                 </div>
-                <Button className="rounded-xl bg-brand px-10 font-semibold text-[17px] text-white">
-                  Пополнить
-                </Button>
+                <ActionButton
+                  action={() => {}}
+                  text="Пополнить"
+                  view="profileRefill"
+                />
               </article>
             </section>
 
@@ -123,12 +126,13 @@ export const ProfilePage = withViewModel(
                     key={item.id}
                     className="relative min-h-[222px] rounded-3xl bg-profile-card-muted p-5"
                   >
-                    <button
-                      className="absolute top-3 right-3 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
-                      type="button"
-                    >
-                      <X className="size-4" />
-                    </button>
+                    <ActionButton
+                      action={() => {}}
+                      className="absolute top-3 right-3"
+                      icon={X}
+                      iconClassName="size-4"
+                      view="profileDismiss"
+                    />
                     <div className="mx-auto mt-2 mb-4 size-17 rounded-2xl bg-profile-card-soft" />
                     <p className="mx-auto max-w-[250px] text-center text-[20px] text-slate-800 leading-[1.1]">
                       {item.title}

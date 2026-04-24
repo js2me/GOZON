@@ -128,7 +128,6 @@ export interface CartItemQuantityDC {
 }
 
 export interface CartItemDC {
-  id: string;
   productId: number;
   title: string;
   imageUrl: string;
@@ -234,35 +233,6 @@ export const loadProfileViewedProducts = async (): Promise<
   ProfileViewedProductDC[]
 > => {
   const response = await fetch('/api/profile/viewed-products');
-  return response.json();
-};
-
-export const postAddToCart = async (productId: number): Promise<CartDC> => {
-  const response = await fetch('/api/cart/items', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productId }),
-    credentials: 'include',
-  });
-  if (!response.ok) {
-    throw new Error('Failed to add to cart');
-  }
-
-  return response.json();
-};
-
-export const deleteCartItem = async (itemId: string): Promise<CartDC> => {
-  const response = await fetch(
-    `/api/cart/items/${encodeURIComponent(itemId)}`,
-    {
-      method: 'DELETE',
-      credentials: 'include',
-    },
-  );
-  if (!response.ok) {
-    throw new Error('Failed to remove cart item');
-  }
-
   return response.json();
 };
 

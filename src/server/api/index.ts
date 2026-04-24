@@ -6,12 +6,7 @@ import type {
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
-import {
-  addProductToCart,
-  getCartDC,
-  removeCartItem,
-  replaceCart,
-} from '../data/cart';
+import { getCartDC, removeCartItem, replaceCart } from '../data/cart';
 import { getCategoryById } from '../data/categories';
 import { getFavoritesDC, replaceFavorites } from '../data/favorites';
 import {
@@ -65,32 +60,15 @@ const handleCartApiRequest = (
     return true;
   }
 
-  if (path === '/api/cart/items' && req.method === 'POST') {
-    const raw = req.body as { productId?: unknown };
-    const productId = Number(raw.productId);
+  if (path.startsWith('/api/cart/items/') && req.method === 'DELETE') {
+    const raw = decodeURIComponent(path.slice('/api/cart/items/'.length));
+    const productId = Number(raw);
     if (!Number.isInteger(productId)) {
       res.status(400).json({ error: 'Invalid productId' });
       return true;
     }
 
-    const result = addProductToCart(sessionId, productId);
-    if (!result.ok) {
-      res.status(404).json({ error: 'Product not found' });
-      return true;
-    }
-
-    res.status(200).json(getCartDC(sessionId));
-    return true;
-  }
-
-  if (path.startsWith('/api/cart/items/') && req.method === 'DELETE') {
-    const itemId = decodeURIComponent(path.slice('/api/cart/items/'.length));
-    if (!itemId) {
-      res.status(400).json({ error: 'Invalid itemId' });
-      return true;
-    }
-
-    const result = removeCartItem(sessionId, itemId);
+    const result = removeCartItem(sessionId, productId);
     if (!result.ok) {
       res.status(404).json({ error: 'Cart item not found' });
       return true;
