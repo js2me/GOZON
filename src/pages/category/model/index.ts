@@ -199,6 +199,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     });
 
     this.onInit(async ssr => {
+
       if (!this.categoryId) {
         return null;
       }
@@ -217,12 +218,22 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
         head.ogDescription = `Товары категории «${category.title}»`;
         head.ogUrl = `/category/${category.id}`;
 
-        return { category, categoryId: this.categoryId };
+        return { category };
       } else {
-        void this.loadProductsChunk();
+        const category =  await loadCategoryById(this.categoryId)
 
-        loadCategoryById(this.categoryId)
+        if (!category) {
+          return null;
+        }
+
+        return { category, }
       }
     })
+  }
+
+  protected willMount(): void {
+    if (this.globals.isClient) {
+        void this.loadProductsChunk();
+    }
   }
 }
