@@ -107,22 +107,26 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       shouldShowViewedSkeletons: computed,
     });
 
+
+    this.onInit(async (ssr) => {
+      if (ssr) {
+        const profile = await ssr.getProfile();
+
+        ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
+
+        return {
+          profile,
+        }
+
+      } else {
+        const profile = await loadProfile();
+        return {
+          profile,
+        }
+      }
+    })
     if (this.globals.isClient) {
       void this.loadProfileProducts();
     }
-  }
-
-  async init(isClient = false): Promise<ProfilePageContext> {
-    const profile = isClient
-      ? await loadProfile()
-      : await this.globals.ssr.getProfile();
-
-    if (!isClient) {
-      this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
-    }
-
-    return {
-      profile,
-    };
   }
 }

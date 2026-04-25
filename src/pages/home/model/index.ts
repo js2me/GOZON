@@ -121,17 +121,14 @@ export class HomePageVM extends PageVM {
       virtualProductRows: computed,
     });
 
-    if (this.globals.isClient) {
-      this.globals.stores.favorites.load();
-      void this.loadProductsChunk();
-    }
-  }
-
-  async init(isClient = false) {
-    if (!isClient) {
-      this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
-    }
-    return null;
+    this.onInit(ssr => {
+      if (ssr) {
+        ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
+      } else {
+        this.globals.stores.favorites.load();
+        void this.loadProductsChunk();
+      }
+    })
   }
 
   // async mount() {

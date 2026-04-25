@@ -1,9 +1,14 @@
-import { computed, makeObservable, observable, runInAction } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import { VM } from './vm';
+import { SSRApi } from '../../../server/api/types';
+
+type InitFn<TPageContext extends Maybe<AnyObject>> = (ssr: Maybe<SSRApi>) => MaybePromise<Maybe<TPageContext> | void>
 
 export class PageVM<
   out TPageContext extends Maybe<AnyObject> = null,
 > extends VM<{}, null> {
+  private initFn?: InitFn<TPageContext>;
+
   isPageContextLoading = false;
 
   get ctx() {
@@ -13,29 +18,32 @@ export class PageVM<
   /**
    * Загружает с сервера необходимые данные для первой отрисовки страницы
    */
-  async init(_isClient = false): Promise<TPageContext> {
-    return {} as TPageContext;
+  async init(ssr: SSRApi): Promise<TPageContext> {
+    const result = this.initFn?.(ssr);
+    console.log('init result', result);
+    return (result ?? {}) as TPageContext;
   }
 
-  protected loadContextOnClientIfNeeded = async (): Promise<void> => {
-    if (!this.globals.isClient || this.ctx || this.isPageContextLoading) {
+  private loadContextOnClient = async (): Promise<void> => {
+    if (!this.globals.isClient || this.ctx || this.isPageContextLoading || !this.initFn) {
       return;
     }
 
-    runInAction(() => {
-      this.isPageContextLoading = true;
-    });
+    console.log('prkiol ?:P)');
+
+    this.isPageContextLoading = true;
     try {
-      const ctx = await this.init(true);
-      runInAction(() => {
-        this.viewModels.loadedContexts[this.id] = ctx;
-      });
+      const ctx = await this.initFn(null);
+      this.viewModels.loadedContexts[this.id] = ctx;
     } finally {
-      runInAction(() => {
-        this.isPageContextLoading = false;
-      });
+      this.isPageContextLoading = false;
     }
   };
+
+  protected onInit(initFn: InitFn<TPageContext>) {
+    console.log('on init :))');
+    this.initFn = initFn;
+  }
 
   mount(): void {
     makeObservable(this, {
@@ -44,6 +52,7 @@ export class PageVM<
     });
 
     super.mount();
-    void this.loadContextOnClientIfNeeded();
+
+    void this.loadContextOnClient();
   }
 }

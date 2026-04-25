@@ -1,6 +1,5 @@
 import { computed, makeObservable, observable } from 'mobx';
 import { assert } from 'yummies/assert';
-import { typeGuard } from 'yummies/type-guard';
 import {
   loadProductById,
   loadProfile,
@@ -12,6 +11,7 @@ import {
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
+import { parser } from 'yummies/parser';
 
 const FALLBACK_PRODUCT_IMAGE = '/vite.svg';
 
@@ -41,10 +41,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get productId(): number | null {
-    const productId = Number(
-      this.globals.router.routes.product.params?.productId,
-    );
-    return typeGuard.isNumber(productId) ? productId : null;
+    return parser.number(this.globals.router.routes.product.params?.productId, { fallback: null });
   }
 
   get priceText(): string {
@@ -71,7 +68,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     const discount = Math.round(
       ((this.product.originalPrice - this.product.price) /
         this.product.originalPrice) *
-        100,
+      100,
     );
     if (discount <= 0) {
       return '';
@@ -313,43 +310,48 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       canIncreaseCartQuantity: computed,
     });
 
+    this.onInit(async ssr => {
+      try {
+        assert.defined(this.productId, 'Product id is required for product page');
+
+        if (ssr) {
+          const profile = await this.globals.ssr.getProfile();
+          const product = await this.globals.ssr.getProductById(this.productId);
+          const shop = await this.globals.ssr.getShopById(product!.shopId);
+
+          const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
+          const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
+          const head = this.globals.ssr.head;
+
+          head.title = pageTitle;
+          head.ogTitle = product!.title;
+          head.ogDescription = `${product!.title} — ${priceLabel}`;
+          head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
+          head.ogUrl = `/products/${product!.id}`;
+          head.ogType = 'product';
+
+          return { product, profile, shop };
+        } else {
+          const product = await loadProductById(this.productId);
+          const [shop, profile] = await Promise.all([
+            loadShopById(product.shopId),
+            loadProfile(),
+          ]);
+
+          void this.globals.stores.cart.load();
+          this.globals.stores.favorites.load();
+
+          return { product, profile, shop };
+        }
+
+      } catch {
+        return null;
+      }
+    })
+
     if (this.globals.isClient) {
       void this.globals.stores.cart.load();
       this.globals.stores.favorites.load();
-    }
-  }
-
-  async init(isClient = false): Promise<ProductPageContext | null> {
-    try {
-      assert.defined(this.productId, 'Product id is required for product page');
-
-      if (isClient) {
-        const product = await loadProductById(this.productId);
-        const [shop, profile] = await Promise.all([
-          loadShopById(product.shopId),
-          loadProfile(),
-        ]);
-        return { product, profile, shop };
-      }
-
-      const profile = await this.globals.ssr.getProfile();
-      const product = await this.globals.ssr.getProductById(this.productId);
-      const shop = await this.globals.ssr.getShopById(product!.shopId);
-
-      const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
-      const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
-      const head = this.globals.ssr.head;
-
-      head.title = pageTitle;
-      head.ogTitle = product!.title;
-      head.ogDescription = `${product!.title} — ${priceLabel}`;
-      head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
-      head.ogUrl = `/products/${product!.id}`;
-      head.ogType = 'product';
-
-      return { product, profile, shop };
-    } catch {
-      return null;
     }
   }
 }

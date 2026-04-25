@@ -58,7 +58,10 @@ export class ViewModelsStore extends ViewModelStoreBase {
 
     if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
       this.loadingContexts.add(vm.id);
-      vm.init(false)
+
+      console.log('inti?:))))');
+
+      vm.init(this.globals.ssr)
         .then((ctx) => {
           this.loadedContexts[vm.id] = ctx;
         })

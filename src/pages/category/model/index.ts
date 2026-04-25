@@ -6,6 +6,7 @@ import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import { mapProductToCard } from '../../home/model/map-product-to-card';
 import type { ProductCardInfo, ProductRow } from '../../home/model/types';
 import type { CategoryPageContext } from './types';
+import { parser } from 'yummies/parser';
 
 const PAGE_SIZE = 100;
 
@@ -38,10 +39,6 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     return this.ctx?.category ?? null;
   }
 
-  get categoryId(): string | null {
-    return this.ctx?.categoryId ?? null;
-  }
-
   get virtualProductRows(): ProductRow[] {
     const rowCount = Math.ceil(this.products.length / CATEGORY_ITEMS_PER_ROW);
     const productRows: ProductRow[] = Array.from(
@@ -61,6 +58,10 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     }
 
     return rows;
+  }
+
+  get categoryId() {
+    return parser.string(this.globals.router.routes.category.params?.categoryId, { fallback: null });
   }
 
   defineComputeItemKey: ComputeItemKey<ProductRow, unknown> = (index, row) => {
@@ -197,54 +198,32 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       categoryId: computed,
     });
 
-    if (this.globals.isClient) {
-      void (async () => {
-        await this.loadContextOnClientIfNeeded();
-        if (this.ctx?.categoryId) {
-          void this.loadProductsChunk();
+    this.onInit(async ssr => {
+      console.log('this.categoryId', this.categoryId);
+      if (!this.categoryId) {
+        return null;
+      }
+
+      if (ssr) {
+        const category = await this.globals.ssr.getCategoryById(this.categoryId);
+
+        if (!category) {
+          return null;
         }
-      })();
-    }
-  }
 
-  getCurrentPathname(): string {
-    const history = this.globals.router.history as {
-      location?: { pathname?: string };
-      pathname?: string;
-      path?: string;
-    };
+        const head = this.globals.ssr.head;
+        const appName = this.globals.stores.appInfo.appName;
+        head.title = `${category.title} — купить на ${appName}`;
+        head.ogTitle = category.title;
+        head.ogDescription = `Товары категории «${category.title}»`;
+        head.ogUrl = `/category/${category.id}`;
 
-    return history.location?.pathname ?? history.pathname ?? history.path ?? '';
-  }
+        return { category, categoryId: this.categoryId };
+      } else {
+        void this.loadProductsChunk();
 
-  parseCategoryIdFromPath(): string | null {
-    const path = this.getCurrentPathname();
-    const match = path.match(/^\/category\/([^/]+)\/?$/);
-    return match?.[1] ? decodeURIComponent(match[1]) : null;
-  }
-
-  async init(isClient = false): Promise<CategoryPageContext | null> {
-    const rawId = this.parseCategoryIdFromPath();
-    if (!rawId) {
-      return null;
-    }
-
-    const category = isClient
-      ? await loadCategoryById(rawId)
-      : await this.globals.ssr.getCategoryById(rawId);
-    if (!category) {
-      return null;
-    }
-
-    if (!isClient) {
-      const head = this.globals.ssr.head;
-      const appName = this.globals.stores.appInfo.appName;
-      head.title = `${category.title} — купить на ${appName}`;
-      head.ogTitle = category.title;
-      head.ogDescription = `Товары категории «${category.title}»`;
-      head.ogUrl = `/category/${category.id}`;
-    }
-
-    return { category, categoryId: rawId };
+        loadCategoryById(this.categoryId)
+      }
+    })
   }
 }
