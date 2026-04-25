@@ -94,7 +94,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       ratingProducts: observable.ref,
       viewedProducts: observable.ref,

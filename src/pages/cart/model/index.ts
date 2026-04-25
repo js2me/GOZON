@@ -62,7 +62,7 @@ export class CartPageVM extends PageVM<null> {
     return this.globals.stores.favorites.hasProduct(productId);
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       summary: computed,
       allSelected: computed,

@@ -279,7 +279,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     this.globals.stores.cart.decrement(this.productId);
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       activeImageIndex: observable.ref,
       product: computed,

@@ -179,7 +179,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     this.resetListAndReload();
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       products: observable.ref,
       isProductsLoaded: observable.ref,
@@ -199,7 +199,6 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     });
 
     this.onInit(async ssr => {
-      console.log('this.categoryId', this.categoryId);
       if (!this.categoryId) {
         return null;
       }

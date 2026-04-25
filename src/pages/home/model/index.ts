@@ -111,7 +111,7 @@ export class HomePageVM extends PageVM {
     this.hasMoreProducts = this.firstPageHasMoreProducts;
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       products: observable.ref,
       isProductsLoaded: observable.ref,

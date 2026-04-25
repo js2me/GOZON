@@ -20,16 +20,13 @@ export class PageVM<
    */
   async init(ssr: SSRApi): Promise<TPageContext> {
     const result = this.initFn?.(ssr);
-    console.log('init result', result);
-    return (result ?? {}) as TPageContext;
+    return (result ?? null) as TPageContext;
   }
 
   private loadContextOnClient = async (): Promise<void> => {
     if (!this.globals.isClient || this.ctx || this.isPageContextLoading || !this.initFn) {
       return;
     }
-
-    console.log('prkiol ?:P)');
 
     this.isPageContextLoading = true;
     try {
@@ -41,7 +38,6 @@ export class PageVM<
   };
 
   protected onInit(initFn: InitFn<TPageContext>) {
-    console.log('on init :))');
     this.initFn = initFn;
   }
 

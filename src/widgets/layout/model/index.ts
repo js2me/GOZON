@@ -73,7 +73,7 @@ export class LayoutVM extends VM {
     this.isHeaderCompact = globalThis.scrollY > 120;
   };
 
-  protected willMount(): void {
+  didCreate(): void {
     makeObservable(this, {
       navItems: computed.struct,
       quickLinks: computed.struct,
