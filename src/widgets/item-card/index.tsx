@@ -257,7 +257,7 @@ export const ItemCard = ({
           action={() => onFavoriteClick?.()}
           ariaLabel={favoriteLabel}
           icon={<FavoriteIcon isFavorite={isFavorite} />}
-          view="itemCardFavorite"
+          look="overlayIcon"
         />
 
         {badge ? (

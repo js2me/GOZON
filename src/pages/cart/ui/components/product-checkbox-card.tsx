@@ -98,19 +98,15 @@ export const ProductCheckboxCard = observer(
                   />
                 }
                 selected={isFavorite}
-                view="cartRowFavorite"
+                look="ghostRisk"
               />
               <ActionButton
                 action={() => model.removeItem(item.productId)}
                 icon={Trash2}
                 iconClassName="size-4"
-                view="cartRowTrash"
+                look="ghostRisk"
               />
-              <ActionButton
-                action={() => {}}
-                text="Купить"
-                view="cartBuyLink"
-              />
+              <ActionButton look="linkAccent" text="Купить" />
             </div>
           </div>
         </div>
@@ -141,7 +137,7 @@ export const ProductCheckboxCard = observer(
                 disabled={item.quantity.current <= 1}
                 icon={Minus}
                 iconClassName="size-4"
-                view="cartQty"
+                look="segment"
               />
               <span className="min-w-[36px] text-center font-medium text-[14px] text-slate-900 tabular-nums">
                 {item.quantity.current}
@@ -151,7 +147,7 @@ export const ProductCheckboxCard = observer(
                 disabled={item.quantity.current >= item.quantity.maxAvailable}
                 icon={Plus}
                 iconClassName="size-4"
-                view="cartQty"
+                look="segment"
               />
             </div>
             {item.stockStatus === 'limited' ? (

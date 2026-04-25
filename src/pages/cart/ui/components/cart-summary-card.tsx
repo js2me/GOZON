@@ -47,9 +47,9 @@ export const CartSummaryCard = observer(() => {
               </span>
             </div>
             <ActionButton
-              action={() => {}}
               text="Подробнее"
-              view="cartDetailsLink"
+              className="block w-fit"
+              look="linkAccent"
             />
           </div>
           <div className="mt-5 border-slate-100 border-t pt-4">

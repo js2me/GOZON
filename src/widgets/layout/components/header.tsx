@@ -28,15 +28,14 @@ export const Header = observer(() => {
           </Link>
 
           <ActionButton
-            action={() => {}}
             icon={LayoutGridIcon}
             iconClassName="size-4"
+            look="solidBrand"
             text="Каталог"
-            view="headerCatalog"
           />
 
           <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-xl border-2 border-brand bg-contrast-bg">
-            <ActionButton action={() => {}} className="ml-1" view="headerScope">
+            <ActionButton className="ml-1" look="neutralInset">
               <span>Везде</span>
               <ChevronDown className="size-3.5" />
             </ActionButton>
@@ -49,11 +48,10 @@ export const Header = observer(() => {
               />
             </div>
             <ActionButton
-              action={() => {}}
               ariaLabel="Искать"
               icon={SearchIcon}
               iconClassName="size-4"
-              view="headerSearch"
+              look="solidBrandIcon"
             />
           </div>
           <Navbar />
@@ -76,9 +74,8 @@ export const Header = observer(() => {
         <div className="ml-auto flex shrink-0 items-center gap-3">
           <span className="text-slate-400 text-xs">Пункт GOZ0N</span>
           <ActionButton
-            action={() => {}}
+            look="linkNeutral"
             text="Выберите адрес"
-            view="headerAddressLink"
           />
         </div>
       </div>

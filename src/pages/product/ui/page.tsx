@@ -83,7 +83,7 @@ export const ProductPage = withViewModel(
                     className="w-full"
                     key={`${product.id}-${img}-preview`}
                     selected={index === model.activeImageIndex}
-                    view="productThumbRail"
+                    look="mediaRail"
                   >
                     <img
                       alt=""
@@ -119,7 +119,7 @@ export const ProductPage = withViewModel(
                   icon={Share2}
                   iconClassName="size-4"
                   text="Поделиться"
-                  view="productShare"
+                  look="ghostNeutral"
                 />
               </div>
 
@@ -157,7 +157,7 @@ export const ProductPage = withViewModel(
                     action={() => model.setActiveImage(index)}
                     key={`${product.id}-${image}-thumb`}
                     selected={index === model.activeImageIndex}
-                    view="productThumbSwatch"
+                    look="mediaSwatch"
                   >
                     <img
                       alt=""
@@ -241,6 +241,7 @@ export const ProductPage = withViewModel(
                     disabled={model.isAddingToCart}
                     className="min-w-[120px] flex-1"
                     extraText={!model.isInCart ? model.deliveryText : undefined}
+                    look="solidBrand"
                     size="l"
                     text={
                       model.isAddingToCart
@@ -265,7 +266,6 @@ export const ProductPage = withViewModel(
                         icon={Minus}
                         loading={model.isCartLoading}
                         size="m"
-                        view="brand"
                       />
                       <span className="font-semibold text-2xl text-slate-900 tabular-nums leading-none">
                         {model.cartQuantity}
@@ -276,12 +276,12 @@ export const ProductPage = withViewModel(
                         icon={Plus}
                         loading={model.isCartLoading}
                         size="m"
-                        view="brand"
                       />
                     </div>
                   </div>
 
                   <ActionButton
+                    accentIcon
                     action={model.toggleFavorite}
                     ariaLabel={
                       model.isFavorite
@@ -290,18 +290,17 @@ export const ProductPage = withViewModel(
                     }
                     icon={Heart}
                     loading={model.isFavoritesLoading}
+                    look="surface"
                     selected={model.isFavorite}
                     size="l"
-                    view="favoriteBrand"
                   />
                 </div>
               </ClientOnly>
 
               <ActionButton
-                action={() => {}}
                 className="mt-3"
+                look="softBrand"
                 text="Купить сейчас"
-                view="buyNow"
               />
 
               <div className="mt-5 space-y-3 rounded-2xl bg-product-delivery-bg p-4 text-[14px] text-slate-700">

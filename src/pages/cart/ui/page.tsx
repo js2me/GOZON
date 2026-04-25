@@ -83,18 +83,16 @@ export const CartPage = withViewModel(
                       </Checkbox>
                       <div className="flex items-center gap-4 text-slate-500">
                         <ActionButton
-                          action={() => {}}
                           icon={Share2}
                           iconClassName="size-4"
                           text="Поделиться"
-                          view="cartShare"
+                          look="ghostNeutral"
                         />
                         <ActionButton
-                          action={() => {}}
                           ariaLabel="Удалить выбранное"
                           icon={Trash2}
                           iconClassName="size-5"
-                          view="cartToolbarTrash"
+                          look="ghostRisk"
                         />
                       </div>
                     </Card>
@@ -119,9 +117,8 @@ export const CartPage = withViewModel(
               <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
                 <Card>
                   <ActionButton
-                    action={() => {}}
                     text="Перейти к оформлению"
-                    view="cartCheckout"
+                    look="solidSuccess"
                   />
                   <p className="mt-2 text-center text-[12px] text-slate-500 leading-snug">
                     Способ доставки и оплаты можно выбрать на следующем шаге
@@ -132,9 +129,8 @@ export const CartPage = withViewModel(
 
                 <Card className="p-0">
                   <ActionButton
-                    action={() => {}}
                     className="rounded-2xl"
-                    view="cartWalletTrigger"
+                    look="insetRow"
                   >
                     <span className="flex w-full min-w-0 items-center justify-between gap-3">
                       <span className="flex min-w-0 items-center gap-3">

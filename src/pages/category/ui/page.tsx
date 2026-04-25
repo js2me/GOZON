@@ -52,10 +52,9 @@ export const CategoryPage = withViewModel(
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {c.subNav.map((item) => (
               <ActionButton
-                action={() => {}}
                 key={item.id}
                 text={item.label}
-                view="categoryPill"
+                look="outlinePill"
               />
             ))}
             {c.subNavMore && c.subNavMore.length > 0 ? (
@@ -67,11 +66,10 @@ export const CategoryPage = withViewModel(
                 <div className="absolute top-full left-0 z-20 mt-2 min-w-[220px] rounded-2xl border border-slate-100 bg-contrast-bg p-2 shadow-lg">
                   {c.subNavMore.map((item) => (
                     <ActionButton
-                      action={() => {}}
                       className="w-full justify-start"
                       key={item.id}
                       text={item.label}
-                      view="categoryMenuItem"
+                      look="outlineMenu"
                     />
                   ))}
                 </div>
@@ -131,7 +129,7 @@ export const CategoryPage = withViewModel(
                 ariaLabel="Показать ещё бренды"
                 icon={ChevronRight}
                 iconClassName="size-5"
-                view="categoryBrandNext"
+                look="outlineCircle"
               />
             </div>
             <div
@@ -173,10 +171,9 @@ export const CategoryPage = withViewModel(
                   </Link>
                 ))}
                 <ActionButton
-                  action={() => {}}
                   className="justify-start"
                   text="Смотреть все"
-                  view="categoryNavMutedLink"
+                  look="linkMuted"
                 />
               </nav>
 
@@ -191,8 +188,8 @@ export const CategoryPage = withViewModel(
                     role: 'switch',
                     type: 'button',
                   }}
+                  look="switch"
                   selected={model.saleOnly}
-                  view="categorySwitch"
                 />
               </div>
 
@@ -246,8 +243,9 @@ export const CategoryPage = withViewModel(
                 </div>
                 <ActionButton
                   action={model.applyPriceFilter}
+                  className="mt-3"
+                  look="solidBrandBar"
                   text="Применить"
-                  view="categoryApply"
                 />
                 <div className="mt-3 flex flex-col gap-2">
                   {pricePresets.map((preset) => (
@@ -288,8 +286,8 @@ export const CategoryPage = withViewModel(
                     role: 'switch',
                     type: 'button',
                   }}
+                  look="switch"
                   selected={model.installmentUi}
-                  view="categorySwitch"
                 />
               </div>
             </aside>

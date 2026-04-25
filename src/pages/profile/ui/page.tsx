@@ -92,9 +92,8 @@ export const ProfilePage = withViewModel(
                   </p>
                 </div>
                 <ActionButton
-                  action={() => {}}
+                  look="solidBrandRelaxed"
                   text="Пополнить"
-                  view="profileRefill"
                 />
               </article>
             </section>
@@ -127,11 +126,10 @@ export const ProfilePage = withViewModel(
                     className="relative min-h-[222px] rounded-3xl bg-profile-card-muted p-5"
                   >
                     <ActionButton
-                      action={() => {}}
                       className="absolute top-3 right-3"
                       icon={X}
                       iconClassName="size-4"
-                      view="profileDismiss"
+                      look="ghostMuted"
                     />
                     <div className="mx-auto mt-2 mb-4 size-17 rounded-2xl bg-profile-card-soft" />
                     <p className="mx-auto max-w-[250px] text-center text-[20px] text-slate-800 leading-[1.1]">
