@@ -52,6 +52,7 @@ export const Header = observer(() => {
               icon={SearchIcon}
               iconClassName="size-4"
               look="solidBrandIcon"
+              className='size-10'
             />
           </div>
           <Navbar />
