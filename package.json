@@ -32,7 +32,7 @@
     "react-dom": "^19.1.0",
     "react-virtuoso": "^4.15.0",
     "tsx": "^4.21.0",
-    "yummies": "^7.19.2"
+    "yummies": "^7.19.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",

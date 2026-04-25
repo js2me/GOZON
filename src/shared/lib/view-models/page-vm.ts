@@ -1,5 +1,4 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
-import type { AnyObject, Maybe } from 'yummies/types';
 import { VM } from './vm';
 
 export class PageVM<

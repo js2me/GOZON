@@ -4,7 +4,6 @@ import {
   ViewModelBase,
   type ViewModelParams,
 } from 'mobx-view-model';
-import type { AnyObject, EmptyObject } from 'yummies/types';
 import type { Globals } from '../../../globals';
 import type { ViewModelsStore } from '../../../globals/stores/view-models';
 

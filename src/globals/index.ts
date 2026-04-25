@@ -1,5 +1,4 @@
 import { assert } from 'yummies/assert';
-import type { AnyObject, Maybe } from 'yummies/types';
 import { Router } from './router';
 import { AppInfoStore } from './stores/app-info';
 import { CartStore } from './stores/cart/index';

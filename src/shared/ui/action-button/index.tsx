@@ -1,42 +1,15 @@
 import { Button, Skeleton } from '@heroui/react';
 import type {
+  AnchorHTMLAttributes,
   ComponentPropsWithoutRef,
+  ComponentType,
   ReactNode,
 } from 'react';
 import { cloneElement, isValidElement } from 'react';
-import { cva, cx, VariantProps } from 'yummies/css';
+import { cva, cx } from 'yummies/css';
+import type { VariantProps } from 'yummies/css';
 import { isIconComponent } from './lib/is-icon-component';
-import type {
-  ActionButtonIconComponent,
-  ActionButtonLook,
-  ActionButtonSize,
-  AnchorTarget,
-} from './types';
 
-type ActionButtonProps = {
-  icon?: ReactNode | ActionButtonIconComponent;
-  iconClassName?: string;
-  text?: string;
-  extraText?: string;
-  size?: ActionButtonSize;
-  look?: ActionButtonLook;
-  /** Иконка в тон бренда на `surface` (например сердце в блоке с серым фоном). */
-  accentIcon?: boolean;
-  /** Выбранное состояние (рамки превью, избранное, переключатели). */
-  selected?: boolean;
-  action?: VoidFunction;
-  href?: string;
-  target?: AnchorTarget;
-  disabled?: boolean;
-  loading?: boolean;
-  className?: string;
-  ariaLabel?: string;
-  children?: ReactNode;
-  htmlAttributes?: Pick<
-    ComponentPropsWithoutRef<'button'>,
-    'role' | 'aria-checked' | 'type'
-  >;
-};
 
 const actionButtonCx = cva('inline-flex items-center justify-center', {
   variants: {
@@ -93,35 +66,39 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
       s: '',
       m: '',
       l: '',
-    } satisfies Record<ActionButtonSize, string>,
-    textMode: {
-      icon: '',
-      withText: '',
+    },
+    displayType: {
+      iconOnly: '',
+      full: '',
     },
     selected: {
       true: '',
       false: '',
     },
+    accentIcon: {
+      true: '',
+      false: '',
+    },
   },
   compoundVariants: [
-    { textMode: 'icon', size: 's', class: 'size-7 shrink-0' },
-    { textMode: 'icon', size: 'm', class: 'size-8 shrink-0' },
-    { textMode: 'icon', size: 'l', class: 'h-12 w-12 shrink-0' },
+    { displayType: 'iconOnly', size: 's', class: 'size-7 shrink-0' },
+    { displayType: 'iconOnly', size: 'm', class: 'size-8 shrink-0' },
+    { displayType: 'iconOnly', size: 'l', class: 'h-12 w-12 shrink-0' },
     {
-      textMode: 'withText',
+      displayType: 'full',
       size: 'm',
       look: 'solidBrand',
       class: 'h-10 shrink-0 gap-2 rounded-xl px-4 text-sm',
     },
     {
-      textMode: 'withText',
+      displayType: 'full',
       size: 'l',
       look: 'solidBrand',
       class:
         'h-12 flex-1 justify-center rounded-2xl font-bold text-[17px] hover:bg-brand/90 disabled:text-white/70',
     },
     {
-      textMode: 'withText',
+      displayType: 'full',
       size: 'l',
       look: 'surface',
       class: 'h-12 shrink-0 gap-2 px-3',
@@ -161,16 +138,38 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
       selected: true,
       class: 'text-accent-emphasis',
     },
+    {
+      look: 'surface',
+      accentIcon: true,
+      selected: true,
+      class: '[&>svg]:text-brand [&>svg]:fill-current',
+    },
+    {
+      look: 'surface',
+      accentIcon: true,
+      selected: false,
+      class: '[&>svg]:text-brand [&>svg]:fill-none',
+    },
   ],
   defaultVariants: {
     look: 'ghostBrand',
     size: 'm',
-    textMode: 'icon',
+    displayType: 'iconOnly',
     selected: false,
+    accentIcon: false,
   },
 });
 
-type ActionButtonCxProps = VariantProps<typeof cva>
+type ActionButtonCxProps = VariantProps<typeof actionButtonCx>
+
+
+export type AnchorTarget = AnchorHTMLAttributes<HTMLAnchorElement>['target'];
+
+export type ActionButtonIconComponent = ComponentType<{ className?: string }>;
+
+export type ActionButtonSize = NotMaybe<ActionButtonCxProps['size']>
+
+export type ActionButtonLook = NotMaybe<ActionButtonCxProps['look']>
 
 const switchKnobCx = cva(
   'pointer-events-none absolute top-0.5 left-0.5 size-6 rounded-full bg-slate-50 shadow transition-transform',
@@ -221,7 +220,7 @@ const skeletonIconShapeCx = cva('shrink-0', {
       s: 'size-4',
       m: 'size-5',
       l: 'size-6',
-    } satisfies ActionButtonCxProps['size'],
+    } satisfies Record<ActionButtonSize, string>,
     shape: {
       round: 'rounded-full',
       soft: 'rounded-xl',
@@ -306,9 +305,6 @@ function extraLabelToneForLook(look: ActionButtonLook) {
   return 'onMuted' as const;
 }
 
-const surfaceAccentIconCx = (selected: boolean) =>
-  cx('text-brand', selected ? 'fill-current' : 'fill-none');
-
 function buildIconNode(
   icon: ActionButtonProps['icon'],
   iconSizeClass: string,
@@ -338,7 +334,7 @@ function renderActionButtonBody(params: {
   look: ActionButtonLook;
   selected: boolean;
   loading: boolean;
-  hasText: boolean;
+  isOnlyIcon: boolean;
   hasExtraText: boolean;
   text: string | undefined;
   extraText: string | undefined;
@@ -350,7 +346,7 @@ function renderActionButtonBody(params: {
     look,
     selected,
     loading,
-    hasText,
+    isOnlyIcon,
     hasExtraText,
     text,
     extraText,
@@ -365,7 +361,7 @@ function renderActionButtonBody(params: {
     return <span className={switchKnobCx({ on: selected })} />;
   }
   if (loading) {
-    if (hasText) {
+    if (!isOnlyIcon) {
       return (
         <span className={loadingRowCx({ size })}>
           {iconNode ? (
@@ -392,7 +388,7 @@ function renderActionButtonBody(params: {
       />
     );
   }
-  if (hasText) {
+  if (!isOnlyIcon) {
     const tone = extraLabelToneForLook(look);
     return (
       <>
@@ -417,6 +413,33 @@ function renderActionButtonBody(params: {
   return iconNode;
 }
 
+
+
+type ActionButtonProps = {
+  icon?: ReactNode | ActionButtonIconComponent;
+  iconClassName?: string;
+  text?: string;
+  extraText?: string;
+  size?: ActionButtonSize;
+  look?: ActionButtonLook;
+  /** Иконка в тон бренда на `surface` (например сердце в блоке с серым фоном). */
+  accentIcon?: boolean;
+  /** Выбранное состояние (рамки превью, избранное, переключатели). */
+  selected?: boolean;
+  action?: VoidFunction;
+  href?: string;
+  target?: AnchorTarget;
+  disabled?: boolean;
+  loading?: boolean;
+  className?: string;
+  ariaLabel?: string;
+  children?: ReactNode;
+  htmlAttributes?: Pick<
+    ComponentPropsWithoutRef<'button'>,
+    'role' | 'aria-checked' | 'type'
+  >;
+};
+
 export function ActionButton({
   icon,
   iconClassName,
@@ -431,30 +454,25 @@ export function ActionButton({
   target,
   disabled,
   loading = false,
-  className,
+  className: outerClassName,
   ariaLabel,
   children,
   htmlAttributes,
 }: ActionButtonProps) {
   const isDisabled = Boolean(disabled || loading);
-  const hasText = Boolean(text);
+  const isOnlyIcon = !text && !children;
   const hasExtraText = Boolean(extraText);
-  const textMode = hasText ? 'withText' : 'icon';
+  const displayType = isOnlyIcon ? 'iconOnly' : 'full';
   const iconSizeClass = size === 'l' ? 'size-6' : 'size-5';
 
-  const resolvedIconClassName =
-    look === 'surface' && accentIcon
-      ? cx(surfaceAccentIconCx(selected), iconClassName)
-      : iconClassName;
-
-  const iconNode = buildIconNode(icon, iconSizeClass, resolvedIconClassName);
+  const iconNode = buildIconNode(icon, iconSizeClass, iconClassName);
 
   const innerContent = renderActionButtonBody({
     children,
     look,
     selected,
     loading,
-    hasText,
+    isOnlyIcon,
     hasExtraText,
     text,
     extraText,
@@ -462,9 +480,9 @@ export function ActionButton({
     iconNode,
   });
 
-  const surfaceClass = cx(
-    actionButtonCx({ look, size, textMode, selected }),
-    className,
+  const className = cx(
+    actionButtonCx({ look, size, displayType, selected, accentIcon }),
+    outerClassName,
   );
 
   if (href != null) {
@@ -475,7 +493,7 @@ export function ActionButton({
         aria-disabled={isDisabled || undefined}
         aria-label={ariaLabel}
         className={cx(
-          surfaceClass,
+          className,
           isDisabled && 'pointer-events-none opacity-50',
         )}
         href={href}
@@ -499,10 +517,10 @@ export function ActionButton({
       {...htmlAttributes}
       aria-busy={loading || undefined}
       aria-label={ariaLabel}
-      className={surfaceClass}
+      className={className}
       isDisabled={isDisabled}
       isIconOnly={look === 'solidBrandIcon'}
-      onPress={() => action?.()}
+      onClick={() => action?.()}
     >
       {innerContent}
     </Button>

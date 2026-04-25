@@ -5,7 +5,6 @@ import {
   type ViewModelCreateConfig,
   ViewModelStoreBase,
 } from 'mobx-view-model';
-import type { AnyObject } from 'yummies/types';
 import { PageVM } from '../../shared/lib/view-models/page-vm';
 import type { Globals } from '..';
 

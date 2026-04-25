@@ -60,8 +60,8 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       yummies:
-        specifier: ^7.19.2
-        version: 7.19.2(mobx@6.15.0)(react@19.2.5)
+        specifier: ^7.19.3
+        version: 7.19.3(mobx@6.15.0)(react@19.2.5)
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.12
@@ -1885,8 +1885,8 @@ packages:
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
 
-  dompurify@3.3.3:
-    resolution: {integrity: sha512-Oj6pzI2+RqBfFG+qOaOLbFXLQ90ARpcGG6UePL82bJLtdsa6CYJD7nmiU8MW9nQNOtCHV3lZ/Bzq1X0QYbBZCA==}
+  dompurify@3.4.1:
+    resolution: {integrity: sha512-JahakDAIg1gyOm7dlgWSDjV4n7Ip2PKR55NIT6jrMfIgLFgWo81vdr1/QGqWtFNRqXP9UV71oVePtjqS2ebnPw==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -2732,8 +2732,8 @@ packages:
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
-  yummies@7.19.2:
-    resolution: {integrity: sha512-3a8C0lsYP3c1sMsnQiPffS/X6hj1T0oIWOV/P6515ytGY5scAtcgaIg4mv8pe3856vyoTjagllvixdMxnitNUg==}
+  yummies@7.19.3:
+    resolution: {integrity: sha512-XDcnhbE7v651b3PTRCyzRsIJTBlJ5cR0FNI2xoHpZcHZNe4ikat0FX1AXYWX7G56XB3TpKgL/n9h2/At7S6J9g==}
     peerDependencies:
       mobx: ^6.12.4
       react: ^18 || ^19
@@ -4786,7 +4786,7 @@ snapshots:
 
   dom-accessibility-api@0.5.16: {}
 
-  dompurify@3.3.3:
+  dompurify@3.4.1:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -5175,7 +5175,7 @@ snapshots:
       linked-abort-controller: 1.1.1
       mobx: 6.15.0
       qs: 6.15.1
-      yummies: 7.19.2(mobx@6.15.0)(react@19.2.5)
+      yummies: 7.19.3(mobx@6.15.0)(react@19.2.5)
     transitivePeerDependencies:
       - react
 
@@ -5194,7 +5194,7 @@ snapshots:
       mobx-location-history: 9.3.1(mobx@6.15.0)(react@19.2.5)
       path-to-regexp: 8.4.2
       react-simple-loadable: 3.1.0(react@19.2.5)
-      yummies: 7.19.2(mobx@6.15.0)(react@19.2.5)
+      yummies: 7.19.3(mobx@6.15.0)(react@19.2.5)
     optionalDependencies:
       mobx-react-lite: 4.1.1(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       mobx-view-model: 10.2.0(mobx-react-lite@4.1.1(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -5212,7 +5212,7 @@ snapshots:
     dependencies:
       mobx: 6.15.0
       mobx-view-model-react: 10.2.0(mobx-react-lite@4.1.1(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(mobx@6.15.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      yummies: 7.19.2(mobx@6.15.0)(react@19.2.5)
+      yummies: 7.19.3(mobx@6.15.0)(react@19.2.5)
     optionalDependencies:
       react: 19.2.5
     transitivePeerDependencies:
@@ -5222,7 +5222,7 @@ snapshots:
   mobx-web-api@1.13.0(mobx@6.15.0)(react@19.2.5):
     dependencies:
       mobx: 6.15.0
-      yummies: 7.19.2(mobx@6.15.0)(react@19.2.5)
+      yummies: 7.19.3(mobx@6.15.0)(react@19.2.5)
     transitivePeerDependencies:
       - react
 
@@ -5692,12 +5692,12 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  yummies@7.19.2(mobx@6.15.0)(react@19.2.5):
+  yummies@7.19.3(mobx@6.15.0)(react@19.2.5):
     dependencies:
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       dayjs: 1.11.20
-      dompurify: 3.3.3
+      dompurify: 3.4.1
       nanoid: 5.1.7
       tailwind-merge: 3.5.0
     optionalDependencies:
