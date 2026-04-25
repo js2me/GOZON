@@ -75,6 +75,7 @@ export const Header = observer(() => {
           <span className="text-slate-400 text-xs">Пункт GOZ0N</span>
           <ActionButton
             look="linkNeutral"
+            size='s'
             text="Выберите адрес"
           />
         </div>

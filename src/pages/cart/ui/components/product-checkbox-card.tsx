@@ -106,7 +106,7 @@ export const ProductCheckboxCard = observer(
                 iconClassName="size-4"
                 look="ghostRisk"
               />
-              <ActionButton look="linkAccent" text="Купить" />
+              <ActionButton look="linkAccent" size='s' text="Купить" />
             </div>
           </div>
         </div>

@@ -1,64 +1,17 @@
 import { Button, Skeleton } from '@heroui/react';
 import type {
-  AnchorHTMLAttributes,
   ComponentPropsWithoutRef,
-  ComponentType,
   ReactNode,
 } from 'react';
 import { cloneElement, isValidElement } from 'react';
-import { cva, cx } from 'yummies/css';
-
-type ActionButtonSize = 'l' | 'm';
-
-/** Внешний вид: тон и роль контрола, без привязки к экрану или сценарию. */
-export type ActionButtonLook =
-  | 'solidBrand'
-  | 'solidBrandBar'
-  | 'solidBrandIcon'
-  | 'solidBrandRelaxed'
-  | 'solidSuccess'
-  | 'softBrand'
-  | 'surface'
-  | 'neutralInset'
-  | 'ghostBrand'
-  | 'ghostNeutral'
-  | 'ghostRisk'
-  | 'ghostMuted'
-  | 'outlinePill'
-  | 'outlineMenu'
-  | 'outlineCircle'
-  | 'linkNeutral'
-  | 'linkAccent'
-  | 'linkMuted'
-  | 'switch'
-  | 'mediaRail'
-  | 'mediaSwatch'
-  | 'overlayIcon'
-  | 'insetRow'
-  | 'segment';
-
-export type AnchorTarget = AnchorHTMLAttributes<HTMLAnchorElement>['target'];
-
-type ActionButtonIconComponent = ComponentType<{ className?: string }>;
-
-function isIconComponent(
-  value: ReactNode | ActionButtonIconComponent | undefined,
-): value is ActionButtonIconComponent {
-  if (value == null || isValidElement(value)) {
-    return false;
-  }
-  if (typeof value === 'function') {
-    return true;
-  }
-  if (typeof value === 'object' && '$$typeof' in value) {
-    const { $$typeof } = value as { $$typeof: symbol };
-    return (
-      $$typeof === Symbol.for('react.forward_ref') ||
-      $$typeof === Symbol.for('react.memo')
-    );
-  }
-  return false;
-}
+import { cva, cx, VariantProps } from 'yummies/css';
+import { isIconComponent } from './lib/is-icon-component';
+import type {
+  ActionButtonIconComponent,
+  ActionButtonLook,
+  ActionButtonSize,
+  AnchorTarget,
+} from './types';
 
 type ActionButtonProps = {
   icon?: ReactNode | ActionButtonIconComponent;
@@ -137,9 +90,10 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
         'size-9 shrink-0 rounded-none p-0 text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-40',
     },
     size: {
+      s: '',
       m: '',
       l: '',
-    },
+    } satisfies Record<ActionButtonSize, string>,
     textMode: {
       icon: '',
       withText: '',
@@ -150,20 +104,9 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
     },
   },
   compoundVariants: [
-    { look: 'ghostBrand', textMode: 'icon', size: 'm', class: 'size-8' },
-    {
-      look: 'ghostBrand',
-      textMode: 'icon',
-      size: 'l',
-      class: 'h-12 w-12 shrink-0',
-    },
-    { look: 'surface', textMode: 'icon', size: 'm', class: 'size-8' },
-    {
-      look: 'surface',
-      textMode: 'icon',
-      size: 'l',
-      class: 'h-12 w-12 shrink-0',
-    },
+    { textMode: 'icon', size: 's', class: 'size-7 shrink-0' },
+    { textMode: 'icon', size: 'm', class: 'size-8 shrink-0' },
+    { textMode: 'icon', size: 'l', class: 'h-12 w-12 shrink-0' },
     {
       textMode: 'withText',
       size: 'm',
@@ -227,6 +170,8 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
   },
 });
 
+type ActionButtonCxProps = VariantProps<typeof cva>
+
 const switchKnobCx = cva(
   'pointer-events-none absolute top-0.5 left-0.5 size-6 rounded-full bg-slate-50 shadow transition-transform',
   {
@@ -273,9 +218,10 @@ const skeletonIconShape: Record<
 const skeletonIconShapeCx = cva('shrink-0', {
   variants: {
     size: {
+      s: 'size-4',
       m: 'size-5',
       l: 'size-6',
-    },
+    } satisfies ActionButtonCxProps['size'],
     shape: {
       round: 'rounded-full',
       soft: 'rounded-xl',
@@ -289,6 +235,7 @@ const skeletonIconShapeCx = cva('shrink-0', {
 const loadingRowCx = cva('inline-flex items-center', {
   variants: {
     size: {
+      s: 'gap-1',
       m: 'gap-1.5',
       l: 'gap-2',
     },
@@ -299,6 +246,7 @@ const loadingRowCx = cva('inline-flex items-center', {
 const skeletonTextLineCx = cva('shrink-0 rounded-md', {
   variants: {
     size: {
+      s: 'h-3 w-10',
       m: 'h-3.5 w-14',
       l: 'h-4 w-20',
     },
@@ -311,7 +259,8 @@ const skeletonTextLineCx = cva('shrink-0 rounded-md', {
 const labelCx = cva('font-medium leading-none', {
   variants: {
     size: {
-      m: 'text-[13px]',
+      s: 'text-sm',
+      m: 'text-base',
       l: 'text-lg',
     },
   },
@@ -323,8 +272,9 @@ const extraLabelToneCx = cva(
   {
     variants: {
       size: {
+        s: 'text-[11px]',
         m: 'text-[12px]',
-        l: 'text-[15px]',
+        l: 'text-[12px] -mt-1',
       },
       tone: {
         onBrand: 'text-white/95',
@@ -370,8 +320,8 @@ function buildIconNode(
   if (isValidElement<{ className?: string }>(icon)) {
     return resolvedIconClassName
       ? cloneElement(icon, {
-          className: cx(icon.props.className, resolvedIconClassName),
-        })
+        className: cx(icon.props.className, resolvedIconClassName),
+      })
       : icon;
   }
   if (isIconComponent(icon)) {
