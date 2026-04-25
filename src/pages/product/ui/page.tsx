@@ -129,7 +129,7 @@ export const ProductPage = withViewModel(
 
               <div className="mt-3 flex items-center gap-2.5 text-[16px]">
                 <span className="inline-flex items-center gap-1 font-medium text-slate-800">
-                  <Star className="size-4 fill-rating-star text-rating-star" />
+                  <Star className="size-4 fill-rating-accent text-rating-accent" />
                   {model.product.rating.toFixed(1)}
                 </span>
                 <span className="text-slate-500">·</span>
@@ -173,7 +173,7 @@ export const ProductPage = withViewModel(
                   О товаре
                 </p>
                 <Link
-                  className="text-[14px] text-profile-link no-underline"
+                  className="text-[14px] text-link-primary no-underline"
                   href="#"
                 >
                   Перейти к описанию
@@ -195,7 +195,7 @@ export const ProductPage = withViewModel(
 
             <aside className="rounded-3xl bg-contrast-bg p-5">
               {model.saleBadgeText ? (
-                <div className="flex items-center rounded-2xl bg-product-sale-bg px-4 py-3 text-[14px] text-product-sale-text">
+                <div className="flex items-center rounded-2xl bg-highlight-bg px-4 py-3 text-[14px] text-highlight-text">
                   <p className="my-auto inline-flex items-center gap-2 font-semibold">
                     <Percent className="size-4" />
                     {model.saleBadgeText}
@@ -203,7 +203,7 @@ export const ProductPage = withViewModel(
                 </div>
               ) : null}
 
-              <div className="mt-4 rounded-2xl bg-product-price-panel-bg p-4">
+              <div className="mt-4 rounded-2xl bg-surface-positive p-4">
                 <p className="font-extrabold text-[36px] text-brand-accent leading-none">
                   {model.priceText}
                 </p>
@@ -303,7 +303,7 @@ export const ProductPage = withViewModel(
                 text="Купить сейчас"
               />
 
-              <div className="mt-5 space-y-3 rounded-2xl bg-product-delivery-bg p-4 text-[14px] text-slate-700">
+              <div className="mt-5 space-y-3 rounded-2xl bg-surface-info p-4 text-[14px] text-slate-700">
                 <p>{model.deliveryAddress}</p>
                 {model.deliveryVariants.map(({ variant, label }) => (
                   <p key={variant}>{label}</p>

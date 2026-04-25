@@ -15,7 +15,7 @@ export const CartPage = withViewModel(
     const isEmpty = !model.isLoading && model.localItems.length === 0;
 
     return (
-      <main className="w-full bg-cart-page-bg pt-4 pb-12">
+      <main className="w-full bg-surface-subtle pt-4 pb-12">
         <section className="mx-auto w-full max-w-[1416px] px-4">
           <div className="mb-6 flex items-baseline gap-2">
             <h1 className="font-bold text-[28px] text-slate-900 leading-none">
@@ -24,7 +24,7 @@ export const CartPage = withViewModel(
             {model.isLoading ? (
               <Skeleton className="inline-block h-6 w-10 rounded-md align-middle" />
             ) : (
-              <span className="align-top font-bold text-cart-accent text-lg leading-none">
+              <span className="align-top font-bold text-accent-emphasis text-lg leading-none">
                 {model.headerCount}
               </span>
             )}
@@ -65,7 +65,7 @@ export const CartPage = withViewModel(
                         </p>
                       </div>
                     </div>
-                    <span className="shrink-0 font-semibold text-cart-accent text-sm">
+                    <span className="shrink-0 font-semibold text-accent-emphasis text-sm">
                       {promo.saleDeadline}
                     </span>
                   </Card>

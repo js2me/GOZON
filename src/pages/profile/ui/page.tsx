@@ -59,7 +59,7 @@ export const ProfilePage = withViewModel(
             ))}
           </aside>
 
-          <div className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-profile-panel-bg p-8">
+          <div className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface-panel p-8">
             <section>
               <h2 className="mb-4 font-bold text-[19px] text-slate-900 leading-none">
                 Заказы
@@ -110,7 +110,7 @@ export const ProfilePage = withViewModel(
                       'rating-skeleton-3',
                     ].map((skeletonId) => (
                       <article
-                        className="relative min-h-[222px] rounded-3xl bg-profile-card-muted p-5"
+                        className="relative min-h-[222px] rounded-3xl bg-surface-muted p-5"
                         key={skeletonId}
                       >
                         <Skeleton className="mx-auto mt-2 mb-4 size-17 rounded-2xl" />
@@ -123,7 +123,7 @@ export const ProfilePage = withViewModel(
                 {model.ratingCards.map((item) => (
                   <article
                     key={item.id}
-                    className="relative min-h-[222px] rounded-3xl bg-profile-card-muted p-5"
+                    className="relative min-h-[222px] rounded-3xl bg-surface-muted p-5"
                   >
                     <ActionButton
                       className="absolute top-3 right-3"
@@ -131,11 +131,11 @@ export const ProfilePage = withViewModel(
                       iconClassName="size-4"
                       look="ghostMuted"
                     />
-                    <div className="mx-auto mt-2 mb-4 size-17 rounded-2xl bg-profile-card-soft" />
+                    <div className="mx-auto mt-2 mb-4 size-17 rounded-2xl bg-surface-soft" />
                     <p className="mx-auto max-w-[250px] text-center text-[20px] text-slate-800 leading-[1.1]">
                       {item.title}
                     </p>
-                    <p className="mt-4 text-center text-[16px] text-profile-icon-muted">
+                    <p className="mt-4 text-center text-[16px] text-icon-muted">
                       ★★★★★
                     </p>
                   </article>

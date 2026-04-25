@@ -19,10 +19,10 @@ const badgeCx = cva(
   {
     variants: {
       colorType: {
-        sale: 'border border-pink-200 bg-pink-50 text-cart-accent',
+        sale: 'border border-pink-200 bg-pink-50 text-accent-emphasis',
         installment:
-          'border border-violet-100 bg-violet-50 text-cart-badge-muted',
-        postpay: 'border border-blue-100 bg-blue-50 text-cart-badge-muted',
+          'border border-violet-100 bg-violet-50 text-accent-muted',
+        postpay: 'border border-blue-100 bg-blue-50 text-accent-muted',
       },
     },
   },
@@ -53,7 +53,7 @@ export const ProductCheckboxCard = observer(
         <div className="flex min-w-0 flex-1 gap-3">
           <input
             checked={item.isSelected}
-            className="mt-1 size-4 shrink-0 rounded border-slate-300 accent-cart-bank-benefit"
+            className="mt-1 size-4 shrink-0 rounded border-slate-300 accent-positive"
             onChange={() => model.toggleItem(item.productId)}
             type="checkbox"
           />
@@ -114,7 +114,7 @@ export const ProductCheckboxCard = observer(
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between lg:flex-col lg:items-end">
           <div className="text-right">
             <p
-              className={`font-bold text-[18px] leading-tight ${item.price.current < item.price.original ? 'text-cart-accent' : 'text-slate-900'}`}
+              className={`font-bold text-[18px] leading-tight ${item.price.current < item.price.original ? 'text-accent-emphasis' : 'text-slate-900'}`}
             >
               {formatMoney(item.price.current)}
             </p>
@@ -151,7 +151,7 @@ export const ProductCheckboxCard = observer(
               />
             </div>
             {item.stockStatus === 'limited' ? (
-              <p className="max-w-[200px] text-right text-[11px] text-cart-accent">
+              <p className="max-w-[200px] text-right text-[11px] text-accent-emphasis">
                 Количество ограничено
               </p>
             ) : null}

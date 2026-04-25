@@ -12,7 +12,7 @@ export const ProductNotFound = () => {
             Проверьте ссылку или вернитесь на главную страницу.
           </p>
           <Link
-            className="mt-5 inline-flex text-profile-link no-underline"
+            className="mt-5 inline-flex text-link-primary no-underline"
             href="/"
           >
             Перейти к каталогу

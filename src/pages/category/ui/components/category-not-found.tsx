@@ -12,7 +12,7 @@ export const CategoryNotFound = () => {
             Проверьте адрес или выберите раздел в каталоге.
           </p>
           <Link
-            className="mt-5 inline-flex text-profile-link no-underline"
+            className="mt-5 inline-flex text-link-primary no-underline"
             href="/"
           >
             На главную

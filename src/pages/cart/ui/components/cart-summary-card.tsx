@@ -42,7 +42,7 @@ export const CartSummaryCard = observer(() => {
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-slate-700">Скидка</span>
-              <span className="shrink-0 font-medium text-cart-accent tabular-nums">
+              <span className="shrink-0 font-medium text-accent-emphasis tabular-nums">
                 {formatMoney(summary.totalDiscount)}
               </span>
             </div>
@@ -54,7 +54,7 @@ export const CartSummaryCard = observer(() => {
           </div>
           <div className="mt-5 border-slate-100 border-t pt-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-bold text-[22px] text-cart-bank-benefit tabular-nums">
+              <span className="font-bold text-[22px] text-positive tabular-nums">
                 {formatMoney(summary.finalPriceWithLoyalty)}
               </span>
             </div>

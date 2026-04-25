@@ -97,9 +97,9 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
       solidBrandIcon:
         'h-10 w-11 shrink-0 rounded-none bg-brand text-white hover:bg-brand/90 disabled:text-white/70',
       solidSuccess:
-        'h-12 w-full rounded-xl bg-cart-bank-benefit font-semibold text-[16px] text-white shadow-none hover:opacity-95 disabled:text-white/70',
+        'h-12 w-full rounded-xl bg-positive font-semibold text-[16px] text-white shadow-none hover:opacity-95 disabled:text-white/70',
       softBrand:
-        'h-11 w-full rounded-2xl bg-product-buy-now-bg px-4 font-semibold text-[16px] text-brand',
+        'h-11 w-full rounded-2xl bg-surface-success-soft px-4 font-semibold text-[16px] text-brand',
       surface:
         'rounded-2xl bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200 disabled:text-slate-400',
       neutralInset:
@@ -109,7 +109,7 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
       ghostNeutral:
         'gap-1.5 rounded-md px-0 py-0 font-inherit text-[13px] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800',
       ghostRisk:
-        'gap-1 rounded-md p-0 font-inherit text-[13px] text-slate-500 transition-colors hover:text-cart-accent',
+        'gap-1 rounded-md p-0 font-inherit text-[13px] text-slate-500 transition-colors hover:text-accent-emphasis',
       ghostMuted:
         'rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600',
       outlinePill:
@@ -123,7 +123,7 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
       linkAccent:
         'rounded-md px-0 py-0 text-left font-medium text-[13px] text-brand transition-colors hover:underline',
       linkMuted:
-        'mt-1 px-3 py-2 text-left text-[13px] text-profile-link transition-colors hover:underline',
+        'mt-1 px-3 py-2 text-left text-[13px] text-link-primary transition-colors hover:underline',
       switch: 'relative h-7 w-12 shrink-0 rounded-full p-0 transition-colors',
       mediaRail:
         'min-h-0 overflow-hidden rounded-xl border-2 p-0 transition-colors',
@@ -216,7 +216,7 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
     {
       look: 'ghostRisk',
       selected: true,
-      class: 'text-cart-accent',
+      class: 'text-accent-emphasis',
     },
   ],
   defaultVariants: {

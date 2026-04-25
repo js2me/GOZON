@@ -92,15 +92,15 @@ export const CategoryPage = withViewModel(
                         90deg,
                         transparent,
                         transparent 11px,
-                        var(--color-category-tile-grid-stripe) 11px,
-                        var(--color-category-tile-grid-stripe) 12px
+                        var(--color-overlay-stripe) 11px,
+                        var(--color-overlay-stripe) 12px
                       ),
                       repeating-linear-gradient(
                         0deg,
                         transparent,
                         transparent 11px,
-                        var(--color-category-tile-grid-stripe) 11px,
-                        var(--color-category-tile-grid-stripe) 12px
+                        var(--color-overlay-stripe) 11px,
+                        var(--color-overlay-stripe) 12px
                       ),
                       var(--background-image-category-tile)`,
                     }}
