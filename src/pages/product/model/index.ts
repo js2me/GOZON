@@ -330,23 +330,22 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
           head.ogUrl = `/products/${product!.id}`;
           head.ogType = 'product';
 
-          return { product, profile, shop };
-        } else {
+          this.ctx = { product, profile, shop };
+          return;
+        } else if (!this.ctx) {
           const product = await loadProductById(this.productId);
           const [shop, profile] = await Promise.all([
             loadShopById(product.shopId),
             loadProfile(),
           ]);
 
+          this.ctx = { product, profile, shop };
+          return;
+        } else {
           void this.globals.stores.cart.load();
           this.globals.stores.favorites.load();
-
-          return { product, profile, shop };
         }
-
-      } catch {
-        return null;
-      }
+      } finally {}
     })
 
     if (this.globals.isClient) {

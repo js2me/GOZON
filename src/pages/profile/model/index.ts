@@ -114,19 +114,16 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
 
         ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
 
-        return {
+        this.ctx = {
           profile,
         }
-
-      } else {
+        return;
+      } else if (!this.ctx) {
         const profile = await loadProfile();
-        return {
-          profile,
-        }
+        this.ctx = { profile }
       }
-    })
-    if (this.globals.isClient) {
+
       void this.loadProfileProducts();
-    }
+    })
   }
 }

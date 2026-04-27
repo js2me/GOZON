@@ -21,7 +21,7 @@ import { ProductNotFound } from './components/product-not-found';
 export const ProductPage = withViewModel(
   ProductPageVM,
   ({ model }) => {
-    if (model.isPageContextLoading && !model.product) {
+    if (model.isInitializing && !model.product) {
       return (
         <main className="w-full bg-base-bg pt-4 pb-10">
           <section className="mx-auto w-full max-w-[1416px] px-4">

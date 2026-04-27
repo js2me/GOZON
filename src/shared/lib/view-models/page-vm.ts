@@ -9,31 +9,32 @@ export class PageVM<
 > extends VM<{}, null> {
   private initFn?: InitFn<TPageContext>;
 
-  isPageContextLoading = false;
+  isInitializing = false;
 
-  get ctx() {
-    return this.viewModels.loadedContexts[this.id] as TPageContext;
-  }
+  ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ?? null) as TPageContext;
 
   /**
    * Загружает с сервера необходимые данные для первой отрисовки страницы
    */
-  async init(ssr: SSRApi): Promise<TPageContext> {
+  async initOnServer(ssr: SSRApi): Promise<TPageContext> {
     const result = this.initFn?.(ssr);
     return (result ?? null) as TPageContext;
   }
 
-  private loadContextOnClient = async (): Promise<void> => {
-    if (!this.globals.isClient || this.ctx || this.isPageContextLoading || !this.initFn) {
+  /**
+   * Инициализирует с клиента
+   */
+  private initOnClient = async (): Promise<void> => {
+    if (!this.globals.isClient || this.isInitializing || !this.initFn) {
       return;
     }
 
-    this.isPageContextLoading = true;
+    this.isInitializing = true;
     try {
-      const ctx = await this.initFn(null);
-      this.viewModels.loadedContexts[this.id] = ctx;
+      await this.initFn(null);
+      this.viewModels.loadedContexts[this.id] = this.ctx;
     } finally {
-      this.isPageContextLoading = false;
+      this.isInitializing = false;
     }
   };
 
@@ -43,12 +44,12 @@ export class PageVM<
 
   mount(): void {
     makeObservable(this, {
-      ctx: computed,
-      isPageContextLoading: observable.ref,
+      ctx: observable.ref,
+      isInitializing: observable.ref,
     });
 
     super.mount();
 
-    void this.loadContextOnClient();
+    void this.initOnClient();
   }
 }

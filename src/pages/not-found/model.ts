@@ -6,7 +6,7 @@ export class NotFoundPageVM extends PageVM<{ label: string }> {
     this.onInit(ssr => {
       if (ssr) {
         const systemInfo = this.globals.ssr.getSystemInfo();
-        return {
+        this.ctx = {
           label: `А на сервере сейчас ${new Date(systemInfo.date).toLocaleString()}`,
         };
       }

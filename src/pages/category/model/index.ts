@@ -32,7 +32,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
 
   /** Клиентский переход без SSR: ждём загрузку каталога. */
   get isCategoryContextLoading(): boolean {
-    return this.isPageContextLoading;
+    return this.isInitializing;
   }
 
   get category(): CategoryPageContext['category'] | null {
@@ -199,7 +199,6 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     });
 
     this.onInit(async ssr => {
-
       if (!this.categoryId) {
         return null;
       }
@@ -218,22 +217,23 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
         head.ogDescription = `Товары категории «${category.title}»`;
         head.ogUrl = `/category/${category.id}`;
 
-        return { category };
-      } else {
-        const category =  await loadCategoryById(this.categoryId)
+        this.ctx = { category }
+        return;
+      } else if (!this.ctx) {
+        const category = await loadCategoryById(this.categoryId)
 
         if (!category) {
-          return null;
+          return;
         }
 
-        return { category, }
+        this.ctx = { category }
       }
     })
   }
 
   protected willMount(): void {
     if (this.globals.isClient) {
-        void this.loadProductsChunk();
+      void this.loadProductsChunk();
     }
   }
 }
