@@ -315,20 +315,19 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
         assert.defined(this.productId, 'Product id is required for product page');
 
         if (ssr) {
-          const profile = await this.globals.ssr.getProfile();
-          const product = await this.globals.ssr.getProductById(this.productId);
-          const shop = await this.globals.ssr.getShopById(product!.shopId);
+          const profile = await ssr.getProfile();
+          const product = await ssr.getProductById(this.productId);
+          const shop = await ssr.getShopById(product!.shopId);
 
           const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
           const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
-          const head = this.globals.ssr.head;
 
-          head.title = pageTitle;
-          head.ogTitle = product!.title;
-          head.ogDescription = `${product!.title} — ${priceLabel}`;
-          head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
-          head.ogUrl = `/products/${product!.id}`;
-          head.ogType = 'product';
+          ssr.head.title = pageTitle;
+          ssr.head.ogTitle = product!.title;
+          ssr.head.ogDescription = `${product!.title} — ${priceLabel}`;
+          ssr.head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
+          ssr.head.ogUrl = `/products/${product!.id}`;
+          ssr.head.ogType = 'product';
 
           this.ctx = { product, profile, shop };
           return;

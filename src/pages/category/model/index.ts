@@ -204,13 +204,13 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       }
 
       if (ssr) {
-        const category = await this.globals.ssr.getCategoryById(this.categoryId);
+        const category = await ssr.getCategoryById(this.categoryId);
 
         if (!category) {
           return null;
         }
 
-        const head = this.globals.ssr.head;
+        const head = ssr.head;
         const appName = this.globals.stores.appInfo.appName;
         head.title = `${category.title} — купить на ${appName}`;
         head.ogTitle = category.title;
