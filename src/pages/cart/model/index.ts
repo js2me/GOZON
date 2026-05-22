@@ -73,13 +73,13 @@ export class CartPageVM extends PageVM<null> {
       loadError: computed,
     });
 
-    this.onInit(ssr => {
+    this.onInit((ssr) => {
       if (ssr) {
-        ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`
+        ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
       } else {
         void this.globals.stores.cart.load();
         this.globals.stores.favorites.load();
       }
-    })
+    });
   }
 }

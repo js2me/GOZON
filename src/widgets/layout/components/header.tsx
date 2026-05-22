@@ -52,7 +52,7 @@ export const Header = observer(() => {
               icon={SearchIcon}
               iconClassName="size-4"
               look="solidBrandIcon"
-              className='size-10'
+              className="size-10"
             />
           </div>
           <Navbar />
@@ -74,11 +74,7 @@ export const Header = observer(() => {
         ))}
         <div className="ml-auto flex shrink-0 items-center gap-3">
           <span className="text-slate-400 text-xs">Пункт GOZ0N</span>
-          <ActionButton
-            look="linkNeutral"
-            size='s'
-            text="Выберите адрес"
-          />
+          <ActionButton look="linkNeutral" size="s" text="Выберите адрес" />
         </div>
       </div>
     </>

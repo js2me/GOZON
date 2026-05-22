@@ -91,10 +91,7 @@ export const ProfilePage = withViewModel(
                     239,89 ₽
                   </p>
                 </div>
-                <ActionButton
-                  look="solidBrandRelaxed"
-                  text="Пополнить"
-                />
+                <ActionButton look="solidBrandRelaxed" text="Пополнить" />
               </article>
             </section>
 

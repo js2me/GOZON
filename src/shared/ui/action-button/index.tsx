@@ -6,10 +6,9 @@ import type {
   ReactNode,
 } from 'react';
 import { cloneElement, isValidElement } from 'react';
-import { cva, cx } from 'yummies/css';
 import type { VariantProps } from 'yummies/css';
+import { cva, cx } from 'yummies/css';
 import { isIconComponent } from './lib/is-icon-component';
-
 
 const actionButtonCx = cva('inline-flex items-center justify-center', {
   variants: {
@@ -160,16 +159,15 @@ const actionButtonCx = cva('inline-flex items-center justify-center', {
   },
 });
 
-type ActionButtonCxProps = VariantProps<typeof actionButtonCx>
-
+type ActionButtonCxProps = VariantProps<typeof actionButtonCx>;
 
 export type AnchorTarget = AnchorHTMLAttributes<HTMLAnchorElement>['target'];
 
 export type ActionButtonIconComponent = ComponentType<{ className?: string }>;
 
-export type ActionButtonSize = NotMaybe<ActionButtonCxProps['size']>
+export type ActionButtonSize = NotMaybe<ActionButtonCxProps['size']>;
 
-export type ActionButtonLook = NotMaybe<ActionButtonCxProps['look']>
+export type ActionButtonLook = NotMaybe<ActionButtonCxProps['look']>;
 
 const switchKnobCx = cva(
   'pointer-events-none absolute top-0.5 left-0.5 size-6 rounded-full bg-slate-50 shadow transition-transform',
@@ -316,8 +314,8 @@ function buildIconNode(
   if (isValidElement<{ className?: string }>(icon)) {
     return resolvedIconClassName
       ? cloneElement(icon, {
-        className: cx(icon.props.className, resolvedIconClassName),
-      })
+          className: cx(icon.props.className, resolvedIconClassName),
+        })
       : icon;
   }
   if (isIconComponent(icon)) {
@@ -412,8 +410,6 @@ function renderActionButtonBody(params: {
   }
   return iconNode;
 }
-
-
 
 type ActionButtonProps = {
   icon?: ReactNode | ActionButtonIconComponent;

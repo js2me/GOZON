@@ -25,7 +25,9 @@ function normalizeProductIds(productIds: number[]): number[] | null {
 }
 
 export function getFavoritesDC(sessionId: string): FavoritesDC {
-  const productIds = Array.from(favoriteProductIdsBySessionId.get(sessionId) ?? []);
+  const productIds = Array.from(
+    favoriteProductIdsBySessionId.get(sessionId) ?? [],
+  );
   return { productIds };
 }
 

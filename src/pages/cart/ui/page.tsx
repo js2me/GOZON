@@ -128,10 +128,7 @@ export const CartPage = withViewModel(
                 <CartSummaryCard />
 
                 <Card className="p-0">
-                  <ActionButton
-                    className="rounded-2xl"
-                    look="insetRow"
-                  >
+                  <ActionButton className="rounded-2xl" look="insetRow">
                     <span className="flex w-full min-w-0 items-center justify-between gap-3">
                       <span className="flex min-w-0 items-center gap-3">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">

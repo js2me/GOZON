@@ -107,7 +107,6 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       shouldShowViewedSkeletons: computed,
     });
 
-
     this.onInit(async (ssr) => {
       if (ssr) {
         const profile = await ssr.getProfile();
@@ -116,14 +115,14 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
 
         this.ctx = {
           profile,
-        }
+        };
         return;
       } else if (!this.ctx) {
         const profile = await loadProfile();
-        this.ctx = { profile }
+        this.ctx = { profile };
       }
 
       void this.loadProfileProducts();
-    })
+    });
   }
 }

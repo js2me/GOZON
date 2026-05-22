@@ -4,9 +4,9 @@ import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
 import { Globals } from '../globals';
-import { getMainCategories } from './data/categories';
 import { handleApiRequest } from './api';
 import { app } from './app';
+import { getMainCategories } from './data/categories';
 import { getOrCreateSessionId } from './session';
 import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
@@ -31,7 +31,6 @@ async function main() {
 
   app.use('/dist', express.static(app.distDir));
   app.use('/assets', express.static(path.resolve(app.distDir, 'assets')));
-  // Files in src/public are available at /filename (and at /public/filename for compatibility)
   app.use(express.static(app.publicDir));
   app.use('/public', express.static(app.publicDir));
   app.use(

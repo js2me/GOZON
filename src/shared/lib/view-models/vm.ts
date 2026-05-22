@@ -12,7 +12,6 @@ export class VM<
   ParentViewModel extends AnyViewModel | AnyViewModelSimple | null = null,
   ComponentProps extends AnyObject = AnyObject,
 > extends ViewModelBase<Payload, ParentViewModel, ComponentProps> {
-
   protected override get viewModels(): ViewModelsStore {
     return this.globals.stores.viewModels;
   }
@@ -26,7 +25,7 @@ export class VM<
 
   didCreate() {
     /**
-     * 
+     *
      */
   }
 }

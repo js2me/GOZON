@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { isValidElement } from 'react';
-import { ActionButtonIconComponent } from '..';
+import type { ActionButtonIconComponent } from '..';
 
 export function isIconComponent(
   value: ReactNode | ActionButtonIconComponent | undefined,

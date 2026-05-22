@@ -1,12 +1,12 @@
 import { computed, makeObservable, observable } from 'mobx';
 import type { ComputeItemKey } from 'react-virtuoso';
+import { parser } from 'yummies/parser';
 import type { ProductSortParam } from '../../../shared/api/api';
 import { loadCategoryById, loadProducts } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import { mapProductToCard } from '../../home/model/map-product-to-card';
 import type { ProductCardInfo, ProductRow } from '../../home/model/types';
 import type { CategoryPageContext } from './types';
-import { parser } from 'yummies/parser';
 
 const PAGE_SIZE = 100;
 
@@ -61,7 +61,10 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   }
 
   get categoryId() {
-    return parser.string(this.globals.router.routes.category.params?.categoryId, { fallback: null });
+    return parser.string(
+      this.globals.router.routes.category.params?.categoryId,
+      { fallback: null },
+    );
   }
 
   defineComputeItemKey: ComputeItemKey<ProductRow, unknown> = (index, row) => {
@@ -198,7 +201,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       categoryId: computed,
     });
 
-    this.onInit(async ssr => {
+    this.onInit(async (ssr) => {
       if (!this.categoryId) {
         return null;
       }
@@ -217,18 +220,18 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
         head.ogDescription = `Товары категории «${category.title}»`;
         head.ogUrl = `/category/${category.id}`;
 
-        this.ctx = { category }
+        this.ctx = { category };
         return;
       } else if (!this.ctx) {
-        const category = await loadCategoryById(this.categoryId)
+        const category = await loadCategoryById(this.categoryId);
 
         if (!category) {
           return;
         }
 
-        this.ctx = { category }
+        this.ctx = { category };
       }
-    })
+    });
   }
 
   protected willMount(): void {

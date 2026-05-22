@@ -1,6 +1,6 @@
 import { ItemCard } from '../../../../widgets/item-card';
-import { CATEGORY_ITEMS_PER_ROW } from '../../model';
 import type { ProductRow } from '../../../home/model/types';
+import { CATEGORY_ITEMS_PER_ROW } from '../../model';
 
 const LOADING_PLACEHOLDER_KEYS = ['c0', 'c1', 'c2', 'c3'] as const;
 

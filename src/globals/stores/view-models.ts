@@ -1,14 +1,15 @@
 import { computed, makeObservable, observable, when } from 'mobx';
 import {
+  type AnyViewModel,
   mergeVMConfigs,
   type ViewModelCreateConfig,
-  ViewModelStoreBase
+  ViewModelStoreBase,
 } from 'mobx-view-model';
 import { PageVM } from '../../shared/lib/view-models/page-vm';
+import type { VM } from '../../shared/lib/view-models/vm';
 import type { Globals } from '..';
-import { VM } from '../../shared/lib/view-models/vm';
 
-export class ViewModelsStore extends ViewModelStoreBase<VM> {
+export class ViewModelsStore extends ViewModelStoreBase {
   loadedContexts: AnyObject;
   loadingContexts;
 
@@ -48,10 +49,12 @@ export class ViewModelsStore extends ViewModelStoreBase<VM> {
     return !this.loadingContexts.size;
   }
 
-  createViewModel(
-    config: ViewModelCreateConfig<VM>,
-  ): any {
-    const vm = new config.VM(this.globals, {
+  createViewModel(config: ViewModelCreateConfig<AnyViewModel>): any {
+    const VMClass = config.VM as unknown as Class<
+      VM | PageVM,
+      ConstructorParameters<typeof VM | typeof PageVM>
+    >;
+    const vm = new VMClass(this.globals, {
       ...config,
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });

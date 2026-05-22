@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [tailwindcss(), react()],
   appType: 'custom',
   // Matches src/server/app.ts publicDir so dev warnings and /logo.png align with Express
-  publicDir: 'src/public',
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     manifest: true,

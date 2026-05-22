@@ -1,8 +1,10 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
+import type { SSRApi } from '../../../server/api/types';
 import { VM } from './vm';
-import { SSRApi } from '../../../server/api/types';
 
-type InitFn<TPageContext extends Maybe<AnyObject>> = (ssr: Maybe<SSRApi>) => MaybePromise<Maybe<TPageContext> | void>
+type InitFn<TPageContext extends Maybe<AnyObject>> = (
+  ssr: Maybe<SSRApi>,
+) => MaybePromise<Maybe<TPageContext> | void>;
 
 export class PageVM<
   out TPageContext extends Maybe<AnyObject> = null,
@@ -11,7 +13,8 @@ export class PageVM<
 
   isInitializing = false;
 
-  ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ?? null) as TPageContext;
+  ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ??
+    null) as TPageContext;
 
   /**
    * Загружает с сервера необходимые данные для первой отрисовки страницы

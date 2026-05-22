@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
-
+import type { MainCategory } from '../../globals/stores/category';
 import type {
   CategoryBrandDC,
   CategoryPageDC,
@@ -8,7 +8,6 @@ import type {
   CategorySubNavItemDC,
   CategoryTileDC,
 } from '../../shared/api/api';
-import type { MainCategory } from '../../globals/stores/category';
 import { app } from '../app';
 
 const productImagesDir = path.resolve(
@@ -24,17 +23,14 @@ const CATEGORY_ID_COUNT = 6;
 function buildUniqueCategoryIds(count: number): string[] {
   const ids = new Set<string>();
   while (ids.size < count) {
-    ids.add(
-      app.faker.string.alphanumeric({ length: 12, casing: 'lower' }),
-    );
+    ids.add(app.faker.string.alphanumeric({ length: 12, casing: 'lower' }));
   }
   return [...ids];
 }
 
 /** Идентификаторы категорий — совпадают с `ProductDC.categoryId`, задаются faker при старте. */
-export const CATEGORY_IDS: readonly string[] = buildUniqueCategoryIds(
-  CATEGORY_ID_COUNT,
-);
+export const CATEGORY_IDS: readonly string[] =
+  buildUniqueCategoryIds(CATEGORY_ID_COUNT);
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
 

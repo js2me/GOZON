@@ -20,8 +20,7 @@ const badgeCx = cva(
     variants: {
       colorType: {
         sale: 'border border-pink-200 bg-pink-50 text-accent-emphasis',
-        installment:
-          'border border-violet-100 bg-violet-50 text-accent-muted',
+        installment: 'border border-violet-100 bg-violet-50 text-accent-muted',
         postpay: 'border border-blue-100 bg-blue-50 text-accent-muted',
       },
     },
@@ -106,7 +105,7 @@ export const ProductCheckboxCard = observer(
                 iconClassName="size-4"
                 look="ghostRisk"
               />
-              <ActionButton look="linkAccent" size='s' text="Купить" />
+              <ActionButton look="linkAccent" size="s" text="Купить" />
             </div>
           </div>
         </div>

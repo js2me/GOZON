@@ -1,5 +1,6 @@
 import { computed, makeObservable, observable } from 'mobx';
 import { assert } from 'yummies/assert';
+import { parser } from 'yummies/parser';
 import {
   loadProductById,
   loadProfile,
@@ -11,7 +12,6 @@ import {
 } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import type { ProductPageContext } from './types';
-import { parser } from 'yummies/parser';
 
 const FALLBACK_PRODUCT_IMAGE = '/vite.svg';
 
@@ -41,7 +41,9 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get productId(): number | null {
-    return parser.number(this.globals.router.routes.product.params?.productId, { fallback: null });
+    return parser.number(this.globals.router.routes.product.params?.productId, {
+      fallback: null,
+    });
   }
 
   get priceText(): string {
@@ -68,7 +70,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     const discount = Math.round(
       ((this.product.originalPrice - this.product.price) /
         this.product.originalPrice) *
-      100,
+        100,
     );
     if (discount <= 0) {
       return '';
@@ -310,9 +312,12 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       canIncreaseCartQuantity: computed,
     });
 
-    this.onInit(async ssr => {
+    this.onInit(async (ssr) => {
       try {
-        assert.defined(this.productId, 'Product id is required for product page');
+        assert.defined(
+          this.productId,
+          'Product id is required for product page',
+        );
 
         if (ssr) {
           const profile = await ssr.getProfile();
@@ -344,8 +349,9 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
           void this.globals.stores.cart.load();
           this.globals.stores.favorites.load();
         }
-      } finally {}
-    })
+      } finally {
+      }
+    });
 
     if (this.globals.isClient) {
       void this.globals.stores.cart.load();
