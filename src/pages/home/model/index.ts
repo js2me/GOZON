@@ -26,9 +26,6 @@ export class HomePageVM extends PageVM {
     return {
       ...product,
       isFavorite,
-      favoriteLabel: isFavorite
-        ? 'Убрать из избранного'
-        : 'Добавить в избранное',
       onFavoriteClick: () => {
         this.globals.stores.favorites.toggleProduct(product.id);
       },

@@ -7,6 +7,7 @@ import type { Globals } from '../../globals';
 import { app } from '../app';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
+import { config } from '../config';
 
 export const renderWithStreams = (
   globals: Globals,
@@ -47,7 +48,8 @@ ${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}  </hea
     <div id="root">${appStream}</div>
     ${REACT_REFRESH_PREAMBLE}
     <script>window.__SSR_DATA__ = ${ssrData};</script>
-    <script type="module" src="${clientScript}"></script>
+    <script type="module" async src="${clientScript}"></script>
+    <script src="${config.useLocalDevtools ? 'http://127.0.0.1:15000/auto.global.js' : 'https://unpkg.com/mobx-view-model-devtools/auto.global.js'}" async></script>
   </body>
 </html>`;
 

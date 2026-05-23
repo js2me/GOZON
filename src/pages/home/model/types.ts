@@ -14,7 +14,6 @@ export interface ProductCardInfo {
   reviewsCount?: string;
   reviewsLabel?: string;
   isFavorite?: boolean;
-  favoriteLabel?: string;
   onFavoriteClick?: () => void;
 }
 

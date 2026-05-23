@@ -31,7 +31,6 @@ export interface ItemCardProps {
   imageFit?: CSSProperties['objectFit'];
   imageOverlay?: ReactNode;
   isFavorite?: boolean;
-  favoriteLabel?: string;
   onFavoriteClick?: () => void;
   originalPrice?: ReactNode;
   priceMeta?: ItemCardMeta | null;
@@ -168,7 +167,6 @@ export const ItemCard = ({
   imageFit = 'cover',
   imageOverlay,
   isFavorite = false,
-  favoriteLabel = isFavorite ? 'Убрать из избранного' : 'Добавить в избранное',
   onFavoriteClick,
   originalPrice,
   priceMeta,
@@ -217,6 +215,10 @@ export const ItemCard = ({
       </article>
     );
   }
+
+  const favoriteLabel = isFavorite
+        ? 'Убрать из избранного'
+        : 'Добавить в избранное'
 
   return (
     <article
