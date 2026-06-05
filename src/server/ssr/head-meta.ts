@@ -33,6 +33,8 @@ export function renderHeadMetaTags(head: HeadApi): string {
     }
   };
 
+  pushName('description', head.description);
+
   pushOg('og:title', head.ogTitle);
   pushOg('og:description', head.ogDescription);
   pushOg('og:image', head.ogImage);

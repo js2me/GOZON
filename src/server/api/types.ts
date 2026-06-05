@@ -7,6 +7,7 @@ import type {
 
 export interface HeadApi {
   title: string;
+  description?: string;
   /** Open Graph */
   ogTitle?: string;
   ogDescription?: string;

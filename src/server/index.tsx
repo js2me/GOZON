@@ -10,8 +10,12 @@ import { getMainCategories } from './data/categories';
 import { getOrCreateSessionId } from './session';
 import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
+ async function main() {
+  // const tlsOpts = app.isDev ? await generateTlsOptions() : undefined;
 
-async function main() {
+  // const httpServer = tlsOpts
+  //   ? https.createServer(tlsOpts, app)
+  //   :
   const httpServer = http.createServer(app);
 
   if (app.isDev) {
@@ -26,6 +30,8 @@ async function main() {
     });
     app.use(vite.middlewares);
   }
+
+  // app.use(compression);
 
   app.use(express.json());
 
@@ -61,7 +67,7 @@ async function main() {
   });
 
   httpServer.listen(app.port, () => {
-    console.log(`SSR express example running on http://localhost:${app.port}`);
+    console.log(`SSR express example running on https://localhost:${app.port}`);
   });
 }
 
