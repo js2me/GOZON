@@ -38,7 +38,7 @@ async function main() {
     express.static(path.resolve(app.serverDir, 'data/assets')),
   );
 
-  app.all('*', (req, res) => {
+  app.all('{*path}', (req, res) => {
     const sessionId = getOrCreateSessionId(req, res);
 
     if (req.path.startsWith('/api')) {
