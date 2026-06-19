@@ -22,10 +22,4 @@ export class VM<
   ) {
     super(params);
   }
-
-  didCreate() {
-    /**
-     *
-     */
-  }
 }

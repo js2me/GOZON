@@ -1,6 +1,8 @@
 import { House } from 'lucide-react';
 import { computed, makeObservable, observable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
 import { createRef } from 'yummies/mobx';
+import type { Globals } from '../../../globals';
 import { BoxIcon, CartIcon, UserIcon } from '../../../shared/assets/icons';
 import { VM } from '../../../shared/lib/view-models/vm';
 import type { LayoutNavItem, LayoutQuickLink } from './types';
@@ -73,7 +75,9 @@ export class LayoutVM extends VM {
     this.isHeaderCompact = globalThis.scrollY > 120;
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       navItems: computed.struct,
       quickLinks: computed.struct,

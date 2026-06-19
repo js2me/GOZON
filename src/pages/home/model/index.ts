@@ -1,5 +1,7 @@
 import { computed, makeObservable, observable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
+import type { Globals } from '../../../globals';
 import { loadProducts } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 import { mapProductToCard } from './map-product-to-card';
@@ -108,7 +110,9 @@ export class HomePageVM extends PageVM {
     this.hasMoreProducts = this.firstPageHasMoreProducts;
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       products: observable.ref,
       isProductsLoaded: observable.ref,

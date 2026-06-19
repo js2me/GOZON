@@ -1,6 +1,8 @@
 import { computed, makeObservable, observable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
 import { parser } from 'yummies/parser';
+import type { Globals } from '../../../globals';
 import type { ProductSortParam } from '../../../shared/api/api';
 import { loadCategoryById, loadProducts } from '../../../shared/api/api';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
@@ -182,7 +184,9 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     this.resetListAndReload();
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       products: observable.ref,
       isProductsLoaded: observable.ref,

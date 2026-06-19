@@ -1,4 +1,6 @@
 import { computed, makeObservable, observable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
+import type { Globals } from '../../../globals';
 import {
   loadProfile,
   loadProfileRatingProducts,
@@ -94,7 +96,9 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     }
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       ratingProducts: observable.ref,
       viewedProducts: observable.ref,

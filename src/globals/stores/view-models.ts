@@ -59,8 +59,6 @@ export class ViewModelsStore extends ViewModelStoreBase {
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });
 
-    vm.didCreate();
-
     if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
       this.loadingContexts.add(vm.id);
 

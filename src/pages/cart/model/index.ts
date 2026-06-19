@@ -1,4 +1,6 @@
 import { computed, makeObservable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
+import type { Globals } from '../../../globals';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 
 export class CartPageVM extends PageVM<null> {
@@ -62,7 +64,9 @@ export class CartPageVM extends PageVM<null> {
     return this.globals.stores.favorites.hasProduct(productId);
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       summary: computed,
       allSelected: computed,

@@ -1,6 +1,8 @@
 import { computed, makeObservable, observable } from 'mobx';
+import type { ViewModelParams } from 'mobx-view-model';
 import { assert } from 'yummies/assert';
 import { parser } from 'yummies/parser';
+import type { Globals } from '../../../globals';
 import {
   loadProductById,
   loadProfile,
@@ -281,7 +283,9 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     this.globals.stores.cart.decrement(this.productId);
   };
 
-  didCreate(): void {
+  constructor(globals: Globals, params: ViewModelParams) {
+    super(globals, params);
+
     makeObservable(this, {
       activeImageIndex: observable.ref,
       product: computed,
