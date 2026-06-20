@@ -10,7 +10,8 @@ import { getMainCategories } from './data/categories';
 import { getOrCreateSessionId } from './session';
 import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
- async function main() {
+
+async function main() {
   // const tlsOpts = app.isDev ? await generateTlsOptions() : undefined;
 
   // const httpServer = tlsOpts

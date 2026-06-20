@@ -1,5 +1,5 @@
-import selfsigned from 'selfsigned';
 import type { SecureContextOptions } from 'node:tls';
+import selfsigned from 'selfsigned';
 
 export async function generateTlsOptions(): Promise<SecureContextOptions> {
   const result = await selfsigned.generate(

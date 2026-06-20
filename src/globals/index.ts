@@ -37,7 +37,6 @@ export class Globals {
   }
 
   get ssr() {
-    assert.defined(this.params.ssr, 'is not ssr');
     return this.params.ssr;
   }
 

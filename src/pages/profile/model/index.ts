@@ -110,23 +110,23 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       shouldShowRatingSkeletons: computed,
       shouldShowViewedSkeletons: computed,
     });
+  }
 
-    this.onInit(async (ssr) => {
-      if (ssr) {
-        const profile = await ssr.getProfile();
+  async onInit() {
+    if (this.globals.ssr) {
+      const profile = await this.globals.ssr.getProfile();
 
-        ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
+      this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
 
-        this.ctx = {
-          profile,
-        };
-        return;
-      } else if (!this.ctx) {
-        const profile = await loadProfile();
-        this.ctx = { profile };
-      }
+      this.ctx = {
+        profile,
+      };
+      return;
+    } else if (!this.ctx) {
+      const profile = await loadProfile();
+      this.ctx = { profile };
+    }
 
-      void this.loadProfileProducts();
-    });
+    void this.loadProfileProducts();
   }
 }

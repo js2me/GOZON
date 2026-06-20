@@ -204,38 +204,38 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       category: computed,
       categoryId: computed,
     });
+  }
 
-    this.onInit(async (ssr) => {
-      if (!this.categoryId) {
+  async onInit() {
+    if (!this.categoryId) {
+      return null;
+    }
+
+    if (this.globals.ssr) {
+      const category = await this.globals.ssr.getCategoryById(this.categoryId);
+
+      if (!category) {
         return null;
       }
 
-      if (ssr) {
-        const category = await ssr.getCategoryById(this.categoryId);
+      const head = this.globals.ssr.head;
+      const appName = this.globals.stores.appInfo.appName;
+      head.title = `${category.title} — купить на ${appName}`;
+      head.ogTitle = category.title;
+      head.ogDescription = `Товары категории «${category.title}»`;
+      head.ogUrl = `/category/${category.id}`;
 
-        if (!category) {
-          return null;
-        }
+      this.ctx = { category };
+      return;
+    } else if (!this.ctx) {
+      const category = await loadCategoryById(this.categoryId);
 
-        const head = ssr.head;
-        const appName = this.globals.stores.appInfo.appName;
-        head.title = `${category.title} — купить на ${appName}`;
-        head.ogTitle = category.title;
-        head.ogDescription = `Товары категории «${category.title}»`;
-        head.ogUrl = `/category/${category.id}`;
-
-        this.ctx = { category };
+      if (!category) {
         return;
-      } else if (!this.ctx) {
-        const category = await loadCategoryById(this.categoryId);
-
-        if (!category) {
-          return;
-        }
-
-        this.ctx = { category };
       }
-    });
+
+      this.ctx = { category };
+    }
   }
 
   protected willMount(): void {

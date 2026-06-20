@@ -1,16 +1,9 @@
 import { makeObservable, observable } from 'mobx';
-import type { SSRApi } from '../../../server/api/types';
 import { VM } from './vm';
-
-type InitFn<TPageContext extends Maybe<AnyObject>> = (
-  ssr: Maybe<SSRApi>,
-) => MaybePromise<Maybe<TPageContext> | void>;
 
 export class PageVM<
   out TPageContext extends Maybe<AnyObject> = null,
 > extends VM<{}, null> {
-  private initFn?: InitFn<TPageContext>;
-
   isInitializing = false;
 
   ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ??
@@ -19,8 +12,8 @@ export class PageVM<
   /**
    * Загружает с сервера необходимые данные для первой отрисовки страницы
    */
-  async initOnServer(ssr: SSRApi): Promise<TPageContext> {
-    const result = this.initFn?.(ssr);
+  async initOnServer(): Promise<TPageContext> {
+    const result = this.onInit?.();
     return (result ?? null) as TPageContext;
   }
 
@@ -28,22 +21,20 @@ export class PageVM<
    * Инициализирует с клиента
    */
   private initOnClient = async (): Promise<void> => {
-    if (!this.globals.isClient || this.isInitializing || !this.initFn) {
+    if (!this.globals.isClient || this.isInitializing || !this.onInit) {
       return;
     }
 
     this.isInitializing = true;
     try {
-      await this.initFn(null);
+      await this.onInit();
       this.viewModels.loadedContexts[this.id] = this.ctx;
     } finally {
       this.isInitializing = false;
     }
   };
 
-  protected onInit(initFn: InitFn<TPageContext>) {
-    this.initFn = initFn;
-  }
+  onInit?(): MaybePromise<Maybe<TPageContext> | void>;
 
   mount(): void {
     makeObservable(this, {

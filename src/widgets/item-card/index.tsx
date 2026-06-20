@@ -217,8 +217,8 @@ export const ItemCard = ({
   }
 
   const favoriteLabel = isFavorite
-        ? 'Убрать из избранного'
-        : 'Добавить в избранное'
+    ? 'Убрать из избранного'
+    : 'Добавить в избранное';
 
   return (
     <article

@@ -72,7 +72,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     const discount = Math.round(
       ((this.product.originalPrice - this.product.price) /
         this.product.originalPrice) *
-        100,
+      100,
     );
     if (discount <= 0) {
       return '';
@@ -315,51 +315,45 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       cartQuantity: computed,
       canIncreaseCartQuantity: computed,
     });
+  }
 
-    this.onInit(async (ssr) => {
-      try {
-        assert.defined(
-          this.productId,
-          'Product id is required for product page',
-        );
+  async onInit() {
+    const { ssr } = this.globals;
 
-        if (ssr) {
-          const profile = await ssr.getProfile();
-          const product = await ssr.getProductById(this.productId);
-          const shop = await ssr.getShopById(product!.shopId);
+    try {
+      assert.defined(this.productId, 'Product id is required for product page');
 
-          const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
-          const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
+      if (ssr) {
+        const profile = await ssr.getProfile();
+        const product = await ssr.getProductById(this.productId);
+        const shop = await ssr.getShopById(product!.shopId);
 
-          ssr.head.title = pageTitle;
-          ssr.head.ogTitle = product!.title;
-          ssr.head.ogDescription = `${product!.title} — ${priceLabel}`;
-          ssr.head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
-          ssr.head.ogUrl = `/products/${product!.id}`;
-          ssr.head.ogType = 'product';
+        const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
+        const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
 
-          this.ctx = { product, profile, shop };
-          return;
-        } else if (!this.ctx) {
-          const product = await loadProductById(this.productId);
-          const [shop, profile] = await Promise.all([
-            loadShopById(product.shopId),
-            loadProfile(),
-          ]);
+        ssr.head.title = pageTitle;
+        ssr.head.ogTitle = product!.title;
+        ssr.head.ogDescription = `${product!.title} — ${priceLabel}`;
+        ssr.head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
+        ssr.head.ogUrl = `/products/${product!.id}`;
+        ssr.head.ogType = 'product';
 
-          this.ctx = { product, profile, shop };
-          return;
-        } else {
-          void this.globals.stores.cart.load();
-          this.globals.stores.favorites.load();
-        }
-      } finally {
+        this.ctx = { product, profile, shop };
+        return;
+      } else if (!this.ctx) {
+        const product = await loadProductById(this.productId);
+        const [shop, profile] = await Promise.all([
+          loadShopById(product.shopId),
+          loadProfile(),
+        ]);
+
+        this.ctx = { product, profile, shop };
+        return;
+      } else {
+        void this.globals.stores.cart.load();
+        this.globals.stores.favorites.load();
       }
-    });
-
-    if (this.globals.isClient) {
-      void this.globals.stores.cart.load();
-      this.globals.stores.favorites.load();
+    } finally {
     }
   }
 }

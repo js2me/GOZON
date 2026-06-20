@@ -121,15 +121,15 @@ export class HomePageVM extends PageVM {
       offset: observable.ref,
       virtualProductRows: computed,
     });
+  }
 
-    this.onInit((ssr) => {
-      if (ssr) {
-        ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
-      } else {
-        this.globals.stores.favorites.load();
-        void this.loadProductsChunk();
-      }
-    });
+  onInit() {
+    if (this.globals.ssr) {
+      this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
+    } else {
+      this.globals.stores.favorites.load();
+      void this.loadProductsChunk();
+    }
   }
 
   // async mount() {

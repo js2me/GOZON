@@ -5,9 +5,9 @@ import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
 import type { Globals } from '../../globals';
 import { app } from '../app';
+import { config } from '../config';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
-import { config } from '../config';
 
 export const renderWithStreams = (
   globals: Globals,

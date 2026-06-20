@@ -1,9 +1,7 @@
 import zlib from 'node:zlib';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
-function getPreferredEncoding(
-  req: Request,
-): 'br' | 'gzip' | null {
+function getPreferredEncoding(req: Request): 'br' | 'gzip' | null {
   const accept = req.headers['accept-encoding'] ?? '';
   if (accept.includes('br')) return 'br';
   if (accept.includes('gzip')) return 'gzip';
@@ -11,9 +9,7 @@ function getPreferredEncoding(
 }
 
 function createCompressStream(encoding: 'br' | 'gzip') {
-  return encoding === 'br'
-    ? zlib.createBrotliCompress()
-    : zlib.createGzip();
+  return encoding === 'br' ? zlib.createBrotliCompress() : zlib.createGzip();
 }
 
 export function compression(req: Request, res: Response, next: NextFunction) {

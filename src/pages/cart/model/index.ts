@@ -4,6 +4,8 @@ import type { Globals } from '../../../globals';
 import { PageVM } from '../../../shared/lib/view-models/page-vm';
 
 export class CartPageVM extends PageVM<null> {
+  cart = this.globals.stores.cart;
+
   get summary() {
     return this.globals.stores.cart.summary;
   }
@@ -76,14 +78,14 @@ export class CartPageVM extends PageVM<null> {
       isLoading: computed,
       loadError: computed,
     });
+  }
 
-    this.onInit((ssr) => {
-      if (ssr) {
-        ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
-      } else {
-        void this.globals.stores.cart.load();
-        this.globals.stores.favorites.load();
-      }
-    });
+  onInit() {
+    if (this.globals.ssr) {
+      this.globals.ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
+    } else {
+      void this.globals.stores.cart.load();
+      this.globals.stores.favorites.load();
+    }
   }
 }
