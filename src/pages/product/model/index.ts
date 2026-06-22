@@ -12,7 +12,7 @@ import {
   type ProductDC,
   ProductDeliveryVariant,
 } from '../../../shared/api/api';
-import { PageVM } from '../../../shared/lib/view-models/page-vm';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import type { ProductPageContext } from './types';
 
 const FALLBACK_PRODUCT_IMAGE = '/vite.svg';

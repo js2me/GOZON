@@ -5,7 +5,7 @@ import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
 import type { ProductSortParam } from '../../../shared/api/api';
 import { loadCategoryById, loadProducts } from '../../../shared/api/api';
-import { PageVM } from '../../../shared/lib/view-models/page-vm';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import { mapProductToCard } from '../../home/model/map-product-to-card';
 import type { ProductCardInfo, ProductRow } from '../../home/model/types';
 import type { CategoryPageContext } from './types';

@@ -4,8 +4,8 @@ import {
   ViewModelBase,
   type ViewModelParams,
 } from 'mobx-view-model';
-import type { Globals } from '../../../globals';
-import type { ViewModelsStore } from '../../../globals/stores/view-models';
+import type { Globals } from '../..';
+import type { ViewModelsStore } from './store';
 
 export class VM<
   Payload extends AnyObject = EmptyObject,

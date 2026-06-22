@@ -1,5 +1,7 @@
 import { makeObservable, observable } from 'mobx';
 import { VM } from './vm';
+import { Globals } from '../..';
+import { InferViewModelParams } from 'mobx-view-model';
 
 export class PageVM<
   out TPageContext extends Maybe<AnyObject> = null,
@@ -8,6 +10,7 @@ export class PageVM<
 
   ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ??
     null) as TPageContext;
+
 
   /**
    * Загружает с сервера необходимые данные для первой отрисовки страницы
@@ -36,13 +39,18 @@ export class PageVM<
 
   onInit?(): MaybePromise<Maybe<TPageContext> | void>;
 
-  mount(): void {
+  constructor(globals: Globals, params: InferViewModelParams<PageVM>) {
+    super(globals, params);
+
     makeObservable(this, {
       ctx: observable.ref,
       isInitializing: observable.ref,
     });
+  }
 
+  mount(): void {
     super.mount();
+
 
     void this.initOnClient();
   }

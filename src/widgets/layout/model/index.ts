@@ -4,7 +4,7 @@ import type { ViewModelParams } from 'mobx-view-model';
 import { createRef } from 'yummies/mobx';
 import type { Globals } from '../../../globals';
 import { BoxIcon, CartIcon, UserIcon } from '../../../shared/assets/icons';
-import { VM } from '../../../shared/lib/view-models/vm';
+import { VM } from '../../../globals/stores/view-models/vm';
 import type { LayoutNavItem, LayoutQuickLink } from './types';
 
 export class LayoutVM extends VM {

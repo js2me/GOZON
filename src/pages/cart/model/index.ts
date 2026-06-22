@@ -1,7 +1,7 @@
 import { computed, makeObservable } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { Globals } from '../../../globals';
-import { PageVM } from '../../../shared/lib/view-models/page-vm';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 
 export class CartPageVM extends PageVM<null> {
   cart = this.globals.stores.cart;

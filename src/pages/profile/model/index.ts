@@ -6,7 +6,7 @@ import {
   loadProfileRatingProducts,
   loadProfileViewedProducts,
 } from '../../../shared/api/api';
-import { PageVM } from '../../../shared/lib/view-models/page-vm';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import type {
   ProfileMenuSection,
   ProfilePageContext,

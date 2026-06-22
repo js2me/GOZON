@@ -4,7 +4,7 @@ import { AppInfoStore } from './stores/app-info';
 import { CartStore } from './stores/cart/index';
 import { CategoryStore } from './stores/category';
 import { FavoritesStore } from './stores/favorites';
-import { ViewModelsStore } from './stores/view-models';
+import { ViewModelsStore } from './stores/view-models/store';
 import type { GlobalsCreateParams } from './types';
 
 export class Globals {

@@ -5,9 +5,9 @@ import {
   type ViewModelCreateConfig,
   ViewModelStoreBase,
 } from 'mobx-view-model';
-import { PageVM } from '../../shared/lib/view-models/page-vm';
-import type { VM } from '../../shared/lib/view-models/vm';
-import type { Globals } from '..';
+import { PageVM } from './page-vm';
+import type { VM } from './vm';
+import type { Globals } from '../..';
 
 export class ViewModelsStore extends ViewModelStoreBase {
   loadedContexts: AnyObject;
