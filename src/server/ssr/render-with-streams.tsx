@@ -3,14 +3,14 @@ import { renderToPipeableStream } from 'react-dom/server';
 import { PassThrough, Readable } from 'stream';
 import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
-import type { Globals } from '../../globals';
+import type { ServerSideGlobals } from '../../globals';
 import { app } from '../app';
 import { config } from '../config';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
 
 export const renderWithStreams = (
-  globals: Globals,
+  globals: ServerSideGlobals,
   _req: Request,
   res: Response,
   clientScript: string,

@@ -24,7 +24,7 @@ export class PageVM<
    * Инициализирует с клиента
    */
   private initOnClient = async (): Promise<void> => {
-    if (!this.globals.isClient || this.isInitializing || !this.onInit) {
+    if (this.globals.ssr || this.isInitializing || !this.onInit) {
       return;
     }
 

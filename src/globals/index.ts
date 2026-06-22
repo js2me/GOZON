@@ -8,9 +8,6 @@ import { ViewModelsStore } from './stores/view-models/store';
 import type { GlobalsCreateParams } from './types';
 
 export class Globals {
-  readonly isClient: boolean;
-  readonly isServer: boolean;
-
   readonly router: Router;
   readonly stores: {
     appInfo: AppInfoStore;
@@ -21,8 +18,6 @@ export class Globals {
   };
 
   constructor(private params: GlobalsCreateParams) {
-    this.isClient = typeof window !== 'undefined';
-    this.isServer = !this.isClient;
     this.router = new Router(params.router);
     this.stores = {
       appInfo: new AppInfoStore({
@@ -53,3 +48,5 @@ export class Globals {
     };
   }
 }
+
+export type ServerSideGlobals = Globals & DefinedKeys<Pick<Globals,'ssr'>, 'ssr'>

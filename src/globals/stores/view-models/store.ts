@@ -29,7 +29,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
           },
         },
         suspendUntil: () => {
-          if (globals.isServer) {
+          if (globals.ssr) {
             return when(() => !this.loadingContexts.size);
           }
         },
@@ -59,7 +59,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });
 
-    if (vm instanceof PageVM && !vm.ctx && this.globals.isServer) {
+    if (vm instanceof PageVM && !vm.ctx && this.globals.ssr) {
       this.loadingContexts.add(vm.id);
 
       vm.initOnServer()

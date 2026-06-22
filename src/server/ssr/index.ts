@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Request, Response } from 'express';
-import type { Globals } from '../../globals';
+import type { ServerSideGlobals } from '../../globals';
 import { app } from '../app';
 import { renderSimple } from './render-simple';
 import { renderWithStreams } from './render-with-streams';
@@ -31,7 +31,7 @@ const resolveProdAssets = () => {
   };
 };
 
-export const renderHtml = (globals: Globals, req: Request, res: Response) => {
+export const renderHtml = (globals: ServerSideGlobals, req: Request, res: Response) => {
   const { clientScript, styleHref } = app.isDev
     ? { clientScript: '/src/client.tsx', styleHref: '/src/app/styles.css' }
     : resolveProdAssets();

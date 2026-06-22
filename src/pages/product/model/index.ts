@@ -164,28 +164,28 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get isInCart(): boolean {
-    if (!this.productId || this.globals.isServer) {
+    if (!this.productId || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.cart.hasProduct(this.productId);
   }
 
   get isFavorite(): boolean {
-    if (!this.productId || this.globals.isServer) {
+    if (!this.productId || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.favorites.hasProduct(this.productId);
   }
 
   get isFavoritesLoading(): boolean {
-    if (!this.globals.isClient || this.globals.isServer) {
+    if (this.globals.ssr) {
       return false;
     }
     return this.globals.stores.favorites.isLoading;
   }
 
   get isCartLoading(): boolean {
-    if (!this.globals.isClient || this.globals.isServer) {
+    if (this.globals.ssr) {
       return false;
     }
     const cart = this.globals.stores.cart;
@@ -242,7 +242,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   shareProduct = async () => {
-    if (!this.product || !this.globals.isClient) {
+    if (!this.product || this.globals.ssr) {
       return;
     }
 

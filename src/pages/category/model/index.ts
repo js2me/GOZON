@@ -239,7 +239,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   }
 
   protected willMount(): void {
-    if (this.globals.isClient) {
+    if (!this.globals.ssr) {
       void this.loadProductsChunk();
     }
   }

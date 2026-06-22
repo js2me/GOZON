@@ -3,7 +3,7 @@ import '../app/bootstrap/server';
 import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
-import { Globals } from '../globals';
+import { Globals, ServerSideGlobals } from '../globals';
 import { handleApiRequest } from './api';
 import { app } from './app';
 import { getMainCategories } from './data/categories';
@@ -62,7 +62,7 @@ async function main() {
         },
       },
       ssr: ssrApi,
-    });
+    }) as ServerSideGlobals;
 
     return renderHtml(globals, req, res);
   });
