@@ -113,8 +113,11 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
   }
 
   async onInit() {
+    console.log('ddd kek?')
     if (this.globals.ssr) {
       const profile = await this.globals.ssr.getProfile();
+
+      console.log('pek???')
 
       this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
 

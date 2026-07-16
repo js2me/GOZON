@@ -6,11 +6,15 @@ import { mobxVmVitePlugin } from 'mobx-view-model-vite-plugin';
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development'
   return {
-  plugins: [mobxVmVitePlugin({
-    autoDisplayName: isDev,
-    devtools: isDev,
-    hmr: isDev,
-  }), tailwindcss(), react()],
+  plugins: [
+    // mobxVmVitePlugin({
+    //   autoDisplayName: isDev,
+    //   devtools: isDev,
+    //   hmr: isDev,
+    // }),
+    tailwindcss(),
+    react(),
+  ],
   appType: 'custom' as const,
   // Matches src/server/app.ts publicDir so dev warnings and /logo.png align with Express
   publicDir: 'public',

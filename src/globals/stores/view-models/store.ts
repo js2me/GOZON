@@ -1,12 +1,12 @@
 import { computed, makeObservable, observable, when } from 'mobx';
 import {
   type AnyViewModel,
-  mergeVMConfigs,
+  AnyViewModelSimple, mergeVMConfigs,
   type ViewModelCreateConfig,
-  ViewModelStoreBase,
+  ViewModelStoreBase
 } from 'mobx-view-model';
 import { PageVM } from './page-vm';
-import type { VM } from './vm';
+import { VM } from './vm';
 import type { Globals } from '../..';
 
 export class ViewModelsStore extends ViewModelStoreBase {
@@ -49,27 +49,29 @@ export class ViewModelsStore extends ViewModelStoreBase {
     return !this.loadingContexts.size;
   }
 
-  createViewModel(config: ViewModelCreateConfig<AnyViewModel>): any {
-    const VMClass = config.VM as unknown as Class<
-      VM | PageVM,
-      ConstructorParameters<typeof VM | typeof PageVM>
-    >;
-    const vm = new VMClass(this.globals, {
+  create(config: ViewModelCreateConfig<AnyViewModel | AnyViewModelSimple>): any {
+    if (!VM.is(config.VM)) {
+      return super.create(config);
+    }
+
+    const VMConstructor = config.VM as typeof VM;
+
+    const vm = new VMConstructor(this.globals, {
       ...config,
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });
 
-    if (vm instanceof PageVM && !vm.ctx && this.globals.ssr) {
-      this.loadingContexts.add(vm.id);
+    // if (vm instanceof PageVM && !vm.ctx && this.globals.ssr) {
+    //   this.loadingContexts.add(vm.id);
 
-      vm.initOnServer()
-        .then(() => {
-          this.loadedContexts[vm.id] = vm.ctx;
-        })
-        .finally(() => {
-          this.loadingContexts.delete(vm.id);
-        });
-    }
+    //   vm.initOnServer()
+    //     .then(() => {
+    //       this.loadedContexts[vm.id] = vm.ctx;
+    //     })
+    //     .finally(() => {
+    //       this.loadingContexts.delete(vm.id);
+    //     });
+    // }
 
     return vm;
   }

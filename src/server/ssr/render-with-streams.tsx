@@ -5,7 +5,6 @@ import { asyncTemplate as html } from 'yummies/async';
 import { App } from '../../app';
 import type { ServerSideGlobals } from '../../globals';
 import { app } from '../app';
-import { config } from '../config';
 import { REACT_REFRESH_PREAMBLE } from './constants';
 import { escapeHtmlText, renderHeadMetaTags } from './head-meta';
 
@@ -49,7 +48,6 @@ ${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}  </hea
     ${REACT_REFRESH_PREAMBLE}
     <script>window.__SSR_DATA__ = ${ssrData};</script>
     <script type="module" async src="${clientScript}"></script>
-    <script src="${config.useLocalDevtools ? 'http://127.0.0.1:15000/auto.global.js' : 'https://unpkg.com/mobx-view-model-devtools/auto.global.js'}" async></script>
   </body>
 </html>`;
 

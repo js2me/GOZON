@@ -7,6 +7,8 @@ import {
 import type { Globals } from '../..';
 import type { ViewModelsStore } from './store';
 
+const MARKER_SYMBOl = Symbol()
+
 export class VM<
   Payload extends AnyObject = EmptyObject,
   ParentViewModel extends AnyViewModel | AnyViewModelSimple | null = null,
@@ -22,4 +24,10 @@ export class VM<
   ) {
     super(params);
   }
+
+  private static [MARKER_SYMBOl] = true
+
+  static is(value: unknown) {
+      return !!value && !!(value as typeof VM)[MARKER_SYMBOl]
+    }
 }
