@@ -1,11 +1,10 @@
-import { computed, makeObservable, observable, when } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import {
   type AnyViewModel,
   AnyViewModelSimple, mergeVMConfigs,
   type ViewModelCreateConfig,
   ViewModelStoreBase
 } from 'mobx-view-model';
-import { PageVM } from './page-vm';
 import { VM } from './vm';
 import type { Globals } from '../..';
 
@@ -27,12 +26,7 @@ export class ViewModelsStore extends ViewModelStoreBase {
           viewModelStores: {
             useDecorators: false,
           },
-        },
-        suspendUntil: () => {
-          if (globals.ssr) {
-            return when(() => !this.loadingContexts.size);
-          }
-        },
+        }
       },
     });
 
