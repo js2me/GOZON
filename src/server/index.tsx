@@ -33,6 +33,25 @@ const waitRouterReady = async (globals: Globals) => {
   }
 };
 
+/**
+ * Asset / probe URLs must not hit React SSR — otherwise the browser's automatic
+ * `/favicon.ico` (and Chrome `/.well-known/...`) mounts NotFoundPageVM in the
+ * same terminal log as the real page request.
+ */
+const isDocumentNavigation = (req: express.Request) => {
+  if (req.path.startsWith('/.well-known/')) {
+    return false;
+  }
+  if (/\.[a-z0-9]+$/i.test(req.path) && !req.path.endsWith('.html')) {
+    return false;
+  }
+  const accept = req.headers.accept;
+  if (accept && !accept.includes('text/html') && !accept.includes('*/*')) {
+    return false;
+  }
+  return true;
+};
+
 async function main() {
   // const tlsOpts = app.isDev ? await generateTlsOptions() : undefined;
 
@@ -72,6 +91,10 @@ async function main() {
 
     if (req.path.startsWith('/api')) {
       return handleApiRequest(req, res, sessionId);
+    }
+
+    if (!isDocumentNavigation(req)) {
+      return res.status(404).end();
     }
 
     const ssrApi = createSsrApi(sessionId);
