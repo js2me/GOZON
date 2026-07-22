@@ -112,12 +112,9 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     });
   }
 
-  async onInit() {
-    console.log('ddd kek?')
+  async willMount() {
     if (this.globals.ssr) {
       const profile = await this.globals.ssr.getProfile();
-
-      console.log('pek???')
 
       this.globals.ssr.head.title = `${profile.firstName} ${profile.lastName} - Профиль`;
 
@@ -125,7 +122,9 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
         profile,
       };
       return;
-    } else if (!this.ctx) {
+    }
+
+    if (!this.ctx) {
       const profile = await loadProfile();
       this.ctx = { profile };
     }

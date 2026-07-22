@@ -32,11 +32,6 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   /** Доставка — только UI. */
   deliveryUi: 'any' | 'today' | 'tomorrow' | '3days' = 'any';
 
-  /** Клиентский переход без SSR: ждём загрузку каталога. */
-  get isCategoryContextLoading(): boolean {
-    return this.isInitializing;
-  }
-
   get category(): CategoryPageContext['category'] | null {
     return this.ctx?.category ?? null;
   }
@@ -199,23 +194,22 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       priceMaxInput: observable.ref,
       installmentUi: observable.ref,
       deliveryUi: observable.ref,
-      isCategoryContextLoading: computed,
       virtualProductRows: computed,
       category: computed,
       categoryId: computed,
     });
   }
 
-  async onInit() {
+  async willMount() {
     if (!this.categoryId) {
-      return null;
+      return;
     }
 
     if (this.globals.ssr) {
       const category = await this.globals.ssr.getCategoryById(this.categoryId);
 
       if (!category) {
-        return null;
+        return;
       }
 
       const head = this.globals.ssr.head;
@@ -227,7 +221,9 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
 
       this.ctx = { category };
       return;
-    } else if (!this.ctx) {
+    }
+
+    if (!this.ctx) {
       const category = await loadCategoryById(this.categoryId);
 
       if (!category) {
@@ -236,11 +232,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
 
       this.ctx = { category };
     }
-  }
 
-  protected willMount(): void {
-    if (!this.globals.ssr) {
-      void this.loadProductsChunk();
-    }
+    void this.loadProductsChunk();
   }
 }

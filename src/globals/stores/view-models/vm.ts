@@ -25,6 +25,17 @@ export class VM<
     super(params);
   }
 
+  mount() {
+    console.log('mount', this.id);
+    const result = super.mount();
+    return result;
+  }
+
+  unmount(): void {
+    console.log('unmount', this.id);
+    return super.unmount();
+  }
+
   private static [MARKER_SYMBOl] = true
 
   static is(value: unknown) {

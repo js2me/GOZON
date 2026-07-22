@@ -123,7 +123,7 @@ export class HomePageVM extends PageVM {
     });
   }
 
-  onInit() {
+  willMount() {
     if (this.globals.ssr) {
       this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
     } else {

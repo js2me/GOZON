@@ -18,7 +18,6 @@ export class ViewModelsStore extends ViewModelStoreBase {
   ) {
     super({
       vmConfig: {
-        useReactIds: true,
         observable: {
           viewModels: {
             useDecorators: false,

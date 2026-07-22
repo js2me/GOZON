@@ -21,7 +21,7 @@ export const CategoryPage = withViewModel(
   ({ model }) => {
     const brandsRef = useRef<HTMLDivElement>(null);
 
-    if (model.isCategoryContextLoading && !model.category) {
+    if (!model.category) {
       return (
         <main className="w-full bg-base-bg pt-6 pb-10">
           <section className="mx-auto max-w-[1416px] px-4">

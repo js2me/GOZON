@@ -80,7 +80,7 @@ export class CartPageVM extends PageVM<null> {
     });
   }
 
-  onInit() {
+  willMount() {
     if (this.globals.ssr) {
       this.globals.ssr.head.title = `Корзина — ${this.globals.stores.appInfo.appName}`;
     } else {

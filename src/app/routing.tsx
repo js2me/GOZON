@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { RouteView, RouteViewGroup } from 'mobx-route/react';
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import type { Globals } from '../globals';
 import { Layout } from '../widgets/layout';
 
@@ -41,16 +41,20 @@ const NotFoundPage = lazy(() =>
 );
 
 export const Routing = observer(({ globals }: { globals: Globals }) => {
+  // Do not wrap RouteViews in Suspense here: RouteViewGroup only sees direct
+  // children, and with `otherwise` a non-route wrapper makes it return null.
+  // Page Suspense lives in Layout.
   return (
-    <Suspense fallback={null}>
-      <RouteViewGroup layout={Layout}>
-        <RouteView route={globals.router.routes.home} view={HomePage} />
-        <RouteView route={globals.router.routes.profile} view={ProfilePage} />
-        <RouteView route={globals.router.routes.cart} view={CartPage} />
-        <RouteView route={globals.router.routes.category} view={CategoryPage} />
-        <RouteView route={globals.router.routes.product} view={ProductPage} />
-        <RouteView route={globals.router.routes.notFound} view={NotFoundPage} />
-      </RouteViewGroup>
-    </Suspense>
+    <RouteViewGroup
+      layout={Layout}
+      otherwise={globals.router.routes.notFound}
+    >
+      <RouteView route={globals.router.routes.home} view={HomePage} />
+      <RouteView route={globals.router.routes.profile} view={ProfilePage} />
+      <RouteView route={globals.router.routes.cart} view={CartPage} />
+      <RouteView route={globals.router.routes.category} view={CategoryPage} />
+      <RouteView route={globals.router.routes.product} view={ProductPage} />
+      <RouteView route={globals.router.routes.notFound} view={NotFoundPage} />
+    </RouteViewGroup>
   );
 });

@@ -4,6 +4,6 @@ import { viewModelsConfig } from 'mobx-view-model';
 
 configure({ enforceActions: 'never' });
 
-viewModelsConfig.mode = typeof window === 'undefined' ? 'ssr' : 'csr';
+viewModelsConfig.mode = 'ssr';
 
 enableStaticRendering(typeof window === 'undefined');

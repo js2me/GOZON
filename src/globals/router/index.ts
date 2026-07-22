@@ -1,4 +1,3 @@
-import { reaction } from 'mobx';
 import {
   createBrowserHistory,
   createMemoryHistory,
@@ -54,25 +53,6 @@ export class Router extends RouterLib<RoutesMap> {
 
     this.query = query;
     this.history = history;
-
-    const routeKeys = (Object.keys(this.routes) as (keyof RoutesMap)[]).filter(
-      (key) => key !== 'notFound',
-    );
-
-    reaction(
-      () =>
-        routeKeys.every(
-          (key) => !this.routes[key].isOpening && !this.routes[key].isOpened,
-        ),
-      (isAllRoutesNotOpened) => {
-        if (isAllRoutesNotOpened) {
-          this.routes.notFound.open();
-        }
-      },
-      {
-        fireImmediately: true,
-      },
-    );
   }
 
   navigate() {}

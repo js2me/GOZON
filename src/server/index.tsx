@@ -3,6 +3,7 @@ import '../app/bootstrap/server';
 import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
+import { when } from 'mobx';
 import { Globals, ServerSideGlobals } from '../globals';
 import { handleApiRequest } from './api';
 import { app } from './app';
@@ -10,6 +11,27 @@ import { getMainCategories } from './data/categories';
 import { getOrCreateSessionId } from './session';
 import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
+
+/** Path routes open via reaction; unknown URLs fall back to virtual notFound. */
+const waitRouterReady = async (globals: Globals) => {
+  const { notFound, ...pathRoutesMap } = globals.router.routes;
+  const pathRoutes = Object.values(pathRoutesMap);
+
+  try {
+    await when(
+      () => pathRoutes.some((route) => route.isOpened || route.isOpening),
+      { timeout: 100 },
+    );
+    await when(
+      () => pathRoutes.some((route) => route.isOpened),
+      { timeout: 5000 },
+    );
+  } catch {
+    if (!pathRoutes.some((route) => route.isOpened)) {
+      await notFound.open();
+    }
+  }
+};
 
 async function main() {
   // const tlsOpts = app.isDev ? await generateTlsOptions() : undefined;
@@ -45,7 +67,7 @@ async function main() {
     express.static(path.resolve(app.serverDir, 'data/assets')),
   );
 
-  app.all('{*path}', (req, res) => {
+  app.all('{*path}', async (req, res) => {
     const sessionId = getOrCreateSessionId(req, res);
 
     if (req.path.startsWith('/api')) {
@@ -63,6 +85,8 @@ async function main() {
       },
       ssr: ssrApi,
     }) as ServerSideGlobals;
+
+    await waitRouterReady(globals);
 
     return renderHtml(globals, req, res);
   });
