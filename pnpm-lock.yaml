@@ -41,6 +41,9 @@ importers:
       mobx-route:
         specifier: ^1.2.1
         version: 1.2.1(mobx-react-lite@4.1.1(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(mobx-view-model@10.2.4(mobx-react-lite@4.1.1(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      mobx-swiss-knife:
+        specifier: ^1.15.2
+        version: 1.15.2(mobx@6.16.1)(react@19.2.7)
       mobx-view-model:
         specifier: ^10.2.4
         version: 10.2.4(mobx-react-lite@4.1.1(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3598,6 +3601,17 @@ snapshots:
       lodash-es: 4.18.1
       mobx: 6.16.1
       yummies: 7.20.1(mobx@6.16.1)(react@18.3.1)
+    transitivePeerDependencies:
+      - react
+
+  mobx-swiss-knife@1.15.2(mobx@6.16.1)(react@19.2.7):
+    dependencies:
+      '@faker-js/faker': 9.9.0
+      '@types/lodash-es': 4.17.12
+      linked-abort-controller: 1.1.1
+      lodash-es: 4.18.1
+      mobx: 6.16.1
+      yummies: 7.20.1(mobx@6.16.1)(react@19.2.7)
     transitivePeerDependencies:
       - react
 

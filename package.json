@@ -29,6 +29,7 @@
     "mobx-react-lite": "^4.1.1",
     "mobx-route": "^1.2.1",
     "mobx-view-model": "^10.2.4",
+    "mobx-swiss-knife": "^1.15.2",
     "mobx-view-model-react": "^10.3.1",
     "mobx-view-model-vite-plugin": "^1.4.4",
     "mobx-web-api": "^1.14.1",
