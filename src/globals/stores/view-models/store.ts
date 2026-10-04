@@ -6,17 +6,16 @@ import {
   ViewModelStoreBase,
 } from 'mobx-view-model';
 import type { Globals } from '../..';
-import { PageContextResource } from './page-context-resource';
+import type { PageContextResource } from './page-context-resource';
 import { VM } from './vm';
 
 export class ViewModelsStore extends ViewModelStoreBase {
-  readonly pageContextResource: PageContextResource;
-
   constructor(
     private globals: Globals,
-    pageContexts?: AnyObject,
+    pageContextResource: PageContextResource,
   ) {
     super({
+      resource: pageContextResource,
       vmConfig: {
         observable: {
           viewModels: {
@@ -28,9 +27,6 @@ export class ViewModelsStore extends ViewModelStoreBase {
         },
       },
     });
-
-    this.pageContextResource = new PageContextResource(pageContexts);
-    this.resource = this.pageContextResource;
   }
 
   create(

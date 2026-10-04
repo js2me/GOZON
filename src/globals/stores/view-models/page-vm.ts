@@ -21,11 +21,11 @@ export class PageVM<
 
     if (result instanceof Promise) {
       return result.then(() => {
-        this.viewModels.pageContextResource.save(this.id, this.ctx);
+        this.globals.pageContextResource.save(this.id, this.ctx);
       });
     }
 
-    this.viewModels.pageContextResource.save(this.id, this.ctx);
+    this.globals.pageContextResource.save(this.id, this.ctx);
     return result;
   }
 }

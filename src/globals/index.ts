@@ -4,11 +4,13 @@ import { AppInfoStore } from './stores/app-info';
 import { CartStore } from './stores/cart/index';
 import { CategoryStore } from './stores/category';
 import { FavoritesStore } from './stores/favorites';
+import { PageContextResource } from './stores/view-models/page-context-resource';
 import { ViewModelsStore } from './stores/view-models/store';
 import type { GlobalsCreateParams } from './types';
 
 export class Globals {
   readonly router: Router;
+  readonly pageContextResource: PageContextResource;
   readonly stores: {
     appInfo: AppInfoStore;
     category: CategoryStore;
@@ -19,6 +21,7 @@ export class Globals {
 
   constructor(private params: GlobalsCreateParams) {
     this.router = new Router(params.router);
+    this.pageContextResource = new PageContextResource(params.pageContexts);
     this.stores = {
       appInfo: new AppInfoStore({
         router: this.router,
@@ -27,7 +30,7 @@ export class Globals {
       category: new CategoryStore(this.router, params.mainCategories ?? []),
       cart: new CartStore(this.router),
       favorites: new FavoritesStore(),
-      viewModels: new ViewModelsStore(this, params.pageContexts),
+      viewModels: new ViewModelsStore(this, this.pageContextResource),
     };
   }
 
@@ -67,7 +70,7 @@ export class Globals {
     return {
       ...params,
       openedRoutes,
-      pageContexts: this.stores.viewModels.pageContextResource.snapshot(),
+      pageContexts: this.pageContextResource.snapshot(),
     };
   }
 }
