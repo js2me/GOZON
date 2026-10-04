@@ -8,4 +8,5 @@ export type GlobalsCreateParams = Pick<AppInfoParams, 'appName'> & {
   ssr?: SSRApi;
   pageContexts?: AnyObject;
   mainCategories?: MainCategory[];
+  openedRoutes?: string[];
 };

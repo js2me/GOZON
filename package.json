@@ -14,7 +14,7 @@
     "check": "pnpm run lint:check && tsc --noEmit",
     "start": "NODE_ENV=production pnpm build && NODE_ENV=production node dist/server/index.js",
     "test": "vitest run --config vitest.config.ts",
-    "link:debug:packages": "npx --yes packalink"
+    "check:browser": "node scripts/browser-check.mjs"
   },
   "dependencies": {
     "@faker-js/faker": "^10.5.0",
@@ -27,11 +27,11 @@
     "mobx": "^6.16.1",
     "mobx-location-history": "9.4.0",
     "mobx-react-lite": "^4.1.1",
-    "mobx-route": "^1.2.1",
-    "mobx-view-model": "^10.2.4",
+    "mobx-route": "^1.2.3",
     "mobx-swiss-knife": "^1.15.2",
-    "mobx-view-model-react": "^10.3.1",
-    "mobx-view-model-vite-plugin": "^1.4.4",
+    "mobx-view-model": "^11.0.0",
+    "mobx-view-model-react": "^11.0.0",
+    "mobx-view-model-vite-plugin": "^2.0.0",
     "mobx-web-api": "^1.14.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -52,6 +52,7 @@
     "esbuild": "^0.28.1",
     "js2me-biome-config": "^1.1.0",
     "jsdom": "^29.1.1",
+    "puppeteer-core": "^25.3.0",
     "selfsigned": "^5.5.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",

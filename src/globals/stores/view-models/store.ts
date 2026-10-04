@@ -1,16 +1,16 @@
-import { computed, makeObservable, observable } from 'mobx';
 import {
   type AnyViewModel,
-  AnyViewModelSimple, mergeVMConfigs,
+  type AnyViewModelSimple,
+  mergeVMConfigs,
   type ViewModelCreateConfig,
-  ViewModelStoreBase
+  ViewModelStoreBase,
 } from 'mobx-view-model';
-import { VM } from './vm';
 import type { Globals } from '../..';
+import { PageContextResource } from './page-context-resource';
+import { VM } from './vm';
 
 export class ViewModelsStore extends ViewModelStoreBase {
-  loadedContexts: AnyObject;
-  loadingContexts;
+  readonly pageContextResource: PageContextResource;
 
   constructor(
     private globals: Globals,
@@ -25,24 +25,17 @@ export class ViewModelsStore extends ViewModelStoreBase {
           viewModelStores: {
             useDecorators: false,
           },
-        }
+        },
       },
     });
 
-    this.loadingContexts = observable.set<string>();
-    this.loadedContexts = { ...pageContexts };
-
-    makeObservable(this, {
-      isContextLoaded: computed,
-      loadedContexts: observable.shallow,
-    });
+    this.pageContextResource = new PageContextResource(pageContexts);
+    this.resource = this.pageContextResource;
   }
 
-  get isContextLoaded() {
-    return !this.loadingContexts.size;
-  }
-
-  create(config: ViewModelCreateConfig<AnyViewModel | AnyViewModelSimple>): any {
+  create(
+    config: ViewModelCreateConfig<AnyViewModel | AnyViewModelSimple>,
+  ): any {
     if (!VM.is(config.VM)) {
       return super.create(config);
     }
@@ -53,18 +46,6 @@ export class ViewModelsStore extends ViewModelStoreBase {
       ...config,
       vmConfig: mergeVMConfigs(this.vmConfig, config.vmConfig),
     });
-
-    // if (vm instanceof PageVM && !vm.ctx && this.globals.ssr) {
-    //   this.loadingContexts.add(vm.id);
-
-    //   vm.initOnServer()
-    //     .then(() => {
-    //       this.loadedContexts[vm.id] = vm.ctx;
-    //     })
-    //     .finally(() => {
-    //       this.loadingContexts.delete(vm.id);
-    //     });
-    // }
 
     return vm;
   }

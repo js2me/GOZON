@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
     tailwindcss(),
     react(),
   ],
+  resolve: {
+    dedupe: ['react', 'react-dom', 'mobx', 'mobx-react-lite'],
+  },
   appType: 'custom' as const,
   // Matches src/server/app.ts publicDir so dev warnings and /logo.png align with Express
   publicDir: 'public',

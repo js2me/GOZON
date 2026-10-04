@@ -65,7 +65,7 @@ export const Header = observer(() => {
       >
         {model.quickLinks.map(({ href, label }) => (
           <Link
-            key={label}
+            key={href}
             className="shrink-0 font-medium text-slate-500 no-underline transition-colors hover:text-slate-900"
             href={href}
           >

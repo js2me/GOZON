@@ -1,18 +1,28 @@
-import { PageVM } from '../../globals/stores/view-models/page-vm';
+import { computed, makeObservable } from 'mobx';
 import { createTime } from 'mobx-swiss-knife';
+import { PageVM } from '../../globals/stores/view-models/page-vm';
 
-export class NotFoundPageVM extends PageVM<{ label: string }> {
+export class NotFoundPageVM extends PageVM<{ serverTime: number }> {
   private time = createTime();
 
-  get label() {
-    return `А у вас сейчас ${this.time.value.toLocaleString()}`
+  get labels() {
+    const serverDate = new Date(this.ctx.serverTime);
+
+    return {
+      server: `На сервере было ${serverDate.toLocaleString()}`,
+      user: `А у вас сейчас ${this.isHydrated ? this.time.value.toLocaleString() : serverDate.toLocaleString()}`,
+    };
   }
-  
+
   willMount() {
+    makeObservable(this, {
+      labels: computed,
+    });
+
     if (this.globals.ssr) {
       const systemInfo = this.globals.ssr.getSystemInfo();
       this.ctx = {
-        label: `На сервере было ${new Date(systemInfo.date).toLocaleString()}`,
+        serverTime: new Date(systemInfo.date).getTime(),
       };
     }
   }

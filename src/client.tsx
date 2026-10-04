@@ -15,7 +15,7 @@ const hydrateApp = async () => {
       }
     ).default?.hydrateRoot;
 
-  const globals = Globals.fromSnapshot((globalThis as any).__SSR_DATA__);
+  const globals = await Globals.fromSnapshot((globalThis as any).__SSR_DATA__);
 
   if (typeof hydrateRoot !== 'function') {
     throw new Error('hydrateRoot is not available in react-dom/client');

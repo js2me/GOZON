@@ -1,14 +1,12 @@
 import { makeObservable, observable } from 'mobx';
-import { InferViewModelParams } from 'mobx-view-model';
-import { Globals } from '../..';
+import type { InferViewModelParams } from 'mobx-view-model';
+import type { Globals } from '../..';
 import { VM } from './vm';
 
 export class PageVM<
   out TPageContext extends Maybe<AnyObject> = null,
 > extends VM<{}, null> {
-  ctx: TPageContext = (this.viewModels.loadedContexts[this.id] ??
-    null) as TPageContext;
-
+  ctx: TPageContext = (this.vm.data ?? null) as TPageContext;
 
   constructor(globals: Globals, params: InferViewModelParams<PageVM>) {
     super(globals, params);
@@ -23,11 +21,11 @@ export class PageVM<
 
     if (result instanceof Promise) {
       return result.then(() => {
-        this.viewModels.loadedContexts[this.id] = this.ctx;
+        this.viewModels.pageContextResource.save(this.id, this.ctx);
       });
     }
 
-    this.viewModels.loadedContexts[this.id] = this.ctx;
+    this.viewModels.pageContextResource.save(this.id, this.ctx);
     return result;
   }
 }

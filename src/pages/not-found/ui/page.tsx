@@ -2,6 +2,7 @@ import { withViewModel } from 'mobx-view-model-react';
 import { NotFoundPageVM } from '../model';
 
 export const NotFoundPage = withViewModel(NotFoundPageVM, ({ model }) => {
+
   return (
     <main className="flex min-h-[60vh] w-full items-center justify-center bg-base-bg">
       <div className="flex flex-col items-center gap-6 text-center">
@@ -14,8 +15,8 @@ export const NotFoundPage = withViewModel(NotFoundPageVM, ({ model }) => {
         <p className="max-w-md text-gray-500">
           К сожалению, запрашиваемая страница не существует или была перемещена.
         </p>
-        <p className="text-gray-400 text-xs">{model.ctx.label}</p>
-        <p className="text-gray-400 text-xs">{model.label}</p>
+        <p className="text-gray-400 text-xs">{model.labels.server}</p>
+        <p className='text-gray-400 text-xs'>{model.labels.user}</p>
         <a
           href="/"
           className="mt-4 rounded-lg bg-brand px-6 py-3 text-white transition-opacity hover:opacity-85"

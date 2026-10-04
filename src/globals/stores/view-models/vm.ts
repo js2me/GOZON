@@ -7,7 +7,7 @@ import {
 import type { Globals } from '../..';
 import type { ViewModelsStore } from './store';
 
-const MARKER_SYMBOl = Symbol()
+const MARKER_SYMBOl = Symbol();
 
 export class VM<
   Payload extends AnyObject = EmptyObject,
@@ -25,20 +25,9 @@ export class VM<
     super(params);
   }
 
-  mount() {
-    console.log('mount', this.id);
-    const result = super.mount();
-    return result;
-  }
-
-  unmount(): void {
-    console.log('unmount', this.id);
-    return super.unmount();
-  }
-
-  private static [MARKER_SYMBOl] = true
+  private static [MARKER_SYMBOl] = true;
 
   static is(value: unknown) {
-      return !!value && !!(value as typeof VM)[MARKER_SYMBOl]
-    }
+    return !!value && !!(value as typeof VM)[MARKER_SYMBOl];
+  }
 }

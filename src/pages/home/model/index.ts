@@ -2,8 +2,8 @@ import { computed, makeObservable, observable } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
 import type { Globals } from '../../../globals';
-import { loadProducts } from '../../../shared/api/api';
 import { PageVM } from '../../../globals/stores/view-models/page-vm';
+import { loadProducts } from '../../../shared/api/api';
 import { mapProductToCard } from './map-product-to-card';
 import type { ProductCardInfo, ProductRow } from './types';
 
@@ -125,7 +125,7 @@ export class HomePageVM extends PageVM {
 
   willMount() {
     if (this.globals.ssr) {
-      this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодным ценам`;
+      this.globals.ssr.head.title = `${this.globals.stores.appInfo.appName} маркетплейс – миллионы товаров по выгодных ценам`;
     } else {
       this.globals.stores.favorites.load();
       void this.loadProductsChunk();

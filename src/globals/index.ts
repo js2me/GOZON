@@ -35,18 +35,42 @@ export class Globals {
     return this.params.ssr;
   }
 
-  static fromSnapshot(ssrData: Maybe<AnyObject>): Globals {
+  static async fromSnapshot(ssrData: Maybe<AnyObject>): Promise<Globals> {
     assert.defined(ssrData, 'Missing SSR data');
-    return new Globals(ssrData);
+    const globals = new Globals(ssrData);
+
+    // Restore route state so React hydration matches SSR tree structure
+    const openedRoutes = (ssrData as GlobalsCreateParams).openedRoutes;
+    if (openedRoutes) {
+      await Promise.all(
+        openedRoutes.map((routeName) => {
+          const route =
+            globals.router.routes[
+              routeName as keyof typeof globals.router.routes
+            ];
+          if (route && !route.isOpened) {
+            return (route.open as () => Promise<void>)();
+          }
+          return undefined;
+        }),
+      );
+    }
+
+    return globals;
   }
 
   toSnapshot(): GlobalsCreateParams {
     const { ssr, ...params } = this.params;
+    const openedRoutes = Object.entries(this.router.routes)
+      .filter(([_, r]) => r.isOpened)
+      .map(([name]) => name);
     return {
       ...params,
-      pageContexts: this.stores.viewModels.loadedContexts,
+      openedRoutes,
+      pageContexts: this.stores.viewModels.pageContextResource.snapshot(),
     };
   }
 }
 
-export type ServerSideGlobals = Globals & DefinedKeys<Pick<Globals,'ssr'>, 'ssr'>
+export type ServerSideGlobals = Globals &
+  DefinedKeys<Pick<Globals, 'ssr'>, 'ssr'>;
