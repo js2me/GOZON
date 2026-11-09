@@ -3,9 +3,9 @@ import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import type { ProductSortParam } from '../../../shared/api/api';
 import { loadCategoryById, loadProducts } from '../../../shared/api/api';
-import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import { mapProductToCard } from '../../home/model/map-product-to-card';
 import type { ProductCardInfo, ProductRow } from '../../home/model/types';
 import type { CategoryPageContext } from './types';
@@ -19,6 +19,8 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   isLoadingMore = false;
   hasMoreProducts = true;
   offset = 0;
+  loadError: string | null = null;
+  private productsRequest: AbortController | null = null;
   products: ProductCardInfo[] = [];
   firstPageProducts: ProductCardInfo[] = [];
   firstPageHasMoreProducts = true;
@@ -91,18 +93,28 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       return;
     }
 
+    const request = new AbortController();
+    const signal = AbortSignal.any([request.signal, this.unmountSignal]);
+    this.productsRequest = request;
     this.isLoadingMore = true;
+    this.loadError = null;
 
     try {
-      const { items, hasMore } = await loadProducts({
-        limit: PAGE_SIZE,
-        offset: this.offset,
-        categoryId: this.categoryId,
-        saleOnly: this.saleOnly,
-        minPrice: this.getParsedPriceMin(),
-        maxPrice: this.getParsedPriceMax(),
-        sort: this.sort,
-      });
+      const { items, hasMore } = await loadProducts(
+        {
+          limit: PAGE_SIZE,
+          offset: this.offset,
+          categoryId: this.categoryId,
+          saleOnly: this.saleOnly,
+          minPrice: this.getParsedPriceMin(),
+          maxPrice: this.getParsedPriceMax(),
+          sort: this.sort,
+        },
+        signal,
+      );
+      if (request !== this.productsRequest || signal.aborted) {
+        return;
+      }
       const mappedProducts = items.map(mapProductToCard);
 
       if (this.offset === 0) {
@@ -113,9 +125,15 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       this.products = [...this.products, ...mappedProducts];
       this.offset += mappedProducts.length;
       this.hasMoreProducts = hasMore;
+    } catch {
+      if (request === this.productsRequest && !signal.aborted) {
+        this.loadError = 'Не удалось загрузить товары';
+      }
     } finally {
-      this.isLoadingMore = false;
-      this.isProductsLoaded = true;
+      if (request === this.productsRequest) {
+        this.isLoadingMore = false;
+        this.isProductsLoaded = true;
+      }
     }
   };
 
@@ -123,6 +141,9 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     if (!this.categoryId) {
       return;
     }
+    this.productsRequest?.abort();
+    this.isLoadingMore = false;
+    this.isProductsLoaded = false;
     this.products = [];
     this.offset = 0;
     this.hasMoreProducts = true;
@@ -184,6 +205,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
 
     makeObservable(this, {
       products: observable.ref,
+      loadError: observable.ref,
       isProductsLoaded: observable.ref,
       isLoadingMore: observable.ref,
       hasMoreProducts: observable.ref,
@@ -209,6 +231,8 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       const category = await this.globals.ssr.getCategoryById(this.categoryId);
 
       if (!category) {
+        this.globals.ssr.statusCode = 404;
+        this.globals.ssr.head.title = 'Категория не найдена';
         return;
       }
 

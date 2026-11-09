@@ -20,6 +20,8 @@ export class NotFoundPageVM extends PageVM<{ serverTime: number }> {
     });
 
     if (this.globals.ssr) {
+      this.globals.ssr.statusCode = 404;
+      this.globals.ssr.head.title = 'Страница не найдена';
       const systemInfo = this.globals.ssr.getSystemInfo();
       this.ctx = {
         serverTime: new Date(systemInfo.date).getTime(),

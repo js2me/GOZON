@@ -22,17 +22,6 @@ export const CategoryPage = withViewModel(
     const brandsRef = useRef<HTMLDivElement>(null);
 
     if (!model.category) {
-      return (
-        <main className="w-full bg-base-bg pt-6 pb-10">
-          <section className="mx-auto max-w-[1416px] px-4">
-            <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-200" />
-            <div className="mt-6 h-64 animate-pulse rounded-3xl bg-slate-200" />
-          </section>
-        </main>
-      );
-    }
-
-    if (!model.category) {
       return <CategoryNotFound />;
     }
 
@@ -315,6 +304,11 @@ export const CategoryPage = withViewModel(
                 </label>
               </div>
 
+              {model.loadError ? (
+                <p role="alert" className="mb-4 text-red-600">
+                  {model.loadError}
+                </p>
+              ) : null}
               {model.isProductsLoaded ? (
                 <Virtuoso
                   computeItemKey={model.defineComputeItemKey}

@@ -158,6 +158,7 @@ export interface FavoritesDC {
 
 export const loadProducts = async (
   params: LoadProductsParams,
+  signal?: AbortSignal,
 ): Promise<ProductsChunkDC> => {
   const searchParams = new URLSearchParams({
     limit: String(params.limit),
@@ -178,7 +179,12 @@ export const loadProducts = async (
   if (params.sort && params.sort !== 'popular') {
     searchParams.set('sort', params.sort);
   }
-  const response = await fetch(`/api/products?${searchParams.toString()}`);
+  const response = await fetch(`/api/products?${searchParams.toString()}`, {
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error('Products load failed');
+  }
   return response.json();
 };
 
@@ -199,10 +205,13 @@ export const loadCategoryById = async (
 
 export const loadProductById = async (
   productId: number,
-): Promise<ProductDC> => {
+): Promise<ProductDC | null> => {
   const response = await fetch(`/api/products/${productId}`);
+  if (response.status === 404) {
+    return null;
+  }
   if (!response.ok) {
-    throw new Error('Product not found');
+    throw new Error('Product load failed');
   }
 
   return response.json();

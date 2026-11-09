@@ -42,39 +42,37 @@ export class CartStore {
   selectedProductIds = observable.set<number>();
   loadError: string | null = null;
   cartSyncInFlight = 0;
-  private cartSyncRequestId = 0;
+  private revision = 0;
+  private syncedRevision = 0;
+  private loadingPromise: Promise<void> | null = null;
 
   private readonly syncCart = debounce(async () => {
     if (this.promo === null) {
       return;
     }
 
-    runInAction(() => {
-      this.cartSyncInFlight++;
-    });
+    if (this.cartSyncInFlight > 0) {
+      return;
+    }
 
-    const requestId = ++this.cartSyncRequestId;
-    const payload = this.getSyncPayload();
-
+    this.cartSyncInFlight++;
+    this.loadError = null;
     try {
-      const data = await putCart(payload);
-      runInAction(() => {
-        if (requestId !== this.cartSyncRequestId) {
-          return;
+      // Serialize writes so the server also receives snapshots in order.
+      let revision: number;
+      do {
+        this.syncCart.cancel();
+        revision = this.revision;
+        const data = await putCart(this.getSyncPayload());
+        if (revision === this.revision) {
+          runInAction(() => this.applyServerCart(data));
+          this.syncedRevision = revision;
         }
-        this.applyServerCart(data);
-      });
+      } while (revision !== this.revision);
     } catch {
-      runInAction(() => {
-        if (requestId !== this.cartSyncRequestId) {
-          return;
-        }
-        this.loadError = 'Не удалось синхронизировать корзину';
-      });
+      this.loadError = 'Не удалось синхронизировать корзину';
     } finally {
-      runInAction(() => {
-        this.cartSyncInFlight--;
-      });
+      this.cartSyncInFlight--;
     }
   }, 350);
 
@@ -147,23 +145,33 @@ export class CartStore {
   };
 
   load = async () => {
-    this.syncCart.cancel();
+    if (
+      this.promo !== null &&
+      (this.isSyncing || this.revision !== this.syncedRevision)
+    ) {
+      return;
+    }
+    if (this.loadingPromise) {
+      return this.loadingPromise;
+    }
+
     this.isLoading = true;
     this.loadError = null;
-    try {
-      const data = await loadCart();
-      runInAction(() => {
-        this.applyServerCart(data);
-      });
-    } catch {
-      runInAction(() => {
+    const revision = this.revision;
+    this.loadingPromise = (async () => {
+      try {
+        const data = await loadCart();
+        if (revision === this.revision) {
+          runInAction(() => this.applyServerCart(data));
+        }
+      } catch {
         this.loadError = 'Не удалось загрузить корзину';
-      });
-    } finally {
-      runInAction(() => {
+      } finally {
         this.isLoading = false;
-      });
-    }
+        this.loadingPromise = null;
+      }
+    })();
+    return this.loadingPromise;
   };
 
   addProduct = async (productId: number) => {
@@ -173,6 +181,12 @@ export class CartStore {
 
     this.addingProductIds.add(productId);
     try {
+      if (this.promo === null) {
+        await this.load();
+      }
+      if (this.promo === null) {
+        return;
+      }
       const existing = this.itemsMap.get(productId);
 
       if (existing) {
@@ -186,11 +200,15 @@ export class CartStore {
           });
           this.promo = cartPromoForLineCount(this.itemsMap.size);
         });
+        this.revision++;
         this.syncCart();
         return;
       }
 
       const product = await loadProductById(productId);
+      if (!product) {
+        throw new Error('Product not found');
+      }
       const lineIndex = this.itemsMap.size;
       const newItem = mapProductToCartItem(product, 1, lineIndex);
       runInAction(() => {
@@ -200,6 +218,7 @@ export class CartStore {
           this.getOrderedRawItems().map((i) => i.productId),
         );
       });
+      this.revision++;
       this.syncCart();
     } catch {
       runInAction(() => {
@@ -255,6 +274,7 @@ export class CartStore {
       ...raw,
       quantity: { ...raw.quantity, current: clamped },
     });
+    this.revision++;
     this.syncCart();
   };
 
@@ -286,6 +306,7 @@ export class CartStore {
         this.getOrderedRawItems().map((i) => i.productId),
       );
     });
+    this.revision++;
     this.syncCart();
   };
 

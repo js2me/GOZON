@@ -3,8 +3,8 @@ import { computed, makeObservable, observable } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import { createRef } from 'yummies/mobx';
 import type { Globals } from '../../../globals';
-import { BoxIcon, CartIcon, UserIcon } from '../../../shared/assets/icons';
 import { VM } from '../../../globals/stores/view-models/vm';
+import { BoxIcon, CartIcon, UserIcon } from '../../../shared/assets/icons';
 import type { LayoutNavItem, LayoutQuickLink } from './types';
 
 export class LayoutVM extends VM {
@@ -21,6 +21,8 @@ export class LayoutVM extends VM {
       globalThis.removeEventListener('scroll', this.handleWindowScroll);
     },
   });
+
+  favorites = this.globals.stores.favorites;
 
   appNameLink = '/';
 
