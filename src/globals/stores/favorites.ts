@@ -17,6 +17,7 @@ export class FavoritesStore {
   private revision = 0;
   private syncedRevision = 0;
   private serverVersion = 0;
+  private serverProductIds: number[] = [];
   private pendingToggles: number[] = [];
   loadError: string | null = null;
   /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
@@ -95,6 +96,7 @@ export class FavoritesStore {
       try {
         const { productIds, version } = await loadFavorites();
         this.serverVersion = version;
+        this.serverProductIds = productIds;
         const nextIds = [...productIds];
         for (const productId of this.pendingToggles) {
           const index = nextIds.indexOf(productId);
@@ -142,14 +144,17 @@ export class FavoritesStore {
               AbortSignal.timeout(10_000),
             );
             if (!result.ok) {
-              this.serverVersion = result.version;
-              if (++conflicts < 3) continue;
-              this.loadError = 'Не удалось синхронизировать избранное';
-              break;
+              if (++conflicts >= 3) {
+                this.loadError = 'Не удалось синхронизировать избранное';
+                break;
+              }
+              this.mergeServerFavorites(await loadFavorites());
+              continue;
             }
             const { productIds, version } = result.data;
             conflicts = 0;
             this.serverVersion = version;
+            this.serverProductIds = productIds;
             if (revision === this.revision) {
               this.setProductIds(productIds);
               this.syncedRevision = revision;
@@ -173,5 +178,22 @@ export class FavoritesStore {
   private setProductIds(productIds: number[]) {
     this.productIds = productIds;
     this.storedProductIdsState.value = productIds;
+  }
+
+  private mergeServerFavorites(data: {
+    productIds: number[];
+    version: number;
+  }) {
+    const previous = new Set(this.serverProductIds);
+    const local = new Set(this.productIds);
+    const merged = data.productIds.filter(
+      (id) => !previous.has(id) || local.has(id),
+    );
+    for (const id of local) {
+      if (!previous.has(id) && !merged.includes(id)) merged.push(id);
+    }
+    this.serverVersion = data.version;
+    this.serverProductIds = data.productIds;
+    this.setProductIds(merged);
   }
 }

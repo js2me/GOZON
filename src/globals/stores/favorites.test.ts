@@ -109,20 +109,25 @@ it('submits a newer toggle after a failed write and retains a retry path', async
   expect(store.hasProduct(2)).toBe(true);
 });
 
-it('retries a favorites conflict with the current server version', async () => {
+it('keeps other-tab favorites when retrying a conflict', async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(response([]))
     .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
-    .mockResolvedValueOnce(response([1], 3));
+    .mockResolvedValueOnce(response([2], 2))
+    .mockResolvedValueOnce(response([2, 1], 3));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.toggleProduct(1);
   await vi.waitFor(() => expect(store.isLoading).toBe(false));
-  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(fetch).toHaveBeenCalledTimes(4);
   expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
-  expect(JSON.parse(fetch.mock.calls[2][1].body).version).toBe(2);
+  expect(JSON.parse(fetch.mock.calls[3][1].body)).toEqual({
+    productIds: [2, 1],
+    version: 2,
+  });
   expect(store.hasProduct(1)).toBe(true);
+  expect(store.hasProduct(2)).toBe(true);
   expect(store.loadError).toBeNull();
 });
 

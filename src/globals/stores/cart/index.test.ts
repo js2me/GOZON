@@ -124,22 +124,44 @@ it('retries a failed dirty snapshot on the next cart load', async () => {
   expect(store.loadError).toBeNull();
 });
 
-it('retries a cart conflict with the current server version', async () => {
+it('keeps other-tab items when retrying a cart conflict', async () => {
   vi.useFakeTimers();
+  const otherItem = { ...cart.items[0]!, productId: 2 };
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(Response.json(cart))
     .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
-    .mockResolvedValueOnce(response(2, 3));
+    .mockResolvedValueOnce(
+      Response.json({ ...cart, version: 2, items: [...cart.items, otherItem] }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        ...cart,
+        version: 3,
+        items: [
+          { ...cart.items[0], quantity: { current: 2, maxAvailable: 20 } },
+          otherItem,
+        ],
+      }),
+    );
   vi.stubGlobal('fetch', fetch);
   const store = new CartStore(router);
   await store.load();
   store.changeQuantity(1, 2);
   await vi.advanceTimersByTimeAsync(350);
-  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(fetch).toHaveBeenCalledTimes(4);
   expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
-  expect(JSON.parse(fetch.mock.calls[2][1].body).version).toBe(2);
+  expect(fetch.mock.calls[2][0]).toBe('/api/cart');
+  expect(fetch.mock.calls[2][1].method).toBeUndefined();
+  expect(JSON.parse(fetch.mock.calls[3][1].body)).toEqual({
+    items: [
+      { productId: 1, quantity: 2 },
+      { productId: 2, quantity: 1 },
+    ],
+    version: 2,
+  });
   expect(store.items[0].quantity.current).toBe(2);
+  expect(store.hasProduct(2)).toBe(true);
   expect(store.loadError).toBeNull();
 });
 

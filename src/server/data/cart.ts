@@ -39,8 +39,23 @@ export function getCartDC(sessionId: string): CartDC {
 export function removeCartItem(
   sessionId: string,
   productId: number,
-): { ok: true } | { ok: false; reason: 'not_found' } {
+  expectedVersion: unknown,
+):
+  | { ok: true }
+  | { ok: false; reason: 'not_found' | 'invalid_payload' }
+  | { ok: false; reason: 'conflict'; version: number } {
+  if (
+    typeof expectedVersion !== 'number' ||
+    !Number.isSafeInteger(expectedVersion) ||
+    expectedVersion < 0
+  ) {
+    return { ok: false, reason: 'invalid_payload' };
+  }
   const prev = cartBySessionId.get(sessionId);
+  const version = prev?.version ?? 0;
+  if (expectedVersion !== version) {
+    return { ok: false, reason: 'conflict', version };
+  }
   if (!prev?.lines.some((line) => line.productId === productId)) {
     return { ok: false, reason: 'not_found' };
   }

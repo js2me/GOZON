@@ -1,6 +1,11 @@
 import { debounce } from 'es-toolkit/function';
 import { computed, makeObservable, observable, runInAction } from 'mobx';
-import type { CartDC, CartItemDC, CartPromoDC } from '../../../shared/api/api';
+import type {
+  CartDC,
+  CartItemDC,
+  CartPromoDC,
+  SyncCartItemPayload,
+} from '../../../shared/api/api';
 import { loadCart, loadProductById, putCart } from '../../../shared/api/api';
 import {
   cartPromoForLineCount,
@@ -44,6 +49,7 @@ export class CartStore {
   private revision = 0;
   private syncedRevision = 0;
   private serverVersion = 0;
+  private serverItems: SyncCartItemPayload[] = [];
   private loadingPromise: Promise<void> | null = null;
 
   private readonly syncCart = debounce(() => {
@@ -72,14 +78,20 @@ export class CartStore {
             AbortSignal.timeout(10_000),
           );
           if (!result.ok) {
-            this.serverVersion = result.version;
-            if (++conflicts < 3) continue;
-            this.loadError = 'Не удалось синхронизировать корзину';
-            break;
+            if (++conflicts >= 3) {
+              this.loadError = 'Не удалось синхронизировать корзину';
+              break;
+            }
+            this.mergeServerCart(await loadCart());
+            continue;
           }
           const data = result.data;
           conflicts = 0;
           this.serverVersion = data.version;
+          this.serverItems = data.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity.current,
+          }));
           if (revision === this.revision) {
             runInAction(() => this.applyServerCart(data));
             this.syncedRevision = revision;
@@ -182,9 +194,15 @@ export class CartStore {
     this.loadingPromise = (async () => {
       try {
         const data = await loadCart();
-        this.serverVersion = data.version;
         if (revision === this.revision) {
+          this.serverVersion = data.version;
+          this.serverItems = data.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity.current,
+          }));
           runInAction(() => this.applyServerCart(data));
+        } else {
+          this.mergeServerCart(data);
         }
       } catch {
         this.loadError = 'Не удалось загрузить корзину';
@@ -351,5 +369,34 @@ export class CartStore {
     }
     this.promo = data.promo;
     this.reconcileSelection(data.items.map((item) => item.productId));
+  }
+
+  private mergeServerCart(data: CartDC) {
+    const previous = new Map(
+      this.serverItems.map((item) => [item.productId, item.quantity]),
+    );
+    const merged = new Map(data.items.map((item) => [item.productId, item]));
+
+    for (const productId of previous.keys()) {
+      if (!this.itemsMap.has(productId)) merged.delete(productId);
+    }
+    for (const item of this.itemsMap.values()) {
+      if (previous.get(item.productId) !== item.quantity.current) {
+        merged.set(item.productId, item);
+      }
+    }
+
+    this.serverVersion = data.version;
+    this.serverItems = data.items.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity.current,
+    }));
+    runInAction(() =>
+      this.applyServerCart({
+        ...data,
+        items: [...merged.values()],
+        promo: cartPromoForLineCount(merged.size),
+      }),
+    );
   }
 }

@@ -74,9 +74,15 @@ const handleCartApiRequest = (
       return true;
     }
 
-    const result = removeCartItem(sessionId, productId);
+    const result = removeCartItem(sessionId, productId, req.body?.version);
     if (!result.ok) {
-      res.status(404).json({ error: 'Cart item not found' });
+      if (result.reason === 'conflict') {
+        res.status(409).json({ version: result.version });
+      } else if (result.reason === 'invalid_payload') {
+        res.status(400).json({ error: 'Invalid cart version' });
+      } else {
+        res.status(404).json({ error: 'Cart item not found' });
+      }
       return true;
     }
 
