@@ -34,6 +34,16 @@ export class CartPageVM extends PageVM<null> {
     return this.globals.stores.cart.loadError;
   }
 
+  get hasConflict() {
+    return this.cart.hasConflict;
+  }
+
+  retryLoad = () => {
+    void (this.hasConflict
+      ? this.cart.reloadAfterConflict()
+      : this.cart.load());
+  };
+
   toggleItem = (productId: number) => {
     this.globals.stores.cart.toggleItem(productId);
   };
@@ -77,6 +87,7 @@ export class CartPageVM extends PageVM<null> {
       promo: computed,
       isLoading: computed,
       loadError: computed,
+      hasConflict: computed,
     });
   }
 

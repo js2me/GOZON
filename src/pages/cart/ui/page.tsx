@@ -31,8 +31,21 @@ export const CartPage = withViewModel(
           </div>
 
           {model.loadError ? (
-            <Card className="p-6 text-center text-red-600">
-              {model.loadError}
+            <Card className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-amber-50 px-4 py-3">
+              <div>
+                <p className="font-medium text-slate-900">{model.loadError}</p>
+                {model.hasConflict ? (
+                  <p className="text-slate-600 text-sm">
+                    Обновление сбросит правки в этой вкладке.
+                  </p>
+                ) : null}
+              </div>
+              <ActionButton
+                look="neutralInset"
+                text={model.hasConflict ? 'Обновить корзину' : 'Повторить'}
+                action={model.retryLoad}
+                disabled={model.isLoading}
+              />
             </Card>
           ) : null}
 
@@ -71,7 +84,8 @@ export const CartPage = withViewModel(
                   </Card>
                 ) : null}
 
-                {!model.isLoading && model.localItems.length > 0 ? (
+                {(!model.isLoading || model.hasConflict) &&
+                model.localItems.length > 0 ? (
                   <>
                     <Card className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                       <Checkbox

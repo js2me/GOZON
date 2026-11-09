@@ -17,9 +17,9 @@ export class FavoritesStore {
   private revision = 0;
   private syncedRevision = 0;
   private serverVersion = 0;
-  private serverProductIds: number[] = [];
   private pendingToggles: number[] = [];
   loadError: string | null = null;
+  hasConflict = false;
   /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
   private initialLoadPending = true;
 
@@ -41,6 +41,7 @@ export class FavoritesStore {
       initialLoadPending: observable,
       isLoading: computed,
       loadError: observable.ref,
+      hasConflict: observable.ref,
     });
   }
 
@@ -73,6 +74,26 @@ export class FavoritesStore {
   };
 
   retrySync = async () => {
+    if (this.hasConflict) {
+      if (this.syncPromise) return this.syncPromise;
+      const revision = this.revision;
+      this.syncPromise = (async () => {
+        try {
+          const { productIds, version } = await loadFavorites();
+          if (revision !== this.revision) return;
+          this.setProductIds(productIds);
+          this.serverVersion = version;
+          this.syncedRevision = revision;
+          this.hasConflict = false;
+          this.loadError = null;
+        } catch {
+          this.loadError = 'Не удалось обновить избранное';
+        } finally {
+          this.syncPromise = null;
+        }
+      })();
+      return this.syncPromise;
+    }
     await this.load();
     if (this.isLoaded) {
       await this.syncWithServer();
@@ -96,7 +117,6 @@ export class FavoritesStore {
       try {
         const { productIds, version } = await loadFavorites();
         this.serverVersion = version;
-        this.serverProductIds = productIds;
         const nextIds = [...productIds];
         for (const productId of this.pendingToggles) {
           const index = nextIds.indexOf(productId);
@@ -126,6 +146,9 @@ export class FavoritesStore {
   };
 
   private syncWithServer(): Promise<void> {
+    if (this.hasConflict) {
+      return Promise.resolve();
+    }
     if (this.syncPromise) {
       return this.syncPromise;
     }
@@ -134,7 +157,6 @@ export class FavoritesStore {
     }
     this.syncPromise = (async () => {
       try {
-        let conflicts = 0;
         while (this.revision !== this.syncedRevision) {
           const revision = this.revision;
           try {
@@ -144,17 +166,12 @@ export class FavoritesStore {
               AbortSignal.timeout(10_000),
             );
             if (!result.ok) {
-              if (++conflicts >= 3) {
-                this.loadError = 'Не удалось синхронизировать избранное';
-                break;
-              }
-              this.mergeServerFavorites(await loadFavorites());
-              continue;
+              this.hasConflict = true;
+              this.loadError = 'Избранное изменилось в другой вкладке';
+              break;
             }
             const { productIds, version } = result.data;
-            conflicts = 0;
             this.serverVersion = version;
-            this.serverProductIds = productIds;
             if (revision === this.revision) {
               this.setProductIds(productIds);
               this.syncedRevision = revision;
@@ -178,22 +195,5 @@ export class FavoritesStore {
   private setProductIds(productIds: number[]) {
     this.productIds = productIds;
     this.storedProductIdsState.value = productIds;
-  }
-
-  private mergeServerFavorites(data: {
-    productIds: number[];
-    version: number;
-  }) {
-    const previous = new Set(this.serverProductIds);
-    const local = new Set(this.productIds);
-    const merged = data.productIds.filter(
-      (id) => !previous.has(id) || local.has(id),
-    );
-    for (const id of local) {
-      if (!previous.has(id) && !merged.includes(id)) merged.push(id);
-    }
-    this.serverVersion = data.version;
-    this.serverProductIds = data.productIds;
-    this.setProductIds(merged);
   }
 }

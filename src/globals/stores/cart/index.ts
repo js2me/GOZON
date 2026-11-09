@@ -1,11 +1,6 @@
 import { debounce } from 'es-toolkit/function';
 import { computed, makeObservable, observable, runInAction } from 'mobx';
-import type {
-  CartDC,
-  CartItemDC,
-  CartPromoDC,
-  SyncCartItemPayload,
-} from '../../../shared/api/api';
+import type { CartDC, CartItemDC, CartPromoDC } from '../../../shared/api/api';
 import { loadCart, loadProductById, putCart } from '../../../shared/api/api';
 import {
   cartPromoForLineCount,
@@ -31,6 +26,7 @@ export class CartStore {
       isLoading: observable.ref,
       loadError: observable.ref,
       isSyncing: observable.ref,
+      hasConflict: observable.ref,
       items: computed,
       summary: computed,
       allSelected: computed,
@@ -46,10 +42,10 @@ export class CartStore {
   selectedProductIds = observable.set<number>();
   loadError: string | null = null;
   isSyncing = false;
+  hasConflict = false;
   private revision = 0;
   private syncedRevision = 0;
   private serverVersion = 0;
-  private serverItems: SyncCartItemPayload[] = [];
   private loadingPromise: Promise<void> | null = null;
 
   private readonly syncCart = debounce(() => {
@@ -57,7 +53,7 @@ export class CartStore {
   }, 350);
 
   private readonly syncCartNow = async () => {
-    if (this.promo === null) {
+    if (this.promo === null || this.hasConflict) {
       return;
     }
 
@@ -67,7 +63,6 @@ export class CartStore {
 
     this.isSyncing = true;
     try {
-      let conflicts = 0;
       while (this.revision !== this.syncedRevision) {
         this.syncCart.cancel();
         const revision = this.revision;
@@ -78,20 +73,12 @@ export class CartStore {
             AbortSignal.timeout(10_000),
           );
           if (!result.ok) {
-            if (++conflicts >= 3) {
-              this.loadError = 'Не удалось синхронизировать корзину';
-              break;
-            }
-            this.mergeServerCart(await loadCart());
-            continue;
+            this.hasConflict = true;
+            this.loadError = 'Корзина изменилась в другой вкладке';
+            break;
           }
           const data = result.data;
-          conflicts = 0;
           this.serverVersion = data.version;
-          this.serverItems = data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity.current,
-          }));
           if (revision === this.revision) {
             runInAction(() => this.applyServerCart(data));
             this.syncedRevision = revision;
@@ -175,6 +162,9 @@ export class CartStore {
   };
 
   load = async () => {
+    if (this.hasConflict) {
+      return;
+    }
     if (this.promo !== null) {
       if (this.isSyncing) {
         return;
@@ -196,13 +186,7 @@ export class CartStore {
         const data = await loadCart();
         if (revision === this.revision) {
           this.serverVersion = data.version;
-          this.serverItems = data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity.current,
-          }));
           runInAction(() => this.applyServerCart(data));
-        } else {
-          this.mergeServerCart(data);
         }
       } catch {
         this.loadError = 'Не удалось загрузить корзину';
@@ -212,6 +196,25 @@ export class CartStore {
       }
     })();
     return this.loadingPromise;
+  };
+
+  reloadAfterConflict = async () => {
+    if (!this.hasConflict || this.isLoading) return;
+    const revision = this.revision;
+    this.isLoading = true;
+    try {
+      const data = await loadCart();
+      if (revision !== this.revision) return;
+      runInAction(() => this.applyServerCart(data));
+      this.serverVersion = data.version;
+      this.syncedRevision = revision;
+      this.hasConflict = false;
+      this.loadError = null;
+    } catch {
+      this.loadError = 'Не удалось обновить корзину';
+    } finally {
+      this.isLoading = false;
+    }
   };
 
   addProduct = async (productId: number) => {
@@ -369,34 +372,5 @@ export class CartStore {
     }
     this.promo = data.promo;
     this.reconcileSelection(data.items.map((item) => item.productId));
-  }
-
-  private mergeServerCart(data: CartDC) {
-    const previous = new Map(
-      this.serverItems.map((item) => [item.productId, item.quantity]),
-    );
-    const merged = new Map(data.items.map((item) => [item.productId, item]));
-
-    for (const productId of previous.keys()) {
-      if (!this.itemsMap.has(productId)) merged.delete(productId);
-    }
-    for (const item of this.itemsMap.values()) {
-      if (previous.get(item.productId) !== item.quantity.current) {
-        merged.set(item.productId, item);
-      }
-    }
-
-    this.serverVersion = data.version;
-    this.serverItems = data.items.map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity.current,
-    }));
-    runInAction(() =>
-      this.applyServerCart({
-        ...data,
-        items: [...merged.values()],
-        promo: cartPromoForLineCount(merged.size),
-      }),
-    );
   }
 }
