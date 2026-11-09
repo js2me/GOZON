@@ -1,5 +1,5 @@
 import type { CategoryPageDC } from '../../../shared/api/api';
 
 export interface CategoryPageContext {
-  category: CategoryPageDC;
+  category: CategoryPageDC | null;
 }

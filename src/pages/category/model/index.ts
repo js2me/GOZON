@@ -153,6 +153,9 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   };
 
   handleProductsEndReached = () => {
+    if (this.loadError) {
+      return;
+    }
     void this.loadProductsChunk();
   };
 
@@ -223,12 +226,19 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   }
 
   async willMount() {
-    if (!this.categoryId) {
+    const categoryId = this.categoryId;
+    if (!categoryId) {
+      this.ctx = { category: null };
+      if (this.globals.ssr) {
+        this.globals.ssr.statusCode = 404;
+        this.globals.ssr.head.title = 'Категория не найдена';
+      }
       return;
     }
 
     if (this.globals.ssr) {
-      const category = await this.globals.ssr.getCategoryById(this.categoryId);
+      const category = await this.globals.ssr.getCategoryById(categoryId);
+      this.ctx = { category };
 
       if (!category) {
         this.globals.ssr.statusCode = 404;
@@ -243,20 +253,16 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       head.ogDescription = `Товары категории «${category.title}»`;
       head.ogUrl = `/category/${category.id}`;
 
-      this.ctx = { category };
       return;
     }
 
     if (!this.ctx) {
-      const category = await loadCategoryById(this.categoryId);
-
-      if (!category) {
-        return;
-      }
-
+      const category = await loadCategoryById(categoryId);
       this.ctx = { category };
     }
 
-    void this.loadProductsChunk();
+    if (this.category) {
+      void this.loadProductsChunk();
+    }
   }
 }
