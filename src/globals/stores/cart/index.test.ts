@@ -15,15 +15,17 @@ const cart: CartDC = {
     },
   ],
   promo: { saleDeadline: '', itemsPriceIncreasingCount: 0 },
+  version: 0,
 };
 
 const router = {
   routes: { product: { createUrl: () => '/products/1' } },
 } as unknown as Router;
 
-function response(quantity: number) {
+function response(quantity: number, version = 1) {
   return Response.json({
     ...cart,
+    version,
     items: [
       { ...cart.items[0], quantity: { current: quantity, maxAvailable: 20 } },
     ],
@@ -58,7 +60,7 @@ it('preserves edits made while a previous write is waiting for its response', as
   await vi.advanceTimersByTimeAsync(0);
   expect(store.items[0].quantity.current).toBe(3);
   expect(JSON.parse(fetch.mock.calls[2][1].body).items[0].quantity).toBe(3);
-  secondWrite.resolve(response(3));
+  secondWrite.resolve(response(3, 2));
   await vi.advanceTimersByTimeAsync(0);
   expect(store.isSyncing).toBe(false);
   expect(store.items[0].quantity.current).toBe(3);
@@ -119,6 +121,25 @@ it('retries a failed dirty snapshot on the next cart load', async () => {
   await store.load();
   expect(fetch).toHaveBeenCalledTimes(3);
   expect(fetch.mock.calls[2][1].method).toBe('PUT');
+  expect(store.loadError).toBeNull();
+});
+
+it('retries a cart conflict with the current server version', async () => {
+  vi.useFakeTimers();
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json(cart))
+    .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
+    .mockResolvedValueOnce(response(2, 3));
+  vi.stubGlobal('fetch', fetch);
+  const store = new CartStore(router);
+  await store.load();
+  store.changeQuantity(1, 2);
+  await vi.advanceTimersByTimeAsync(350);
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
+  expect(JSON.parse(fetch.mock.calls[2][1].body).version).toBe(2);
+  expect(store.items[0].quantity.current).toBe(2);
   expect(store.loadError).toBeNull();
 });
 
@@ -204,6 +225,7 @@ it.each([
         return Promise.resolve(
           Response.json({
             ...cart,
+            version: 2,
             items: expectedItems.map(({ productId, quantity }) => ({
               ...cart.items[0],
               productId,

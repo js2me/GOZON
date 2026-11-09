@@ -1,6 +1,9 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { FavoritesStore } from './favorites';
 
+const response = (productIds: number[], version = 0) =>
+  Response.json({ productIds, version });
+
 afterEach(() => {
   sessionStorage.clear();
   vi.restoreAllMocks();
@@ -12,7 +15,7 @@ it('serializes writes and preserves toggles during a pending response', async ()
   const secondWrite = Promise.withResolvers<Response>();
   const fetch = vi
     .fn()
-    .mockResolvedValueOnce(Response.json({ productIds: [] }))
+    .mockResolvedValueOnce(response([]))
     .mockReturnValueOnce(firstWrite.promise)
     .mockReturnValueOnce(secondWrite.promise);
   vi.stubGlobal('fetch', fetch);
@@ -20,11 +23,11 @@ it('serializes writes and preserves toggles during a pending response', async ()
   await store.toggleProduct(1);
   await store.toggleProduct(2);
   expect(fetch).toHaveBeenCalledTimes(2);
-  firstWrite.resolve(Response.json({ productIds: [1] }));
+  firstWrite.resolve(response([1], 1));
   await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
   expect(store.hasProduct(2)).toBe(true);
   expect(JSON.parse(fetch.mock.calls[2][1].body).productIds).toEqual([1, 2]);
-  secondWrite.resolve(Response.json({ productIds: [1, 2] }));
+  secondWrite.resolve(response([1, 2], 2));
   await vi.waitFor(() => expect(store.isLoading).toBe(false));
   expect(store.hasProduct(1)).toBe(true);
   expect(store.hasProduct(2)).toBe(true);
@@ -35,13 +38,13 @@ it('waits for the initial server state before applying a toggle', async () => {
   const fetch = vi
     .fn()
     .mockReturnValueOnce(initialLoad.promise)
-    .mockResolvedValue(Response.json({ productIds: [1, 2] }));
+    .mockResolvedValue(response([1, 2], 1));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   const loading = store.load();
   const toggling = store.toggleProduct(2);
   expect(fetch).toHaveBeenCalledTimes(1);
-  initialLoad.resolve(Response.json({ productIds: [1] }));
+  initialLoad.resolve(response([1]));
   await Promise.all([loading, toggling]);
   expect(JSON.parse(fetch.mock.calls[1][1].body).productIds).toEqual([1, 2]);
   await vi.waitFor(() => expect(store.isLoading).toBe(false));
@@ -52,7 +55,7 @@ it('exposes synchronization errors and retains the local selection', async () =>
     'fetch',
     vi
       .fn()
-      .mockResolvedValueOnce(Response.json({ productIds: [] }))
+      .mockResolvedValueOnce(response([]))
       .mockRejectedValue(new Error('offline')),
   );
   const store = new FavoritesStore();
@@ -69,8 +72,8 @@ it('keeps a toggle after failed initial loading and reconciles it on retry', asy
     .fn()
     .mockRejectedValueOnce(new Error('offline'))
     .mockRejectedValueOnce(new Error('offline'))
-    .mockResolvedValueOnce(Response.json({ productIds: [1] }))
-    .mockResolvedValueOnce(Response.json({ productIds: [1, 2] }));
+    .mockResolvedValueOnce(response([1]))
+    .mockResolvedValueOnce(response([1, 2], 1));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.load();
@@ -88,10 +91,10 @@ it('submits a newer toggle after a failed write and retains a retry path', async
   const firstWrite = Promise.withResolvers<Response>();
   const fetch = vi
     .fn()
-    .mockResolvedValueOnce(Response.json({ productIds: [] }))
+    .mockResolvedValueOnce(response([]))
     .mockReturnValueOnce(firstWrite.promise)
     .mockRejectedValueOnce(new Error('offline'))
-    .mockResolvedValueOnce(Response.json({ productIds: [1, 2] }));
+    .mockResolvedValueOnce(response([1, 2], 1));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.toggleProduct(1);
@@ -106,6 +109,23 @@ it('submits a newer toggle after a failed write and retains a retry path', async
   expect(store.hasProduct(2)).toBe(true);
 });
 
+it('retries a favorites conflict with the current server version', async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(response([]))
+    .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
+    .mockResolvedValueOnce(response([1], 3));
+  vi.stubGlobal('fetch', fetch);
+  const store = new FavoritesStore();
+  await store.toggleProduct(1);
+  await vi.waitFor(() => expect(store.isLoading).toBe(false));
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
+  expect(JSON.parse(fetch.mock.calls[2][1].body).version).toBe(2);
+  expect(store.hasProduct(1)).toBe(true);
+  expect(store.loadError).toBeNull();
+});
+
 it('recovers the latest selection after a stalled write times out', async () => {
   const controller = new AbortController();
   const timeout = vi
@@ -114,7 +134,7 @@ it('recovers the latest selection after a stalled write times out', async () => 
     .mockImplementation(() => new AbortController().signal);
   const fetch = vi
     .fn()
-    .mockResolvedValueOnce(Response.json({ productIds: [] }))
+    .mockResolvedValueOnce(response([]))
     .mockImplementationOnce(
       (_url: string, options: RequestInit) =>
         new Promise<Response>((_resolve, reject) => {
@@ -124,7 +144,7 @@ it('recovers the latest selection after a stalled write times out', async () => 
         }),
     )
     .mockRejectedValueOnce(new Error('offline'))
-    .mockResolvedValueOnce(Response.json({ productIds: [1, 2] }));
+    .mockResolvedValueOnce(response([1, 2], 1));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.toggleProduct(1);

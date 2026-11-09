@@ -37,9 +37,9 @@ const handleCartApiRequest = (
   if (path === '/api/cart' && req.method === 'PUT') {
     const rawBody = req.body as {
       items?: Array<{ productId?: unknown; quantity?: unknown }>;
-      sync?: { clientId?: unknown; sequence?: unknown };
-    };
-    const rawItems = rawBody.items;
+      version?: unknown;
+    } | null;
+    const rawItems = rawBody?.items;
     if (!Array.isArray(rawItems)) {
       res.status(400).json({ error: 'Invalid cart payload' });
       return true;
@@ -51,15 +51,14 @@ const handleCartApiRequest = (
         productId: Number(item.productId),
         quantity: Number(item.quantity),
       })),
-      rawBody.sync,
+      rawBody?.version,
     );
     if (!result.ok) {
-      res.status(result.reason === 'sync_capacity' ? 503 : 400).json({
-        error:
-          result.reason === 'sync_capacity'
-            ? 'Cart sync unavailable'
-            : 'Invalid cart payload',
-      });
+      if (result.reason === 'conflict') {
+        res.status(409).json({ version: result.version });
+      } else {
+        res.status(400).json({ error: 'Invalid cart payload' });
+      }
       return true;
     }
 
@@ -103,9 +102,9 @@ const handleFavoritesApiRequest = (
   if (path === '/api/favorites' && req.method === 'PUT') {
     const rawBody = req.body as {
       productIds?: unknown;
-      sync?: { clientId?: unknown; sequence?: unknown };
-    };
-    const rawIds = rawBody.productIds;
+      version?: unknown;
+    } | null;
+    const rawIds = rawBody?.productIds;
     if (!Array.isArray(rawIds)) {
       res.status(400).json({ error: 'Invalid favorites payload' });
       return true;
@@ -114,15 +113,14 @@ const handleFavoritesApiRequest = (
     const result = replaceFavorites(
       sessionId,
       rawIds.map((id) => Number(id)),
-      rawBody.sync,
+      rawBody?.version,
     );
     if (!result.ok) {
-      res.status(result.reason === 'sync_capacity' ? 503 : 400).json({
-        error:
-          result.reason === 'sync_capacity'
-            ? 'Favorites sync unavailable'
-            : 'Invalid favorites payload',
-      });
+      if (result.reason === 'conflict') {
+        res.status(409).json({ version: result.version });
+      } else {
+        res.status(400).json({ error: 'Invalid favorites payload' });
+      }
       return true;
     }
 

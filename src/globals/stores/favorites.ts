@@ -1,7 +1,6 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import { storageData } from 'mobx-web-api';
 import { loadFavorites, putFavorites } from '../../shared/api/api';
-import { createSyncClientId } from '../../shared/lib/sync-client-id';
 
 export class FavoritesStore {
   private readonly storedProductIdsState = storageData.key<number[]>(
@@ -15,10 +14,9 @@ export class FavoritesStore {
   private isLoaded = false;
   private loadingPromise: Promise<void> | null = null;
   private syncPromise: Promise<void> | null = null;
-  private syncInFlight = 0;
   private revision = 0;
-  private readonly syncClientId = createSyncClientId();
-  private writeSequence = 0;
+  private syncedRevision = 0;
+  private serverVersion = 0;
   private pendingToggles: number[] = [];
   loadError: string | null = null;
   /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
@@ -32,13 +30,13 @@ export class FavoritesStore {
       | 'productIds'
       | 'isReady'
       | 'loadingPromise'
-      | 'syncInFlight'
+      | 'syncPromise'
       | 'initialLoadPending'
     >(this, {
       productIds: observable.ref,
       isReady: observable.ref,
       loadingPromise: observable.ref,
-      syncInFlight: observable,
+      syncPromise: observable.ref,
       initialLoadPending: observable,
       isLoading: computed,
       loadError: observable.ref,
@@ -46,7 +44,7 @@ export class FavoritesStore {
   }
 
   get isLoading(): boolean {
-    return this.initialLoadPending || this.syncInFlight > 0;
+    return this.initialLoadPending || this.syncPromise !== null;
   }
 
   hasProduct = (productId: number): boolean => {
@@ -95,7 +93,8 @@ export class FavoritesStore {
 
     this.loadingPromise = (async () => {
       try {
-        const { productIds } = await loadFavorites();
+        const { productIds, version } = await loadFavorites();
+        this.serverVersion = version;
         const nextIds = [...productIds];
         for (const productId of this.pendingToggles) {
           const index = nextIds.indexOf(productId);
@@ -128,21 +127,33 @@ export class FavoritesStore {
     if (this.syncPromise) {
       return this.syncPromise;
     }
+    if (this.revision === this.syncedRevision) {
+      return Promise.resolve();
+    }
     this.syncPromise = (async () => {
-      this.syncInFlight++;
       try {
-        while (true) {
+        let conflicts = 0;
+        while (this.revision !== this.syncedRevision) {
           const revision = this.revision;
           try {
-            const { productIds } = await putFavorites(
+            const result = await putFavorites(
               [...this.productIds],
+              this.serverVersion,
               AbortSignal.timeout(10_000),
-              { clientId: this.syncClientId, sequence: ++this.writeSequence },
             );
+            if (!result.ok) {
+              this.serverVersion = result.version;
+              if (++conflicts < 3) continue;
+              this.loadError = 'Не удалось синхронизировать избранное';
+              break;
+            }
+            const { productIds, version } = result.data;
+            conflicts = 0;
+            this.serverVersion = version;
             if (revision === this.revision) {
               this.setProductIds(productIds);
+              this.syncedRevision = revision;
               this.loadError = null;
-              break;
             }
           } catch {
             if (revision !== this.revision) {
@@ -153,7 +164,6 @@ export class FavoritesStore {
           }
         }
       } finally {
-        this.syncInFlight--;
         this.syncPromise = null;
       }
     })();

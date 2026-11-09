@@ -145,6 +145,7 @@ export interface CartPromoDC {
 export interface CartDC {
   items: CartItemDC[];
   promo: CartPromoDC;
+  version: number;
 }
 
 export interface SyncCartItemPayload {
@@ -154,7 +155,12 @@ export interface SyncCartItemPayload {
 
 export interface FavoritesDC {
   productIds: number[];
+  version: number;
 }
+
+export type WriteResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; version: number };
 
 export const loadProducts = async (
   params: LoadProductsParams,
@@ -247,21 +253,24 @@ export const loadProfileViewedProducts = async (): Promise<
 
 export const putCart = async (
   items: SyncCartItemPayload[],
+  version: number,
   signal?: AbortSignal,
-  sync?: { clientId: string; sequence: number },
-): Promise<CartDC> => {
+): Promise<WriteResult<CartDC>> => {
   const response = await fetch('/api/cart', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items, sync }),
+    body: JSON.stringify({ items, version }),
     credentials: 'include',
     signal,
   });
+  if (response.status === 409) {
+    return { ok: false, version: (await response.json()).version };
+  }
   if (!response.ok) {
     throw new Error('Failed to sync cart');
   }
 
-  return response.json();
+  return { ok: true, data: await response.json() };
 };
 
 export const loadCart = async (): Promise<CartDC> => {
@@ -284,19 +293,22 @@ export const loadFavorites = async (): Promise<FavoritesDC> => {
 
 export const putFavorites = async (
   productIds: number[],
+  version: number,
   signal?: AbortSignal,
-  sync?: { clientId: string; sequence: number },
-): Promise<FavoritesDC> => {
+): Promise<WriteResult<FavoritesDC>> => {
   const response = await fetch('/api/favorites', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productIds, sync }),
+    body: JSON.stringify({ productIds, version }),
     credentials: 'include',
     signal,
   });
+  if (response.status === 409) {
+    return { ok: false, version: (await response.json()).version };
+  }
   if (!response.ok) {
     throw new Error('Failed to sync favorites');
   }
 
-  return response.json();
+  return { ok: true, data: await response.json() };
 };

@@ -1,9 +1,10 @@
 import type { FavoritesDC } from '../../shared/api/api';
 import { getProductById } from './products';
-import { createWriteOrder, type WriteSync } from './write-order';
 
-const favoriteProductIdsBySessionId = new Map<string, Set<number>>();
-const checkWriteOrder = createWriteOrder();
+const favoritesBySessionId = new Map<
+  string,
+  { productIds: Set<number>; version: number }
+>();
 
 function normalizeProductIds(productIds: number[]): number[] | null {
   const nextIds: number[] = [];
@@ -27,27 +28,41 @@ function normalizeProductIds(productIds: number[]): number[] | null {
 }
 
 export function getFavoritesDC(sessionId: string): FavoritesDC {
-  const productIds = Array.from(
-    favoriteProductIdsBySessionId.get(sessionId) ?? [],
-  );
-  return { productIds };
+  const stored = favoritesBySessionId.get(sessionId);
+  return {
+    productIds: Array.from(stored?.productIds ?? []),
+    version: stored?.version ?? 0,
+  };
 }
 
 export function replaceFavorites(
   sessionId: string,
   productIds: number[],
-  sync?: WriteSync,
-): { ok: true } | { ok: false; reason: 'invalid_payload' | 'sync_capacity' } {
+  expectedVersion: unknown,
+):
+  | { ok: true }
+  | { ok: false; reason: 'invalid_payload' }
+  | { ok: false; reason: 'conflict'; version: number } {
+  if (
+    typeof expectedVersion !== 'number' ||
+    !Number.isSafeInteger(expectedVersion) ||
+    expectedVersion < 0
+  ) {
+    return { ok: false, reason: 'invalid_payload' };
+  }
   const normalized = normalizeProductIds(productIds);
   if (!normalized) {
     return { ok: false, reason: 'invalid_payload' };
   }
 
-  const order = checkWriteOrder(sessionId, sync);
-  if (order === 'invalid') return { ok: false, reason: 'invalid_payload' };
-  if (order === 'full') return { ok: false, reason: 'sync_capacity' };
-  if (order === 'stale') return { ok: true };
+  const version = favoritesBySessionId.get(sessionId)?.version ?? 0;
+  if (expectedVersion !== version) {
+    return { ok: false, reason: 'conflict', version };
+  }
 
-  favoriteProductIdsBySessionId.set(sessionId, new Set(normalized));
+  favoritesBySessionId.set(sessionId, {
+    productIds: new Set(normalized),
+    version: version + 1,
+  });
   return { ok: true };
 }

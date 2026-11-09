@@ -3,18 +3,26 @@ import { expect, it } from 'vitest';
 import { getFavoritesDC, replaceFavorites } from './favorites';
 import { allProducts } from './products';
 
-it('ignores an earlier favorites write after a newer one', () => {
+it('rejects a favorites snapshot based on an outdated session version', () => {
   const sessionId = crypto.randomUUID();
   const first = allProducts[0]!.id;
   const second = allProducts[1]!.id;
-  expect(
-    replaceFavorites(sessionId, [first], { clientId: 'a', sequence: 1 }),
-  ).toEqual({ ok: true });
-  expect(
-    replaceFavorites(sessionId, [second], { clientId: 'a', sequence: 2 }),
-  ).toEqual({ ok: true });
-  expect(
-    replaceFavorites(sessionId, [first], { clientId: 'a', sequence: 1 }),
-  ).toEqual({ ok: true });
-  expect(getFavoritesDC(sessionId).productIds).toEqual([second]);
+  expect(replaceFavorites(sessionId, [first], 0)).toEqual({ ok: true });
+  expect(replaceFavorites(sessionId, [second], 1)).toEqual({ ok: true });
+  expect(replaceFavorites(sessionId, [first], 0)).toEqual({
+    ok: false,
+    reason: 'conflict',
+    version: 2,
+  });
+  expect(getFavoritesDC(sessionId)).toEqual({
+    productIds: [second],
+    version: 2,
+  });
+});
+
+it('rejects invalid versions', () => {
+  expect(replaceFavorites(crypto.randomUUID(), [], null)).toEqual({
+    ok: false,
+    reason: 'invalid_payload',
+  });
 });

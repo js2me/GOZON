@@ -6,7 +6,6 @@ import {
   cartPromoForLineCount,
   mapProductToCartItem,
 } from '../../../shared/lib/cart-from-product';
-import { createSyncClientId } from '../../../shared/lib/sync-client-id';
 import type { Router } from '../../router';
 import { computeCartSummary } from './lib/compute-cart-summary';
 import type { CartItemBenefit, CartItemInfo } from './types';
@@ -26,12 +25,11 @@ export class CartStore {
       promo: observable.ref,
       isLoading: observable.ref,
       loadError: observable.ref,
-      cartSyncInFlight: observable,
+      isSyncing: observable.ref,
       items: computed,
       summary: computed,
       allSelected: computed,
       headerCount: computed,
-      isSyncing: computed,
     });
   }
 
@@ -42,11 +40,10 @@ export class CartStore {
   addingProductIds = observable.set<number>();
   selectedProductIds = observable.set<number>();
   loadError: string | null = null;
-  cartSyncInFlight = 0;
+  isSyncing = false;
   private revision = 0;
   private syncedRevision = 0;
-  private readonly syncClientId = createSyncClientId();
-  private writeSequence = 0;
+  private serverVersion = 0;
   private loadingPromise: Promise<void> | null = null;
 
   private readonly syncCart = debounce(() => {
@@ -58,22 +55,31 @@ export class CartStore {
       return;
     }
 
-    if (this.cartSyncInFlight > 0) {
+    if (this.isSyncing) {
       return;
     }
 
-    this.cartSyncInFlight++;
+    this.isSyncing = true;
     try {
-      // Serialize writes so the server also receives snapshots in order.
+      let conflicts = 0;
       while (this.revision !== this.syncedRevision) {
         this.syncCart.cancel();
         const revision = this.revision;
         try {
-          const data = await putCart(
+          const result = await putCart(
             this.getSyncPayload(),
+            this.serverVersion,
             AbortSignal.timeout(10_000),
-            { clientId: this.syncClientId, sequence: ++this.writeSequence },
           );
+          if (!result.ok) {
+            this.serverVersion = result.version;
+            if (++conflicts < 3) continue;
+            this.loadError = 'Не удалось синхронизировать корзину';
+            break;
+          }
+          const data = result.data;
+          conflicts = 0;
+          this.serverVersion = data.version;
           if (revision === this.revision) {
             runInAction(() => this.applyServerCart(data));
             this.syncedRevision = revision;
@@ -88,13 +94,9 @@ export class CartStore {
         }
       }
     } finally {
-      this.cartSyncInFlight--;
+      this.isSyncing = false;
     }
   };
-
-  get isSyncing(): boolean {
-    return this.cartSyncInFlight > 0;
-  }
 
   private getOrderedRawItems(): CartItemDC[] {
     return Array.from(this.itemsMap.values());
@@ -180,6 +182,7 @@ export class CartStore {
     this.loadingPromise = (async () => {
       try {
         const data = await loadCart();
+        this.serverVersion = data.version;
         if (revision === this.revision) {
           runInAction(() => this.applyServerCart(data));
         }
