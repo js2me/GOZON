@@ -284,12 +284,15 @@ export const loadFavorites = async (): Promise<FavoritesDC> => {
 
 export const putFavorites = async (
   productIds: number[],
+  signal?: AbortSignal,
+  sync?: { clientId: string; sequence: number },
 ): Promise<FavoritesDC> => {
   const response = await fetch('/api/favorites', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productIds }),
+    body: JSON.stringify({ productIds, sync }),
     credentials: 'include',
+    signal,
   });
   if (!response.ok) {
     throw new Error('Failed to sync favorites');

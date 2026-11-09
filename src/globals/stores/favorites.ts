@@ -1,6 +1,7 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import { storageData } from 'mobx-web-api';
 import { loadFavorites, putFavorites } from '../../shared/api/api';
+import { createSyncClientId } from '../../shared/lib/sync-client-id';
 
 export class FavoritesStore {
   private readonly storedProductIdsState = storageData.key<number[]>(
@@ -16,6 +17,8 @@ export class FavoritesStore {
   private syncPromise: Promise<void> | null = null;
   private syncInFlight = 0;
   private revision = 0;
+  private readonly syncClientId = createSyncClientId();
+  private writeSequence = 0;
   private pendingToggles: number[] = [];
   loadError: string | null = null;
   /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
@@ -131,7 +134,11 @@ export class FavoritesStore {
         while (true) {
           const revision = this.revision;
           try {
-            const { productIds } = await putFavorites([...this.productIds]);
+            const { productIds } = await putFavorites(
+              [...this.productIds],
+              AbortSignal.timeout(10_000),
+              { clientId: this.syncClientId, sequence: ++this.writeSequence },
+            );
             if (revision === this.revision) {
               this.setProductIds(productIds);
               this.loadError = null;

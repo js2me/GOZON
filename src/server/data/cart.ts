@@ -4,6 +4,7 @@ import {
   mapProductToCartItem,
 } from '../../shared/lib/cart-from-product';
 import { allProducts } from './products';
+import { createWriteOrder, type WriteSync } from './write-order';
 
 interface SessionCartLine {
   productId: number;
@@ -11,7 +12,7 @@ interface SessionCartLine {
 }
 
 const cartBySessionId = new Map<string, SessionCartLine[]>();
-const lastSequenceByClient = new Map<string, number>();
+const checkWriteOrder = createWriteOrder();
 
 export function getCartDC(sessionId: string): CartDC {
   const stored = cartBySessionId.get(sessionId) ?? [];
@@ -47,21 +48,8 @@ export function removeCartItem(
 export function replaceCart(
   sessionId: string,
   lines: SessionCartLine[],
-  sync?: { clientId?: unknown; sequence?: unknown },
-): { ok: true } | { ok: false; reason: 'invalid_payload' } {
-  const clientId = sync?.clientId;
-  const sequence = sync?.sequence;
-  if (
-    sync !== undefined &&
-    (typeof clientId !== 'string' ||
-      clientId.length === 0 ||
-      clientId.length > 100 ||
-      typeof sequence !== 'number' ||
-      !Number.isSafeInteger(sequence) ||
-      sequence < 1)
-  ) {
-    return { ok: false, reason: 'invalid_payload' };
-  }
+  sync?: WriteSync,
+): { ok: true } | { ok: false; reason: 'invalid_payload' | 'sync_capacity' } {
   const normalized: SessionCartLine[] = [];
 
   for (const line of lines) {
@@ -81,13 +69,10 @@ export function replaceCart(
     });
   }
 
-  if (typeof clientId === 'string' && typeof sequence === 'number') {
-    const key = JSON.stringify([sessionId, clientId]);
-    if (sequence < (lastSequenceByClient.get(key) ?? 0)) {
-      return { ok: true };
-    }
-    lastSequenceByClient.set(key, sequence);
-  }
+  const order = checkWriteOrder(sessionId, sync);
+  if (order === 'invalid') return { ok: false, reason: 'invalid_payload' };
+  if (order === 'full') return { ok: false, reason: 'sync_capacity' };
+  if (order === 'stale') return { ok: true };
   cartBySessionId.set(sessionId, normalized);
   return { ok: true };
 }

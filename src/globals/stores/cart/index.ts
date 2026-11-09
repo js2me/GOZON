@@ -6,6 +6,7 @@ import {
   cartPromoForLineCount,
   mapProductToCartItem,
 } from '../../../shared/lib/cart-from-product';
+import { createSyncClientId } from '../../../shared/lib/sync-client-id';
 import type { Router } from '../../router';
 import { computeCartSummary } from './lib/compute-cart-summary';
 import type { CartItemBenefit, CartItemInfo } from './types';
@@ -44,7 +45,7 @@ export class CartStore {
   cartSyncInFlight = 0;
   private revision = 0;
   private syncedRevision = 0;
-  private readonly syncClientId = globalThis.crypto.randomUUID();
+  private readonly syncClientId = createSyncClientId();
   private writeSequence = 0;
   private loadingPromise: Promise<void> | null = null;
 
