@@ -23,10 +23,12 @@ describe.each([
   async function startServer() {
     const app = express();
     app.get('/', (req, res) => {
+      const pageContext: { title?: string } = {};
       const globals = {
         ssr: createSsrApi('render-test'),
         stores: { appInfo: { appName: 'GOZON' } },
-        toSnapshot: () => ({}),
+        pageContext,
+        toSnapshot: () => ({ pageContext }),
       } as unknown as ServerSideGlobals;
       void render(globals, req, res, '/client.js');
     });
@@ -56,6 +58,9 @@ describe.each([
       use(data.promise);
       globals.ssr.statusCode = 404;
       globals.ssr.head.title = 'Товар не найден';
+      (
+        globals as ServerSideGlobals & { pageContext: { title: string } }
+      ).pageContext.title = 'Товар не найден';
       return createElement('main', null, 'Товар не найден');
     }
     renderPage.mockImplementation((globals) =>
@@ -74,7 +79,8 @@ describe.each([
     expect(response.headers.get('cache-control')).toBe('private, no-store');
     const body = await response.text();
     expect(body).toContain('<title>Товар не найден</title>');
-    expect(body).toContain('window.__SSR_DATA__');
+    expect(body).toContain('<main>Товар не найден</main>');
+    expect(body).toContain('"pageContext":{"title":"Товар не найден"}');
   });
 
   it('returns 500 for shell errors', async () => {

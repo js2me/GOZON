@@ -13,8 +13,10 @@ export class FavoritesStore {
 
   private isLoaded = false;
   private loadingPromise: Promise<void> | null = null;
+  private syncPromise: Promise<void> | null = null;
   private syncInFlight = 0;
   private revision = 0;
+  private pendingToggles: number[] = [];
   loadError: string | null = null;
   /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
   private initialLoadPending = true;
@@ -53,9 +55,6 @@ export class FavoritesStore {
 
   toggleProduct = async (productId: number) => {
     await this.load();
-    if (!this.isLoaded) {
-      return;
-    }
     this.revision++;
 
     if (this.productIds.includes(productId)) {
@@ -64,7 +63,18 @@ export class FavoritesStore {
       this.setProductIds([...this.productIds, productId]);
     }
 
-    void this.syncWithServer();
+    if (this.isLoaded) {
+      void this.syncWithServer();
+    } else {
+      this.pendingToggles.push(productId);
+    }
+  };
+
+  retrySync = async () => {
+    await this.load();
+    if (this.isLoaded) {
+      await this.syncWithServer();
+    }
   };
 
   load = async () => {
@@ -80,12 +90,23 @@ export class FavoritesStore {
       return;
     }
 
-    this.loadError = null;
     this.loadingPromise = (async () => {
       try {
         const { productIds } = await loadFavorites();
-        this.setProductIds(productIds);
+        const nextIds = [...productIds];
+        for (const productId of this.pendingToggles) {
+          const index = nextIds.indexOf(productId);
+          if (index < 0) nextIds.push(productId);
+          else nextIds.splice(index, 1);
+        }
+        this.setProductIds(nextIds);
         this.isLoaded = true;
+        if (this.pendingToggles.length > 0) {
+          this.pendingToggles = [];
+          void this.syncWithServer();
+        } else {
+          this.loadError = null;
+        }
       } catch {
         this.loadError = 'Не удалось загрузить избранное';
       } finally {
@@ -100,26 +121,36 @@ export class FavoritesStore {
     await this.loadingPromise;
   };
 
-  private async syncWithServer() {
-    if (this.syncInFlight > 0) {
-      return;
+  private syncWithServer(): Promise<void> {
+    if (this.syncPromise) {
+      return this.syncPromise;
     }
-    this.syncInFlight++;
-    this.loadError = null;
-    try {
-      let revision: number;
-      do {
-        revision = this.revision;
-        const { productIds } = await putFavorites([...this.productIds]);
-        if (revision === this.revision) {
-          this.setProductIds(productIds);
+    this.syncPromise = (async () => {
+      this.syncInFlight++;
+      try {
+        while (true) {
+          const revision = this.revision;
+          try {
+            const { productIds } = await putFavorites([...this.productIds]);
+            if (revision === this.revision) {
+              this.setProductIds(productIds);
+              this.loadError = null;
+              break;
+            }
+          } catch {
+            if (revision !== this.revision) {
+              continue;
+            }
+            this.loadError = 'Не удалось синхронизировать избранное';
+            break;
+          }
         }
-      } while (revision !== this.revision);
-    } catch {
-      this.loadError = 'Не удалось синхронизировать избранное';
-    } finally {
-      this.syncInFlight--;
-    }
+      } finally {
+        this.syncInFlight--;
+        this.syncPromise = null;
+      }
+    })();
+    return this.syncPromise;
   }
 
   private setProductIds(productIds: number[]) {

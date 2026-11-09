@@ -15,7 +15,14 @@ export const Layout = withViewModel(
         <Header />
         {model.favorites.loadError ? (
           <p role="alert" className="px-4 py-2 text-red-600">
-            {model.favorites.loadError}
+            {model.favorites.loadError}{' '}
+            <button
+              type="button"
+              className="font-medium underline"
+              onClick={() => void model.favorites.retrySync()}
+            >
+              Повторить
+            </button>
           </p>
         ) : null}
         <div className="flex w-full max-w-[1416px] flex-1 flex-col">

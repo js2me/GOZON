@@ -21,26 +21,28 @@ export const renderWithStreams = (
 
   const appStream = new PassThrough();
   let didError = false;
+  let abort: (() => void) | undefined;
   const timeout = setTimeout(() => {
     if (!res.headersSent) {
       res.status(504).type('text').end('Rendering timed out');
     } else {
       res.destroy();
     }
-    abort();
+    abort?.();
     appStream.destroy();
   }, 15_000);
 
   res.once('close', () => {
     clearTimeout(timeout);
     if (!res.writableFinished) {
-      abort();
+      abort?.();
       appStream.destroy();
     }
   });
 
-  const { pipe, abort } = renderToPipeableStream(<App globals={globals} />, {
+  const stream = renderToPipeableStream(<App globals={globals} />, {
     onAllReady() {
+      clearTimeout(timeout);
       if (res.destroyed || res.writableEnded) {
         return;
       }
@@ -73,11 +75,11 @@ ${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}  </hea
       pipeline(Readable.from(template), res, (error) => {
         clearTimeout(timeout);
         if (error) {
-          abort();
+          abort?.();
           appStream.destroy();
         }
       });
-      pipe(appStream);
+      stream.pipe(appStream);
     },
     onShellError(error) {
       console.error('SSR shell failed', error);
@@ -92,4 +94,5 @@ ${styleHref ? `    <link rel="stylesheet" href="${styleHref}" />\n` : ''}  </hea
       console.error('SSR render failed', error);
     },
   });
+  abort = stream.abort;
 };

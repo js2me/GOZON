@@ -4,7 +4,7 @@ import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
 import { when } from 'mobx';
-import { Globals, ServerSideGlobals } from '../globals';
+import { Globals, type ServerSideGlobals } from '../globals';
 import { handleApiRequest } from './api';
 import { app } from './app';
 import { getMainCategories } from './data/categories';
@@ -13,21 +13,21 @@ import { renderHtml } from './ssr';
 import { createSsrApi } from './ssr/api';
 
 /** Path routes open via reaction; unknown URLs fall back to virtual notFound. */
-const waitRouterReady = async (globals: Globals) => {
+const waitRouterReady = async (globals: Globals, signal: AbortSignal) => {
   const { notFound, ...pathRoutesMap } = globals.router.routes;
   const pathRoutes = Object.values(pathRoutesMap);
 
   try {
     await when(
       () => pathRoutes.some((route) => route.isOpened || route.isOpening),
-      { timeout: 100 },
+      { timeout: 100, signal },
     );
-    await when(
-      () => pathRoutes.some((route) => route.isOpened),
-      { timeout: 5000 },
-    );
+    await when(() => pathRoutes.some((route) => route.isOpened), {
+      timeout: 5000,
+      signal,
+    });
   } catch {
-    if (!pathRoutes.some((route) => route.isOpened)) {
+    if (!signal.aborted && !pathRoutes.some((route) => route.isOpened)) {
       await notFound.open();
     }
   }
@@ -109,7 +109,18 @@ async function main() {
       ssr: ssrApi,
     }) as ServerSideGlobals;
 
-    await waitRouterReady(globals);
+    const disconnectController = new AbortController();
+    res.once('close', () => {
+      disconnectController.abort();
+    });
+    await waitRouterReady(globals, disconnectController.signal);
+    if (
+      disconnectController.signal.aborted ||
+      res.destroyed ||
+      res.writableEnded
+    ) {
+      return;
+    }
 
     return renderHtml(globals, req, res);
   });

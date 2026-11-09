@@ -11,6 +11,7 @@ interface SessionCartLine {
 }
 
 const cartBySessionId = new Map<string, SessionCartLine[]>();
+const lastSequenceByClient = new Map<string, number>();
 
 export function getCartDC(sessionId: string): CartDC {
   const stored = cartBySessionId.get(sessionId) ?? [];
@@ -46,7 +47,21 @@ export function removeCartItem(
 export function replaceCart(
   sessionId: string,
   lines: SessionCartLine[],
+  sync?: { clientId?: unknown; sequence?: unknown },
 ): { ok: true } | { ok: false; reason: 'invalid_payload' } {
+  const clientId = sync?.clientId;
+  const sequence = sync?.sequence;
+  if (
+    sync !== undefined &&
+    (typeof clientId !== 'string' ||
+      clientId.length === 0 ||
+      clientId.length > 100 ||
+      typeof sequence !== 'number' ||
+      !Number.isSafeInteger(sequence) ||
+      sequence < 1)
+  ) {
+    return { ok: false, reason: 'invalid_payload' };
+  }
   const normalized: SessionCartLine[] = [];
 
   for (const line of lines) {
@@ -66,6 +81,13 @@ export function replaceCart(
     });
   }
 
+  if (typeof clientId === 'string' && typeof sequence === 'number') {
+    const key = JSON.stringify([sessionId, clientId]);
+    if (sequence < (lastSequenceByClient.get(key) ?? 0)) {
+      return { ok: true };
+    }
+    lastSequenceByClient.set(key, sequence);
+  }
   cartBySessionId.set(sessionId, normalized);
   return { ok: true };
 }

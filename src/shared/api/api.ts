@@ -247,12 +247,15 @@ export const loadProfileViewedProducts = async (): Promise<
 
 export const putCart = async (
   items: SyncCartItemPayload[],
+  signal?: AbortSignal,
+  sync?: { clientId: string; sequence: number },
 ): Promise<CartDC> => {
   const response = await fetch('/api/cart', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ items, sync }),
     credentials: 'include',
+    signal,
   });
   if (!response.ok) {
     throw new Error('Failed to sync cart');

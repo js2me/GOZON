@@ -24,7 +24,6 @@ const product: ProductDC = {
   characteristics: [],
   colorText: '',
 };
-
 afterEach(() => vi.unstubAllGlobals());
 
 it('starts the new filter request immediately and ignores stale results', async () => {
@@ -46,10 +45,11 @@ it('starts the new filter request immediately and ignores stale results', async 
   expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
   expect(fetch.mock.calls[1][0]).toContain('sort=price_asc');
 
-  oldRequest.resolve(Response.json({ items: [product], hasMore: false }));
+  oldRequest.reject(new Error('aborted'));
   await loading;
   expect(model.products).toEqual([]);
   expect(model.isLoadingMore).toBe(true);
+  expect(model.loadError).toBeNull();
   newRequest.resolve(
     Response.json({ items: [{ ...product, id: 2 }], hasMore: false }),
   );

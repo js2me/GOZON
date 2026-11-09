@@ -37,6 +37,7 @@ const handleCartApiRequest = (
   if (path === '/api/cart' && req.method === 'PUT') {
     const rawBody = req.body as {
       items?: Array<{ productId?: unknown; quantity?: unknown }>;
+      sync?: { clientId?: unknown; sequence?: unknown };
     };
     const rawItems = rawBody.items;
     if (!Array.isArray(rawItems)) {
@@ -50,6 +51,7 @@ const handleCartApiRequest = (
         productId: Number(item.productId),
         quantity: Number(item.quantity),
       })),
+      rawBody.sync,
     );
     if (!result.ok) {
       res.status(400).json({ error: 'Invalid cart payload' });

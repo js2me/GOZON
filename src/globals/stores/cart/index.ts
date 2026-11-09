@@ -44,9 +44,15 @@ export class CartStore {
   cartSyncInFlight = 0;
   private revision = 0;
   private syncedRevision = 0;
+  private readonly syncClientId = globalThis.crypto.randomUUID();
+  private writeSequence = 0;
   private loadingPromise: Promise<void> | null = null;
 
-  private readonly syncCart = debounce(async () => {
+  private readonly syncCart = debounce(() => {
+    void this.syncCartNow();
+  }, 350);
+
+  private readonly syncCartNow = async () => {
     if (this.promo === null) {
       return;
     }
@@ -56,25 +62,34 @@ export class CartStore {
     }
 
     this.cartSyncInFlight++;
-    this.loadError = null;
     try {
       // Serialize writes so the server also receives snapshots in order.
-      let revision: number;
-      do {
+      while (this.revision !== this.syncedRevision) {
         this.syncCart.cancel();
-        revision = this.revision;
-        const data = await putCart(this.getSyncPayload());
-        if (revision === this.revision) {
-          runInAction(() => this.applyServerCart(data));
-          this.syncedRevision = revision;
+        const revision = this.revision;
+        try {
+          const data = await putCart(
+            this.getSyncPayload(),
+            AbortSignal.timeout(10_000),
+            { clientId: this.syncClientId, sequence: ++this.writeSequence },
+          );
+          if (revision === this.revision) {
+            runInAction(() => this.applyServerCart(data));
+            this.syncedRevision = revision;
+            this.loadError = null;
+          }
+        } catch {
+          if (revision !== this.revision) {
+            continue;
+          }
+          this.loadError = 'Не удалось синхронизировать корзину';
+          break;
         }
-      } while (revision !== this.revision);
-    } catch {
-      this.loadError = 'Не удалось синхронизировать корзину';
+      }
     } finally {
       this.cartSyncInFlight--;
     }
-  }, 350);
+  };
 
   get isSyncing(): boolean {
     return this.cartSyncInFlight > 0;
@@ -145,11 +160,14 @@ export class CartStore {
   };
 
   load = async () => {
-    if (
-      this.promo !== null &&
-      (this.isSyncing || this.revision !== this.syncedRevision)
-    ) {
-      return;
+    if (this.promo !== null) {
+      if (this.isSyncing) {
+        return;
+      }
+      if (this.revision !== this.syncedRevision) {
+        this.syncCart.cancel();
+        return this.syncCartNow();
+      }
     }
     if (this.loadingPromise) {
       return this.loadingPromise;
