@@ -1,6 +1,6 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import { storageData } from 'mobx-web-api';
-import { loadFavorites, putFavorites } from '../../shared/api/api';
+import { loadFavorites, toggleFavorite } from '../../shared/api/api';
 
 export class FavoritesStore {
   private readonly storedProductIdsState = storageData.key<number[]>(
@@ -13,12 +13,9 @@ export class FavoritesStore {
 
   private isLoaded = false;
   private loadingPromise: Promise<void> | null = null;
-  private syncPromise: Promise<void> | null = null;
-  private revision = 0;
-  private syncedRevision = 0;
-  private pendingToggles: number[] = [];
+  private mutationPromise: Promise<void> | null = null;
   loadError: string | null = null;
-  /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
+  /** До первого ответа сервера избранное не готово к отображению. */
   private initialLoadPending = true;
 
   constructor() {
@@ -29,13 +26,13 @@ export class FavoritesStore {
       | 'productIds'
       | 'isReady'
       | 'loadingPromise'
-      | 'syncPromise'
+      | 'mutationPromise'
       | 'initialLoadPending'
     >(this, {
       productIds: observable.ref,
       isReady: observable.ref,
       loadingPromise: observable.ref,
-      syncPromise: observable.ref,
+      mutationPromise: observable.ref,
       initialLoadPending: observable,
       isLoading: computed,
       loadError: observable.ref,
@@ -43,7 +40,7 @@ export class FavoritesStore {
   }
 
   get isLoading(): boolean {
-    return this.initialLoadPending || this.syncPromise !== null;
+    return this.initialLoadPending || this.mutationPromise !== null;
   }
 
   hasProduct = (productId: number): boolean => {
@@ -53,31 +50,37 @@ export class FavoritesStore {
     return this.productIds.includes(productId);
   };
 
-  toggleProduct = async (productId: number) => {
-    await this.load();
-    this.revision++;
-
-    if (this.productIds.includes(productId)) {
-      this.setProductIds(this.productIds.filter((it) => it !== productId));
-    } else {
-      this.setProductIds([...this.productIds, productId]);
-    }
-
-    if (this.isLoaded) {
-      void this.syncWithServer();
-    } else {
-      this.pendingToggles.push(productId);
-    }
+  toggleProduct = (productId: number): Promise<void> => {
+    const previous = this.mutationPromise ?? this.loadingPromise;
+    const task = (async () => {
+      if (previous) await previous;
+      try {
+        const { productIds } = await toggleFavorite(productId);
+        this.setProductIds(productIds);
+        this.isLoaded = true;
+        this.isReady = true;
+        this.loadError = null;
+      } catch {
+        this.loadError = 'Не удалось изменить избранное';
+      } finally {
+        this.initialLoadPending = false;
+      }
+    })();
+    this.mutationPromise = task;
+    void task.finally(() => {
+      if (this.mutationPromise === task) this.mutationPromise = null;
+    });
+    return task;
   };
 
-  retrySync = async () => {
+  refresh = async () => {
+    if (this.mutationPromise) await this.mutationPromise;
+    this.isLoaded = false;
     await this.load();
-    if (this.isLoaded) {
-      await this.syncWithServer();
-    }
   };
 
   load = async () => {
+    if (this.mutationPromise) return this.mutationPromise;
     if (this.isLoaded) {
       this.isReady = true;
       runInAction(() => {
@@ -93,20 +96,9 @@ export class FavoritesStore {
     this.loadingPromise = (async () => {
       try {
         const { productIds } = await loadFavorites();
-        const nextIds = [...productIds];
-        for (const productId of this.pendingToggles) {
-          const index = nextIds.indexOf(productId);
-          if (index < 0) nextIds.push(productId);
-          else nextIds.splice(index, 1);
-        }
-        this.setProductIds(nextIds);
+        this.setProductIds(productIds);
         this.isLoaded = true;
-        if (this.pendingToggles.length > 0) {
-          this.pendingToggles = [];
-          void this.syncWithServer();
-        } else {
-          this.loadError = null;
-        }
+        this.loadError = null;
       } catch {
         this.loadError = 'Не удалось загрузить избранное';
       } finally {
@@ -120,37 +112,6 @@ export class FavoritesStore {
 
     await this.loadingPromise;
   };
-
-  private syncWithServer(): Promise<void> {
-    if (this.syncPromise) {
-      return this.syncPromise;
-    }
-    if (this.revision === this.syncedRevision) {
-      return Promise.resolve();
-    }
-    const revision = this.revision;
-    this.syncPromise = (async () => {
-      try {
-        const { productIds } = await putFavorites(
-          [...this.productIds],
-          AbortSignal.timeout(10_000),
-        );
-        this.syncedRevision = revision;
-        if (revision === this.revision) {
-          this.setProductIds(productIds);
-          this.loadError = null;
-        }
-      } catch {
-        if (revision === this.revision) {
-          this.loadError = 'Не удалось синхронизировать избранное';
-        }
-      } finally {
-        this.syncPromise = null;
-        if (revision !== this.revision) void this.syncWithServer();
-      }
-    })();
-    return this.syncPromise;
-  }
 
   private setProductIds(productIds: number[]) {
     this.productIds = productIds;

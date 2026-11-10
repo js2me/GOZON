@@ -23,9 +23,9 @@ export const Layout = withViewModel(
               type="button"
               className="rounded-md bg-white px-3 py-1 font-medium text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-50"
               disabled={model.favorites.isLoading}
-              onClick={() => void model.favorites.retrySync()}
+              onClick={() => void model.favorites.refresh()}
             >
-              Повторить
+              Обновить
             </button>
           </div>
         ) : null}

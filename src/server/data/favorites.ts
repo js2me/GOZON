@@ -31,6 +31,20 @@ export function getFavoritesDC(sessionId: string): FavoritesDC {
   return { productIds };
 }
 
+export function toggleFavorite(
+  sessionId: string,
+  productId: number,
+): { ok: true } | { ok: false; reason: 'not_found' } {
+  if (!Number.isInteger(productId) || !getProductById(productId)) {
+    return { ok: false, reason: 'not_found' };
+  }
+  const productIds = favoriteProductIdsBySessionId.get(sessionId) ?? new Set();
+  if (productIds.has(productId)) productIds.delete(productId);
+  else productIds.add(productId);
+  favoriteProductIdsBySessionId.set(sessionId, productIds);
+  return { ok: true };
+}
+
 export function replaceFavorites(
   sessionId: string,
   productIds: number[],

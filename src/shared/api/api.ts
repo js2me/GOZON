@@ -147,11 +147,6 @@ export interface CartDC {
   promo: CartPromoDC;
 }
 
-export interface SyncCartItemPayload {
-  productId: number;
-  quantity: number;
-}
-
 export interface FavoritesDC {
   productIds: number[];
 }
@@ -245,21 +240,31 @@ export const loadProfileViewedProducts = async (): Promise<
   return response.json();
 };
 
-export const putCart = async (
-  items: SyncCartItemPayload[],
-  signal?: AbortSignal,
+export const changeCartItem = async (
+  productId: number,
+  delta: 1 | -1,
 ): Promise<CartDC> => {
-  const response = await fetch('/api/cart', {
-    method: 'PUT',
+  const response = await fetch(`/api/cart/items/${productId}`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ delta }),
     credentials: 'include',
-    signal,
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
-    throw new Error('Failed to sync cart');
+    throw new Error('Failed to change cart item');
   }
 
+  return response.json();
+};
+
+export const removeCartItem = async (productId: number): Promise<CartDC> => {
+  const response = await fetch(`/api/cart/items/${productId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error('Failed to remove cart item');
   return response.json();
 };
 
@@ -281,19 +286,16 @@ export const loadFavorites = async (): Promise<FavoritesDC> => {
   return response.json();
 };
 
-export const putFavorites = async (
-  productIds: number[],
-  signal?: AbortSignal,
+export const toggleFavorite = async (
+  productId: number,
 ): Promise<FavoritesDC> => {
-  const response = await fetch('/api/favorites', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productIds }),
+  const response = await fetch(`/api/favorites/items/${productId}`, {
+    method: 'POST',
     credentials: 'include',
-    signal,
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
-    throw new Error('Failed to sync favorites');
+    throw new Error('Failed to toggle favorite');
   }
 
   return response.json();

@@ -6,9 +6,18 @@ import type {
   ProfileRatingProductDC,
   ProfileViewedProductDC,
 } from '../../shared/api/api';
-import { getCartDC, removeCartItem, replaceCart } from '../data/cart';
+import {
+  changeCartItem,
+  getCartDC,
+  removeCartItem,
+  replaceCart,
+} from '../data/cart';
 import { getCategoryById } from '../data/categories';
-import { getFavoritesDC, replaceFavorites } from '../data/favorites';
+import {
+  getFavoritesDC,
+  replaceFavorites,
+  toggleFavorite,
+} from '../data/favorites';
 import {
   allProducts,
   type ProductSortOption,
@@ -56,6 +65,19 @@ const handleCartApiRequest = (
       return true;
     }
 
+    res.status(200).json(getCartDC(sessionId));
+    return true;
+  }
+
+  if (path.startsWith('/api/cart/items/') && req.method === 'POST') {
+    const productId = Number(path.slice('/api/cart/items/'.length));
+    const result = changeCartItem(sessionId, productId, req.body?.delta);
+    if (!result.ok) {
+      res
+        .status(result.reason === 'not_found' ? 404 : 400)
+        .json({ error: result.reason });
+      return true;
+    }
     res.status(200).json(getCartDC(sessionId));
     return true;
   }
@@ -112,6 +134,17 @@ const handleFavoritesApiRequest = (
       return true;
     }
 
+    res.status(200).json(getFavoritesDC(sessionId));
+    return true;
+  }
+
+  if (path.startsWith('/api/favorites/items/') && req.method === 'POST') {
+    const productId = Number(path.slice('/api/favorites/items/'.length));
+    const result = toggleFavorite(sessionId, productId);
+    if (!result.ok) {
+      res.status(404).json({ error: 'Product not found' });
+      return true;
+    }
     res.status(200).json(getFavoritesDC(sessionId));
     return true;
   }

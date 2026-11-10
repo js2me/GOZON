@@ -37,8 +37,8 @@ export const CartPage = withViewModel(
               </div>
               <ActionButton
                 look="neutralInset"
-                text="Повторить"
-                action={model.retryLoad}
+                text="Обновить"
+                action={model.refreshCart}
                 disabled={model.isLoading}
               />
             </Card>

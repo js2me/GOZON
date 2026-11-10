@@ -1,11 +1,10 @@
-import { debounce } from 'es-toolkit/function';
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import type { CartDC, CartItemDC, CartPromoDC } from '../../../shared/api/api';
-import { loadCart, loadProductById, putCart } from '../../../shared/api/api';
 import {
-  cartPromoForLineCount,
-  mapProductToCartItem,
-} from '../../../shared/lib/cart-from-product';
+  changeCartItem,
+  loadCart,
+  removeCartItem,
+} from '../../../shared/api/api';
 import type { Router } from '../../router';
 import { computeCartSummary } from './lib/compute-cart-summary';
 import type { CartItemBenefit, CartItemInfo } from './types';
@@ -41,56 +40,36 @@ export class CartStore {
   selectedProductIds = observable.set<number>();
   loadError: string | null = null;
   isSyncing = false;
-  private revision = 0;
-  private syncedRevision = 0;
   private loadingPromise: Promise<void> | null = null;
+  private mutationPromise: Promise<void> | null = null;
 
-  private readonly syncCart = debounce(() => {
-    void this.syncCartNow();
-  }, 350);
-
-  private readonly syncCartNow = async () => {
-    if (
-      this.promo === null ||
-      this.isSyncing ||
-      this.revision === this.syncedRevision
-    ) {
-      return;
-    }
-
-    this.syncCart.cancel();
-    const revision = this.revision;
-    this.isSyncing = true;
-    try {
-      const data = await putCart(
-        this.getSyncPayload(),
-        AbortSignal.timeout(10_000),
-      );
-      this.syncedRevision = revision;
-      if (revision === this.revision) {
+  private mutate(request: () => Promise<CartDC>, error: string): Promise<void> {
+    const previous = this.mutationPromise ?? this.loadingPromise;
+    const task = (async () => {
+      if (previous) await previous;
+      try {
+        const data = await request();
         runInAction(() => this.applyServerCart(data));
         this.loadError = null;
+      } catch {
+        this.loadError = error;
+      } finally {
+        this.isLoading = false;
       }
-    } catch {
-      if (revision === this.revision) {
-        this.loadError = 'Не удалось синхронизировать корзину';
+    })();
+    this.mutationPromise = task;
+    this.isSyncing = true;
+    void task.finally(() => {
+      if (this.mutationPromise === task) {
+        this.mutationPromise = null;
+        this.isSyncing = false;
       }
-    } finally {
-      this.isSyncing = false;
-      if (revision !== this.revision) void this.syncCartNow();
-    }
-  };
+    });
+    return task;
+  }
 
   private getOrderedRawItems(): CartItemDC[] {
     return Array.from(this.itemsMap.values());
-  }
-
-  /** Тело для `PUT /api/cart` — по текущему порядку строк в `itemsMap`. */
-  private getSyncPayload() {
-    return this.getOrderedRawItems().map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity.current,
-    }));
   }
 
   get items(): CartItemInfo[] {
@@ -146,28 +125,17 @@ export class CartStore {
   };
 
   load = async () => {
-    if (this.promo !== null) {
-      if (this.isSyncing) {
-        return;
-      }
-      if (this.revision !== this.syncedRevision) {
-        this.syncCart.cancel();
-        return this.syncCartNow();
-      }
-    }
+    if (this.mutationPromise) return this.mutationPromise;
     if (this.loadingPromise) {
       return this.loadingPromise;
     }
 
     this.isLoading = true;
     this.loadError = null;
-    const revision = this.revision;
     this.loadingPromise = (async () => {
       try {
         const data = await loadCart();
-        if (revision === this.revision) {
-          runInAction(() => this.applyServerCart(data));
-        }
+        runInAction(() => this.applyServerCart(data));
       } catch {
         this.loadError = 'Не удалось загрузить корзину';
       } finally {
@@ -184,55 +152,11 @@ export class CartStore {
     }
 
     this.addingProductIds.add(productId);
-    try {
-      if (this.promo === null) {
-        await this.load();
-      }
-      if (this.promo === null) {
-        return;
-      }
-      const existing = this.itemsMap.get(productId);
-
-      if (existing) {
-        runInAction(() => {
-          this.itemsMap.set(productId, {
-            ...existing,
-            quantity: {
-              ...existing.quantity,
-              current: existing.quantity.current + 1,
-            },
-          });
-          this.promo = cartPromoForLineCount(this.itemsMap.size);
-        });
-        this.revision++;
-        this.syncCart();
-        return;
-      }
-
-      const product = await loadProductById(productId);
-      if (!product) {
-        throw new Error('Product not found');
-      }
-      const lineIndex = this.itemsMap.size;
-      const newItem = mapProductToCartItem(product, 1, lineIndex);
-      runInAction(() => {
-        this.itemsMap.set(newItem.productId, newItem);
-        this.promo = cartPromoForLineCount(this.itemsMap.size);
-        this.reconcileSelection(
-          this.getOrderedRawItems().map((i) => i.productId),
-        );
-      });
-      this.revision++;
-      this.syncCart();
-    } catch {
-      runInAction(() => {
-        this.loadError = 'Не удалось добавить товар в корзину';
-      });
-    } finally {
-      runInAction(() => {
-        this.addingProductIds.delete(productId);
-      });
-    }
+    await this.mutate(
+      () => changeCartItem(productId, 1),
+      'Не удалось добавить товар в корзину',
+    );
+    this.addingProductIds.delete(productId);
   };
 
   toggleItem = (productId: number) => {
@@ -264,54 +188,25 @@ export class CartStore {
     this.selectedProductIds.clear();
   };
 
-  changeQuantity = (productId: number, nextQty: number) => {
-    const raw = this.itemsMap.get(productId);
-    if (!raw || this.promo === null) {
-      return;
-    }
-
-    const clamped = Math.min(
-      Math.max(1, Math.trunc(nextQty)),
-      raw.quantity.maxAvailable,
-    );
-    this.itemsMap.set(productId, {
-      ...raw,
-      quantity: { ...raw.quantity, current: clamped },
-    });
-    this.revision++;
-    this.syncCart();
-  };
-
   increment = (productId: number) => {
-    const item = this.items.find((i) => i.productId === productId);
-    if (!item) {
-      return;
-    }
-    this.changeQuantity(productId, item.quantity.current + 1);
+    void this.mutate(
+      () => changeCartItem(productId, 1),
+      'Не удалось изменить корзину',
+    );
   };
 
   decrement = (productId: number) => {
-    const item = this.items.find((i) => i.productId === productId);
-    if (!item) {
-      return;
-    }
-    this.changeQuantity(productId, item.quantity.current - 1);
+    void this.mutate(
+      () => changeCartItem(productId, -1),
+      'Не удалось изменить корзину',
+    );
   };
 
   removeItem = (productId: number) => {
-    if (!this.itemsMap.has(productId) || this.promo === null) {
-      return;
-    }
-
-    runInAction(() => {
-      this.itemsMap.delete(productId);
-      this.promo = cartPromoForLineCount(this.itemsMap.size);
-      this.reconcileSelection(
-        this.getOrderedRawItems().map((i) => i.productId),
-      );
-    });
-    this.revision++;
-    this.syncCart();
+    void this.mutate(
+      () => removeCartItem(productId),
+      'Не удалось удалить товар из корзины',
+    );
   };
 
   private reconcileSelection(orderedProductIds: number[]) {
