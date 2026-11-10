@@ -15,17 +15,15 @@ const cart: CartDC = {
     },
   ],
   promo: { saleDeadline: '', itemsPriceIncreasingCount: 0 },
-  version: 0,
 };
 
 const router = {
   routes: { product: { createUrl: () => '/products/1' } },
 } as unknown as Router;
 
-function response(quantity: number, version = 1) {
+function response(quantity: number) {
   return Response.json({
     ...cart,
-    version,
     items: [
       { ...cart.items[0], quantity: { current: quantity, maxAvailable: 20 } },
     ],
@@ -60,7 +58,7 @@ it('preserves edits made while a previous write is waiting for its response', as
   await vi.advanceTimersByTimeAsync(0);
   expect(store.items[0].quantity.current).toBe(3);
   expect(JSON.parse(fetch.mock.calls[2][1].body).items[0].quantity).toBe(3);
-  secondWrite.resolve(response(3, 2));
+  secondWrite.resolve(response(3));
   await vi.advanceTimersByTimeAsync(0);
   expect(store.isSyncing).toBe(false);
   expect(store.items[0].quantity.current).toBe(3);
@@ -121,36 +119,6 @@ it('retries a failed dirty snapshot on the next cart load', async () => {
   await store.load();
   expect(fetch).toHaveBeenCalledTimes(3);
   expect(fetch.mock.calls[2][1].method).toBe('PUT');
-  expect(store.loadError).toBeNull();
-});
-
-it('stops on a cart conflict until the user reloads the server cart', async () => {
-  vi.useFakeTimers();
-  const otherItem = { ...cart.items[0]!, productId: 2 };
-  const fetch = vi
-    .fn()
-    .mockResolvedValueOnce(Response.json(cart))
-    .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
-    .mockResolvedValueOnce(
-      Response.json({ ...cart, version: 2, items: [...cart.items, otherItem] }),
-    );
-  vi.stubGlobal('fetch', fetch);
-  const store = new CartStore(router);
-  await store.load();
-  store.changeQuantity(1, 2);
-  await vi.advanceTimersByTimeAsync(350);
-  expect(fetch).toHaveBeenCalledTimes(2);
-  expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
-  expect(store.hasConflict).toBe(true);
-  expect(store.items[0].quantity.current).toBe(2);
-  store.changeQuantity(1, 3);
-  await vi.advanceTimersByTimeAsync(350);
-  expect(fetch).toHaveBeenCalledTimes(2);
-  await store.reloadAfterConflict();
-  expect(fetch).toHaveBeenCalledTimes(3);
-  expect(store.hasConflict).toBe(false);
-  expect(store.items[0].quantity.current).toBe(1);
-  expect(store.hasProduct(2)).toBe(true);
   expect(store.loadError).toBeNull();
 });
 
@@ -236,7 +204,6 @@ it.each([
         return Promise.resolve(
           Response.json({
             ...cart,
-            version: 2,
             items: expectedItems.map(({ productId, quantity }) => ({
               ...cart.items[0],
               productId,

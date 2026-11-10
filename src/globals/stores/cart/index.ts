@@ -26,7 +26,6 @@ export class CartStore {
       isLoading: observable.ref,
       loadError: observable.ref,
       isSyncing: observable.ref,
-      hasConflict: observable.ref,
       items: computed,
       summary: computed,
       allSelected: computed,
@@ -42,10 +41,8 @@ export class CartStore {
   selectedProductIds = observable.set<number>();
   loadError: string | null = null;
   isSyncing = false;
-  hasConflict = false;
   private revision = 0;
   private syncedRevision = 0;
-  private serverVersion = 0;
   private loadingPromise: Promise<void> | null = null;
 
   private readonly syncCart = debounce(() => {
@@ -53,47 +50,34 @@ export class CartStore {
   }, 350);
 
   private readonly syncCartNow = async () => {
-    if (this.promo === null || this.hasConflict) {
+    if (
+      this.promo === null ||
+      this.isSyncing ||
+      this.revision === this.syncedRevision
+    ) {
       return;
     }
 
-    if (this.isSyncing) {
-      return;
-    }
-
+    this.syncCart.cancel();
+    const revision = this.revision;
     this.isSyncing = true;
     try {
-      while (this.revision !== this.syncedRevision) {
-        this.syncCart.cancel();
-        const revision = this.revision;
-        try {
-          const result = await putCart(
-            this.getSyncPayload(),
-            this.serverVersion,
-            AbortSignal.timeout(10_000),
-          );
-          if (!result.ok) {
-            this.hasConflict = true;
-            this.loadError = 'Корзина изменилась в другой вкладке';
-            break;
-          }
-          const data = result.data;
-          this.serverVersion = data.version;
-          if (revision === this.revision) {
-            runInAction(() => this.applyServerCart(data));
-            this.syncedRevision = revision;
-            this.loadError = null;
-          }
-        } catch {
-          if (revision !== this.revision) {
-            continue;
-          }
-          this.loadError = 'Не удалось синхронизировать корзину';
-          break;
-        }
+      const data = await putCart(
+        this.getSyncPayload(),
+        AbortSignal.timeout(10_000),
+      );
+      this.syncedRevision = revision;
+      if (revision === this.revision) {
+        runInAction(() => this.applyServerCart(data));
+        this.loadError = null;
+      }
+    } catch {
+      if (revision === this.revision) {
+        this.loadError = 'Не удалось синхронизировать корзину';
       }
     } finally {
       this.isSyncing = false;
+      if (revision !== this.revision) void this.syncCartNow();
     }
   };
 
@@ -162,9 +146,6 @@ export class CartStore {
   };
 
   load = async () => {
-    if (this.hasConflict) {
-      return;
-    }
     if (this.promo !== null) {
       if (this.isSyncing) {
         return;
@@ -185,7 +166,6 @@ export class CartStore {
       try {
         const data = await loadCart();
         if (revision === this.revision) {
-          this.serverVersion = data.version;
           runInAction(() => this.applyServerCart(data));
         }
       } catch {
@@ -196,25 +176,6 @@ export class CartStore {
       }
     })();
     return this.loadingPromise;
-  };
-
-  reloadAfterConflict = async () => {
-    if (!this.hasConflict || this.isLoading) return;
-    const revision = this.revision;
-    this.isLoading = true;
-    try {
-      const data = await loadCart();
-      if (revision !== this.revision) return;
-      runInAction(() => this.applyServerCart(data));
-      this.serverVersion = data.version;
-      this.syncedRevision = revision;
-      this.hasConflict = false;
-      this.loadError = null;
-    } catch {
-      this.loadError = 'Не удалось обновить корзину';
-    } finally {
-      this.isLoading = false;
-    }
   };
 
   addProduct = async (productId: number) => {

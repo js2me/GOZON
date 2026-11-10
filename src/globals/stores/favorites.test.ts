@@ -1,8 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { FavoritesStore } from './favorites';
 
-const response = (productIds: number[], version = 0) =>
-  Response.json({ productIds, version });
+const response = (productIds: number[]) => Response.json({ productIds });
 
 afterEach(() => {
   sessionStorage.clear();
@@ -23,11 +22,11 @@ it('serializes writes and preserves toggles during a pending response', async ()
   await store.toggleProduct(1);
   await store.toggleProduct(2);
   expect(fetch).toHaveBeenCalledTimes(2);
-  firstWrite.resolve(response([1], 1));
+  firstWrite.resolve(response([1]));
   await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
   expect(store.hasProduct(2)).toBe(true);
   expect(JSON.parse(fetch.mock.calls[2][1].body).productIds).toEqual([1, 2]);
-  secondWrite.resolve(response([1, 2], 2));
+  secondWrite.resolve(response([1, 2]));
   await vi.waitFor(() => expect(store.isLoading).toBe(false));
   expect(store.hasProduct(1)).toBe(true);
   expect(store.hasProduct(2)).toBe(true);
@@ -38,7 +37,7 @@ it('waits for the initial server state before applying a toggle', async () => {
   const fetch = vi
     .fn()
     .mockReturnValueOnce(initialLoad.promise)
-    .mockResolvedValue(response([1, 2], 1));
+    .mockResolvedValue(response([1, 2]));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   const loading = store.load();
@@ -73,7 +72,7 @@ it('keeps a toggle after failed initial loading and reconciles it on retry', asy
     .mockRejectedValueOnce(new Error('offline'))
     .mockRejectedValueOnce(new Error('offline'))
     .mockResolvedValueOnce(response([1]))
-    .mockResolvedValueOnce(response([1, 2], 1));
+    .mockResolvedValueOnce(response([1, 2]));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.load();
@@ -94,7 +93,7 @@ it('submits a newer toggle after a failed write and retains a retry path', async
     .mockResolvedValueOnce(response([]))
     .mockReturnValueOnce(firstWrite.promise)
     .mockRejectedValueOnce(new Error('offline'))
-    .mockResolvedValueOnce(response([1, 2], 1));
+    .mockResolvedValueOnce(response([1, 2]));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.toggleProduct(1);
@@ -107,30 +106,6 @@ it('submits a newer toggle after a failed write and retains a retry path', async
   await store.retrySync();
   expect(store.loadError).toBeNull();
   expect(store.hasProduct(2)).toBe(true);
-});
-
-it('stops on a favorites conflict until the user reloads server favorites', async () => {
-  const fetch = vi
-    .fn()
-    .mockResolvedValueOnce(response([]))
-    .mockResolvedValueOnce(Response.json({ version: 2 }, { status: 409 }))
-    .mockResolvedValueOnce(response([2], 2));
-  vi.stubGlobal('fetch', fetch);
-  const store = new FavoritesStore();
-  await store.toggleProduct(1);
-  await vi.waitFor(() => expect(store.isLoading).toBe(false));
-  expect(fetch).toHaveBeenCalledTimes(2);
-  expect(JSON.parse(fetch.mock.calls[1][1].body).version).toBe(0);
-  expect(store.hasConflict).toBe(true);
-  expect(store.hasProduct(1)).toBe(true);
-  await store.toggleProduct(2);
-  expect(fetch).toHaveBeenCalledTimes(2);
-  await store.retrySync();
-  expect(fetch).toHaveBeenCalledTimes(3);
-  expect(store.hasConflict).toBe(false);
-  expect(store.hasProduct(1)).toBe(false);
-  expect(store.hasProduct(2)).toBe(true);
-  expect(store.loadError).toBeNull();
 });
 
 it('recovers the latest selection after a stalled write times out', async () => {
@@ -151,7 +126,7 @@ it('recovers the latest selection after a stalled write times out', async () => 
         }),
     )
     .mockRejectedValueOnce(new Error('offline'))
-    .mockResolvedValueOnce(response([1, 2], 1));
+    .mockResolvedValueOnce(response([1, 2]));
   vi.stubGlobal('fetch', fetch);
   const store = new FavoritesStore();
   await store.toggleProduct(1);

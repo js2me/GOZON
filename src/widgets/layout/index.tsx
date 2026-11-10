@@ -18,19 +18,14 @@ export const Layout = withViewModel(
             role="alert"
             className="mx-4 mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-slate-800 text-sm"
           >
-            <span>
-              {model.favorites.loadError}
-              {model.favorites.hasConflict
-                ? '. Обновление сбросит правки в этой вкладке.'
-                : ''}
-            </span>
+            <span>{model.favorites.loadError}</span>
             <button
               type="button"
               className="rounded-md bg-white px-3 py-1 font-medium text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-50"
               disabled={model.favorites.isLoading}
               onClick={() => void model.favorites.retrySync()}
             >
-              {model.favorites.hasConflict ? 'Обновить избранное' : 'Повторить'}
+              Повторить
             </button>
           </div>
         ) : null}

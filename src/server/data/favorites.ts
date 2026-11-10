@@ -1,10 +1,7 @@
 import type { FavoritesDC } from '../../shared/api/api';
 import { getProductById } from './products';
 
-const favoritesBySessionId = new Map<
-  string,
-  { productIds: Set<number>; version: number }
->();
+const favoriteProductIdsBySessionId = new Map<string, Set<number>>();
 
 function normalizeProductIds(productIds: number[]): number[] | null {
   const nextIds: number[] = [];
@@ -28,41 +25,21 @@ function normalizeProductIds(productIds: number[]): number[] | null {
 }
 
 export function getFavoritesDC(sessionId: string): FavoritesDC {
-  const stored = favoritesBySessionId.get(sessionId);
-  return {
-    productIds: Array.from(stored?.productIds ?? []),
-    version: stored?.version ?? 0,
-  };
+  const productIds = Array.from(
+    favoriteProductIdsBySessionId.get(sessionId) ?? [],
+  );
+  return { productIds };
 }
 
 export function replaceFavorites(
   sessionId: string,
   productIds: number[],
-  expectedVersion: unknown,
-):
-  | { ok: true }
-  | { ok: false; reason: 'invalid_payload' }
-  | { ok: false; reason: 'conflict'; version: number } {
-  if (
-    typeof expectedVersion !== 'number' ||
-    !Number.isSafeInteger(expectedVersion) ||
-    expectedVersion < 0
-  ) {
-    return { ok: false, reason: 'invalid_payload' };
-  }
+): { ok: true } | { ok: false; reason: 'invalid_payload' } {
   const normalized = normalizeProductIds(productIds);
   if (!normalized) {
     return { ok: false, reason: 'invalid_payload' };
   }
 
-  const version = favoritesBySessionId.get(sessionId)?.version ?? 0;
-  if (expectedVersion !== version) {
-    return { ok: false, reason: 'conflict', version };
-  }
-
-  favoritesBySessionId.set(sessionId, {
-    productIds: new Set(normalized),
-    version: version + 1,
-  });
+  favoriteProductIdsBySessionId.set(sessionId, new Set(normalized));
   return { ok: true };
 }

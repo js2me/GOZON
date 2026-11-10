@@ -37,7 +37,6 @@ const handleCartApiRequest = (
   if (path === '/api/cart' && req.method === 'PUT') {
     const rawBody = req.body as {
       items?: Array<{ productId?: unknown; quantity?: unknown }>;
-      version?: unknown;
     } | null;
     const rawItems = rawBody?.items;
     if (!Array.isArray(rawItems)) {
@@ -51,14 +50,9 @@ const handleCartApiRequest = (
         productId: Number(item.productId),
         quantity: Number(item.quantity),
       })),
-      rawBody?.version,
     );
     if (!result.ok) {
-      if (result.reason === 'conflict') {
-        res.status(409).json({ version: result.version });
-      } else {
-        res.status(400).json({ error: 'Invalid cart payload' });
-      }
+      res.status(400).json({ error: 'Invalid cart payload' });
       return true;
     }
 
@@ -74,15 +68,9 @@ const handleCartApiRequest = (
       return true;
     }
 
-    const result = removeCartItem(sessionId, productId, req.body?.version);
+    const result = removeCartItem(sessionId, productId);
     if (!result.ok) {
-      if (result.reason === 'conflict') {
-        res.status(409).json({ version: result.version });
-      } else if (result.reason === 'invalid_payload') {
-        res.status(400).json({ error: 'Invalid cart version' });
-      } else {
-        res.status(404).json({ error: 'Cart item not found' });
-      }
+      res.status(404).json({ error: 'Cart item not found' });
       return true;
     }
 
@@ -108,7 +96,6 @@ const handleFavoritesApiRequest = (
   if (path === '/api/favorites' && req.method === 'PUT') {
     const rawBody = req.body as {
       productIds?: unknown;
-      version?: unknown;
     } | null;
     const rawIds = rawBody?.productIds;
     if (!Array.isArray(rawIds)) {
@@ -119,14 +106,9 @@ const handleFavoritesApiRequest = (
     const result = replaceFavorites(
       sessionId,
       rawIds.map((id) => Number(id)),
-      rawBody?.version,
     );
     if (!result.ok) {
-      if (result.reason === 'conflict') {
-        res.status(409).json({ version: result.version });
-      } else {
-        res.status(400).json({ error: 'Invalid favorites payload' });
-      }
+      res.status(400).json({ error: 'Invalid favorites payload' });
       return true;
     }
 
