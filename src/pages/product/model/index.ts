@@ -1,8 +1,8 @@
 import { computed, makeObservable, observable } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
-import { assert } from 'yummies/assert';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import {
   loadProductById,
   loadProfile,
@@ -12,7 +12,6 @@ import {
   type ProductDC,
   ProductDeliveryVariant,
 } from '../../../shared/api/api';
-import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import type { ProductPageContext } from './types';
 
 const FALLBACK_PRODUCT_IMAGE = '/vite.svg';
@@ -72,7 +71,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     const discount = Math.round(
       ((this.product.originalPrice - this.product.price) /
         this.product.originalPrice) *
-      100,
+        100,
     );
     if (discount <= 0) {
       return '';
@@ -319,40 +318,46 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
 
   async willMount() {
     const { ssr } = this.globals;
-
-    assert.defined(this.productId, 'Product id is required for product page');
-
-    if (ssr) {
-      const profile = await ssr.getProfile();
-      const product = await ssr.getProductById(this.productId);
-      const shop = await ssr.getShopById(product!.shopId);
-
-      const pageTitle = `${product!.title} - ${this.globals.stores.appInfo.appName}`;
-      const priceLabel = `от ${product!.price.toLocaleString('ru-RU')} ₽`;
-
-      ssr.head.title = pageTitle;
-      ssr.head.ogTitle = product!.title;
-      ssr.head.ogDescription = `${product!.title} — ${priceLabel}`;
-      ssr.head.ogImage = product!.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
-      ssr.head.ogUrl = `/products/${product!.id}`;
-      ssr.head.ogType = 'product';
-
-      this.ctx = { product, profile, shop };
-      return;
-    }
+    const productId = this.productId;
 
     if (!this.ctx) {
-      const product = await loadProductById(this.productId);
-      const [shop, profile] = await Promise.all([
-        loadShopById(product.shopId),
-        loadProfile(),
-      ]);
+      const product =
+        productId !== null && Number.isInteger(productId)
+          ? await (ssr
+              ? ssr.getProductById(productId)
+              : loadProductById(productId))
+          : null;
 
+      if (!product) {
+        this.ctx = { product: null, profile: null, shop: null };
+        if (ssr) {
+          ssr.statusCode = 404;
+          ssr.head.title = 'Товар не найден';
+        }
+        return;
+      }
+
+      const [profile, shop] = await Promise.all([
+        ssr ? ssr.getProfile() : loadProfile(),
+        ssr ? ssr.getShopById(product.shopId) : loadShopById(product.shopId),
+      ]);
       this.ctx = { product, profile, shop };
-      return;
     }
 
-    void this.globals.stores.cart.load();
-    this.globals.stores.favorites.load();
+    const product = this.product;
+    if (ssr && product) {
+      const priceLabel = `от ${product.price.toLocaleString('ru-RU')} ₽`;
+      ssr.head.title = `${product.title} - ${this.globals.stores.appInfo.appName}`;
+      ssr.head.ogTitle = product.title;
+      ssr.head.ogDescription = `${product.title} — ${priceLabel}`;
+      ssr.head.ogImage = product.images?.[0] ?? FALLBACK_PRODUCT_IMAGE;
+      ssr.head.ogUrl = `/products/${product.id}`;
+      ssr.head.ogType = 'product';
+    }
+
+    if (!ssr) {
+      void this.globals.stores.cart.load();
+      void this.globals.stores.favorites.load();
+    }
   }
 }

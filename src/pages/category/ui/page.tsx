@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { cx } from 'yummies/css';
 import { ActionButton } from '../../../shared/ui/action-button';
+import { Card } from '../../../shared/ui/card';
 import { CategoryPageVM } from '../model';
 import { CategoryNotFound } from './components/category-not-found';
 import { CategoryProductCardsRow } from './components/category-product-row';
@@ -16,20 +17,21 @@ const pricePresets = [
   { id: '5000+', label: 'От 5000 ₽', min: 5000, max: undefined },
 ] as const;
 
+const CategoryLoading = () => (
+  <main className="w-full bg-base-bg pt-6 pb-10">
+    <section className="mx-auto max-w-[1416px] px-4">
+      <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-200" />
+    </section>
+  </main>
+);
+
 export const CategoryPage = withViewModel(
   CategoryPageVM,
   ({ model }) => {
     const brandsRef = useRef<HTMLDivElement>(null);
 
-    if (!model.category) {
-      return (
-        <main className="w-full bg-base-bg pt-6 pb-10">
-          <section className="mx-auto max-w-[1416px] px-4">
-            <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-200" />
-            <div className="mt-6 h-64 animate-pulse rounded-3xl bg-slate-200" />
-          </section>
-        </main>
-      );
+    if (!model.ctx) {
+      return <CategoryLoading />;
     }
 
     if (!model.category) {
@@ -315,6 +317,26 @@ export const CategoryPage = withViewModel(
                 </label>
               </div>
 
+              {model.loadError ? (
+                <Card
+                  role="alert"
+                  className="mb-4 flex flex-wrap items-center justify-between gap-4 border border-slate-200 p-5 shadow-none"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      {model.loadError}
+                    </p>
+                    <p className="mt-1 text-slate-500 text-sm">
+                      Попробуйте загрузить их ещё раз.
+                    </p>
+                  </div>
+                  <ActionButton
+                    action={() => void model.loadProductsChunk()}
+                    look="solidBrand"
+                    text="Повторить"
+                  />
+                </Card>
+              ) : null}
               {model.isProductsLoaded ? (
                 <Virtuoso
                   computeItemKey={model.defineComputeItemKey}
@@ -334,12 +356,6 @@ export const CategoryPage = withViewModel(
     );
   },
   {
-    fallback: () => (
-      <main className="w-full bg-base-bg pt-6 pb-10">
-        <section className="mx-auto max-w-[1416px] px-4">
-          <div className="h-10 w-48 animate-pulse rounded-xl bg-slate-200" />
-        </section>
-      </main>
-    ),
+    fallback: CategoryLoading,
   },
 );

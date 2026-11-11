@@ -43,6 +43,38 @@ export function removeCartItem(
   return { ok: true };
 }
 
+export function changeCartItem(
+  sessionId: string,
+  productId: number,
+  delta: number,
+): { ok: true } | { ok: false; reason: 'invalid_payload' | 'not_found' } {
+  if (!Number.isInteger(productId) || (delta !== 1 && delta !== -1)) {
+    return { ok: false, reason: 'invalid_payload' };
+  }
+  const product = allProducts.find((item) => item.id === productId);
+  if (!product) return { ok: false, reason: 'not_found' };
+
+  const lines = [...(cartBySessionId.get(sessionId) ?? [])];
+  const index = lines.findIndex((line) => line.productId === productId);
+  if (index < 0) {
+    if (delta < 0) return { ok: false, reason: 'not_found' };
+    lines.push({ productId, quantity: 1 });
+  } else {
+    const quantity = lines[index]!.quantity + delta;
+    if (quantity <= 0) lines.splice(index, 1);
+    else {
+      const maxAvailable = mapProductToCartItem(
+        product,
+        lines[index]!.quantity,
+        index,
+      ).quantity.maxAvailable;
+      lines[index] = { productId, quantity: Math.min(quantity, maxAvailable) };
+    }
+  }
+  cartBySessionId.set(sessionId, lines);
+  return { ok: true };
+}
+
 export function replaceCart(
   sessionId: string,
   lines: SessionCartLine[],

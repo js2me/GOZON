@@ -27,6 +27,7 @@ export interface HeadApi {
 }
 
 export interface SSRApi {
+  statusCode: number;
   head: HeadApi;
   getProfile(): Promise<ProfileDC>;
   getProductById(productId: number): Promise<ProductDC | null>;

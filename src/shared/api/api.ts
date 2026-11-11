@@ -147,17 +147,13 @@ export interface CartDC {
   promo: CartPromoDC;
 }
 
-export interface SyncCartItemPayload {
-  productId: number;
-  quantity: number;
-}
-
 export interface FavoritesDC {
   productIds: number[];
 }
 
 export const loadProducts = async (
   params: LoadProductsParams,
+  signal?: AbortSignal,
 ): Promise<ProductsChunkDC> => {
   const searchParams = new URLSearchParams({
     limit: String(params.limit),
@@ -178,7 +174,12 @@ export const loadProducts = async (
   if (params.sort && params.sort !== 'popular') {
     searchParams.set('sort', params.sort);
   }
-  const response = await fetch(`/api/products?${searchParams.toString()}`);
+  const response = await fetch(`/api/products?${searchParams.toString()}`, {
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error('Products load failed');
+  }
   return response.json();
 };
 
@@ -199,10 +200,13 @@ export const loadCategoryById = async (
 
 export const loadProductById = async (
   productId: number,
-): Promise<ProductDC> => {
+): Promise<ProductDC | null> => {
   const response = await fetch(`/api/products/${productId}`);
+  if (response.status === 404) {
+    return null;
+  }
   if (!response.ok) {
-    throw new Error('Product not found');
+    throw new Error('Product load failed');
   }
 
   return response.json();
@@ -236,19 +240,31 @@ export const loadProfileViewedProducts = async (): Promise<
   return response.json();
 };
 
-export const putCart = async (
-  items: SyncCartItemPayload[],
+export const changeCartItem = async (
+  productId: number,
+  delta: 1 | -1,
 ): Promise<CartDC> => {
-  const response = await fetch('/api/cart', {
-    method: 'PUT',
+  const response = await fetch(`/api/cart/items/${productId}`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ delta }),
     credentials: 'include',
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
-    throw new Error('Failed to sync cart');
+    throw new Error('Failed to change cart item');
   }
 
+  return response.json();
+};
+
+export const removeCartItem = async (productId: number): Promise<CartDC> => {
+  const response = await fetch(`/api/cart/items/${productId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error('Failed to remove cart item');
   return response.json();
 };
 
@@ -270,17 +286,16 @@ export const loadFavorites = async (): Promise<FavoritesDC> => {
   return response.json();
 };
 
-export const putFavorites = async (
-  productIds: number[],
+export const toggleFavorite = async (
+  productId: number,
 ): Promise<FavoritesDC> => {
-  const response = await fetch('/api/favorites', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productIds }),
+  const response = await fetch(`/api/favorites/items/${productId}`, {
+    method: 'POST',
     credentials: 'include',
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
-    throw new Error('Failed to sync favorites');
+    throw new Error('Failed to toggle favorite');
   }
 
   return response.json();

@@ -34,16 +34,16 @@ export class CartPageVM extends PageVM<null> {
     return this.globals.stores.cart.loadError;
   }
 
+  refreshCart = () => {
+    void this.cart.load();
+  };
+
   toggleItem = (productId: number) => {
     this.globals.stores.cart.toggleItem(productId);
   };
 
   setAllSelected = (value: boolean) => {
     this.globals.stores.cart.setAllSelected(value);
-  };
-
-  changeQuantity = (productId: number, nextQty: number) => {
-    this.globals.stores.cart.changeQuantity(productId, nextQty);
   };
 
   increment = (productId: number) => {

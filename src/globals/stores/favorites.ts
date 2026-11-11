@@ -1,6 +1,6 @@
 import { computed, makeObservable, observable, runInAction } from 'mobx';
 import { storageData } from 'mobx-web-api';
-import { loadFavorites, putFavorites } from '../../shared/api/api';
+import { loadFavorites, toggleFavorite } from '../../shared/api/api';
 
 export class FavoritesStore {
   private readonly storedProductIdsState = storageData.key<number[]>(
@@ -13,8 +13,9 @@ export class FavoritesStore {
 
   private isLoaded = false;
   private loadingPromise: Promise<void> | null = null;
-  private syncInFlight = 0;
-  /** До первой завершённой попытки `load()` — считаем список ещё не инициализированным с сервера. */
+  private mutationPromise: Promise<void> | null = null;
+  loadError: string | null = null;
+  /** До первого ответа сервера избранное не готово к отображению. */
   private initialLoadPending = true;
 
   constructor() {
@@ -25,20 +26,21 @@ export class FavoritesStore {
       | 'productIds'
       | 'isReady'
       | 'loadingPromise'
-      | 'syncInFlight'
+      | 'mutationPromise'
       | 'initialLoadPending'
     >(this, {
       productIds: observable.ref,
       isReady: observable.ref,
       loadingPromise: observable.ref,
-      syncInFlight: observable,
+      mutationPromise: observable.ref,
       initialLoadPending: observable,
       isLoading: computed,
+      loadError: observable.ref,
     });
   }
 
   get isLoading(): boolean {
-    return this.initialLoadPending || this.syncInFlight > 0;
+    return this.initialLoadPending || this.mutationPromise !== null;
   }
 
   hasProduct = (productId: number): boolean => {
@@ -48,19 +50,37 @@ export class FavoritesStore {
     return this.productIds.includes(productId);
   };
 
-  toggleProduct = (productId: number) => {
-    this.isReady = true;
+  toggleProduct = (productId: number): Promise<void> => {
+    const previous = this.mutationPromise ?? this.loadingPromise;
+    const task = (async () => {
+      if (previous) await previous;
+      try {
+        const { productIds } = await toggleFavorite(productId);
+        this.setProductIds(productIds);
+        this.isLoaded = true;
+        this.isReady = true;
+        this.loadError = null;
+      } catch {
+        this.loadError = 'Не удалось изменить избранное';
+      } finally {
+        this.initialLoadPending = false;
+      }
+    })();
+    this.mutationPromise = task;
+    void task.finally(() => {
+      if (this.mutationPromise === task) this.mutationPromise = null;
+    });
+    return task;
+  };
 
-    if (this.productIds.includes(productId)) {
-      this.setProductIds(this.productIds.filter((it) => it !== productId));
-    } else {
-      this.setProductIds([...this.productIds, productId]);
-    }
-
-    this.syncWithServer();
+  refresh = async () => {
+    if (this.mutationPromise) await this.mutationPromise;
+    this.isLoaded = false;
+    await this.load();
   };
 
   load = async () => {
+    if (this.mutationPromise) return this.mutationPromise;
     if (this.isLoaded) {
       this.isReady = true;
       runInAction(() => {
@@ -78,8 +98,9 @@ export class FavoritesStore {
         const { productIds } = await loadFavorites();
         this.setProductIds(productIds);
         this.isLoaded = true;
+        this.loadError = null;
       } catch {
-        // keep empty in-memory state if server is temporarily unavailable
+        this.loadError = 'Не удалось загрузить избранное';
       } finally {
         runInAction(() => {
           this.isReady = true;
@@ -91,19 +112,6 @@ export class FavoritesStore {
 
     await this.loadingPromise;
   };
-
-  private async syncWithServer() {
-    this.syncInFlight++;
-    const snapshot = Array.from(this.productIds);
-
-    try {
-      const { productIds } = await putFavorites(snapshot);
-      this.setProductIds(productIds);
-    } catch {
-    } finally {
-      this.syncInFlight--;
-    }
-  }
 
   private setProductIds(productIds: number[]) {
     this.productIds = productIds;

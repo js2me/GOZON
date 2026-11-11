@@ -31,8 +31,16 @@ export const CartPage = withViewModel(
           </div>
 
           {model.loadError ? (
-            <Card className="p-6 text-center text-red-600">
-              {model.loadError}
+            <Card className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-amber-50 px-4 py-3">
+              <div>
+                <p className="font-medium text-slate-900">{model.loadError}</p>
+              </div>
+              <ActionButton
+                look="neutralInset"
+                text="Обновить"
+                action={model.refreshCart}
+                disabled={model.isLoading}
+              />
             </Card>
           ) : null}
 
