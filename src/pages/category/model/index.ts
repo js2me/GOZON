@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
 import { parser } from 'yummies/parser';
@@ -207,18 +207,18 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
     super(globals, params);
 
     makeObservable(this, {
-      products: observable.ref,
-      loadError: observable.ref,
-      isProductsLoaded: observable.ref,
-      isLoadingMore: observable.ref,
-      hasMoreProducts: observable.ref,
-      offset: observable.ref,
-      saleOnly: observable.ref,
-      sort: observable.ref,
-      priceMinInput: observable.ref,
-      priceMaxInput: observable.ref,
-      installmentUi: observable.ref,
-      deliveryUi: observable.ref,
+      products: observableRef,
+      loadError: observableRef,
+      isProductsLoaded: observableRef,
+      isLoadingMore: observableRef,
+      hasMoreProducts: observableRef,
+      offset: observableRef,
+      saleOnly: observableRef,
+      sort: observableRef,
+      priceMinInput: observableRef,
+      priceMaxInput: observableRef,
+      installmentUi: observableRef,
+      deliveryUi: observableRef,
       virtualProductRows: computed,
       category: computed,
       categoryId: computed,

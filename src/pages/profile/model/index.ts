@@ -1,12 +1,12 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { Globals } from '../../../globals';
+import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import {
   loadProfile,
   loadProfileRatingProducts,
   loadProfileViewedProducts,
 } from '../../../shared/api/api';
-import { PageVM } from '../../../globals/stores/view-models/page-vm';
 import type {
   ProfileMenuSection,
   ProfilePageContext,
@@ -100,13 +100,13 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     super(globals, params);
 
     makeObservable(this, {
-      ratingProducts: observable.ref,
-      viewedProducts: observable.ref,
-      isRatingLoading: observable.ref,
-      isViewedLoading: observable.ref,
-      menuSections: computed.struct,
-      ratingCards: computed.struct,
-      viewedCards: computed.struct,
+      ratingProducts: observableRef,
+      viewedProducts: observableRef,
+      isRatingLoading: observableRef,
+      isViewedLoading: observableRef,
+      menuSections: computedStruct,
+      ratingCards: computedStruct,
+      viewedCards: computedStruct,
       shouldShowRatingSkeletons: computed,
       shouldShowViewedSkeletons: computed,
     });

@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
@@ -286,10 +286,10 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     super(globals, params);
 
     makeObservable(this, {
-      activeImageIndex: observable.ref,
+      activeImageIndex: observableRef,
       product: computed,
       productId: computed,
-      images: computed.struct,
+      images: computedStruct,
       activeImage: computed,
       priceText: computed,
       originalPriceText: computed,
@@ -304,8 +304,8 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
       colorText: computed,
       showPriceDropBadge: computed,
       returnPeriodText: computed,
-      characteristics: computed.struct,
-      categoriesPath: computed.struct,
+      characteristics: computedStruct,
+      categoriesPath: computedStruct,
       isAddingToCart: computed,
       isInCart: computed,
       isFavorite: computed,

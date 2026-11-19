@@ -1,4 +1,10 @@
-import { computed, makeObservable, observable, runInAction } from 'mobx';
+import {
+  computed,
+  makeObservable,
+  observable,
+  observableRef,
+  runInAction,
+} from 'mobx';
 import { storageData } from 'mobx-web-api';
 import { loadFavorites, toggleFavorite } from '../../shared/api/api';
 
@@ -29,13 +35,13 @@ export class FavoritesStore {
       | 'mutationPromise'
       | 'initialLoadPending'
     >(this, {
-      productIds: observable.ref,
-      isReady: observable.ref,
-      loadingPromise: observable.ref,
-      mutationPromise: observable.ref,
+      productIds: observableRef,
+      isReady: observableRef,
+      loadingPromise: observableRef,
+      mutationPromise: observableRef,
       initialLoadPending: observable,
       isLoading: computed,
-      loadError: observable.ref,
+      loadError: observableRef,
     });
   }
 

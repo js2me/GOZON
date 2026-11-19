@@ -1,4 +1,10 @@
-import { computed, makeObservable, observable, runInAction } from 'mobx';
+import {
+  computed,
+  makeObservable,
+  observable,
+  observableRef,
+  runInAction,
+} from 'mobx';
 import type { CartDC, CartItemDC, CartPromoDC } from '../../../shared/api/api';
 import {
   changeCartItem,
@@ -21,10 +27,10 @@ export class CartStore {
   constructor(router: Router) {
     this.router = router;
     makeObservable(this, {
-      promo: observable.ref,
-      isLoading: observable.ref,
-      loadError: observable.ref,
-      isSyncing: observable.ref,
+      promo: observableRef,
+      isLoading: observableRef,
+      loadError: observableRef,
+      isSyncing: observableRef,
       items: computed,
       summary: computed,
       allSelected: computed,
