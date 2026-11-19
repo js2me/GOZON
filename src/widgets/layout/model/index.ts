@@ -1,5 +1,5 @@
 import { House } from 'lucide-react';
-import { computed, makeObservable, observable } from 'mobx';
+import { computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import { createRef } from 'yummies/mobx';
 import type { Globals } from '../../../globals';
@@ -81,9 +81,9 @@ export class LayoutVM extends VM {
     super(globals, params);
 
     makeObservable(this, {
-      navItems: computed.struct,
-      quickLinks: computed.struct,
-      isHeaderCompact: observable.ref,
+      navItems: computedStruct,
+      quickLinks: computedStruct,
+      isHeaderCompact: observableRef,
     });
   }
 }

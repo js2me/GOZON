@@ -8,7 +8,3 @@ minimumReleaseAgeExclude:
   - mobx-view-model@11.0.0
   - mobx-route@1.2.1
   - mobx-route@1.2.3
-peerDependencyRules:
-  allowedVersions:
-    # Gozon uses mobx-route's router exports, not its optional ViewModel adapter.
-    'mobx-route>mobx-view-model': '^11.0.0'

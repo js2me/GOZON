@@ -1,4 +1,4 @@
-import { computed, makeObservable } from 'mobx';
+import { computedStruct, makeObservable } from 'mobx';
 import type { Router } from '../router';
 
 export interface MainCategory {
@@ -12,7 +12,7 @@ export class CategoryStore {
     private readonly categories: MainCategory[],
   ) {
     makeObservable(this, {
-      mainCategories: computed.struct,
+      mainCategories: computedStruct,
     });
   }
 

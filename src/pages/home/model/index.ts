@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
 import type { Globals } from '../../../globals';
@@ -114,11 +114,11 @@ export class HomePageVM extends PageVM {
     super(globals, params);
 
     makeObservable(this, {
-      products: observable.ref,
-      isProductsLoaded: observable.ref,
-      isLoadingMore: observable.ref,
-      hasMoreProducts: observable.ref,
-      offset: observable.ref,
+      products: observableRef,
+      isProductsLoaded: observableRef,
+      isLoadingMore: observableRef,
+      hasMoreProducts: observableRef,
+      offset: observableRef,
       virtualProductRows: computed,
     });
   }

@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx';
+import { makeObservable, observableRef } from 'mobx';
 import type { InferViewModelParams } from 'mobx-view-model';
 import type { Globals } from '../..';
 import { VM } from './vm';
@@ -12,7 +12,7 @@ export class PageVM<
     super(globals, params);
 
     makeObservable(this, {
-      ctx: observable.ref,
+      ctx: observableRef,
     });
   }
 
