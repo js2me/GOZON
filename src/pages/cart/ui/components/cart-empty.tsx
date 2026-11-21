@@ -1,26 +1,12 @@
 import { ShoppingCart } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
-import { useEffect, useState } from 'react';
-import { loadProducts } from '../../../../shared/api/api';
 import { ItemCard } from '../../../../widgets/item-card';
-import { mapProductToCard } from '../../../home/model/map-product-to-card';
-import type { ProductCardInfo } from '../../../home/model/types';
 import { CartPageVM } from '../../model';
 
 export const CartEmpty = observer(() => {
   const model = useViewModel(CartPageVM);
-  const [recommendations, setRecommendations] = useState<ProductCardInfo[]>([]);
-  useEffect(() => {
-    const controller = new AbortController();
-    void loadProducts({ limit: 10, offset: 0 }, controller.signal)
-      .then(({ items }) => {
-        if (!controller.signal.aborted)
-          setRecommendations(items.map(mapProductToCard));
-      })
-      .catch(() => {});
-    return () => controller.abort();
-  }, []);
+  const { recommendations } = model;
   return (
     <>
       <div className="empty-panel">

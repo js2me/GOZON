@@ -7,6 +7,19 @@
       },
       "suspicious": {
         "noArrayIndexKey": "warn"
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "react": {
+                "importNames": ["useRef", "useState", "useEffect"],
+                "message": "Храните состояние, DOM-ссылки и эффекты в VM."
+              }
+            }
+          }
+        }
       }
     }
   }

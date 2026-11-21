@@ -164,13 +164,9 @@ export const ProfilePage = withViewModel(
                     href={`/products/${item.id}`}
                     imageAlt={`${item.brand} ${item.title}`}
                     imageSrc={item.imageSrc}
-                    isFavorite={model.globals.stores.favorites.hasProduct(
-                      Number(item.id),
-                    )}
+                    isFavorite={item.isFavorite}
                     onFavoriteClick={() =>
-                      void model.globals.stores.favorites.toggleProduct(
-                        Number(item.id),
-                      )
+                      void model.toggleViewedFavorite(item.id)
                     }
                     key={item.id}
                     originalPrice={item.originalPrice}

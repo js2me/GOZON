@@ -1,7 +1,6 @@
 import { Link } from '@heroui/react';
 import { ChevronRight } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
-import { useRef, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { cx } from 'yummies/css';
 import { ActionButton } from '../../../shared/ui/action-button';
@@ -28,9 +27,6 @@ const CategoryLoading = () => (
 export const CategoryPage = withViewModel(
   CategoryPageVM,
   ({ model }) => {
-    const results = useRef<HTMLDivElement>(null);
-    const [filtersOpen, setFiltersOpen] = useState(false);
-
     if (!model.ctx) {
       return <CategoryLoading />;
     }
@@ -40,11 +36,6 @@ export const CategoryPage = withViewModel(
     }
 
     const c = model.category;
-
-    const choose = (label: string) => {
-      model.chooseCollection(label);
-      results.current?.scrollIntoView({ block: 'start' });
-    };
 
     return (
       <main className="category-page">
@@ -61,7 +52,7 @@ export const CategoryPage = withViewModel(
                 <button
                   key={item.label}
                   type="button"
-                  onClick={() => choose(item.label)}
+                  onClick={() => model.chooseCollection(item.label)}
                 >
                   {item.label}
                 </button>
@@ -72,7 +63,7 @@ export const CategoryPage = withViewModel(
             <button
               type="button"
               className="department-banner"
-              onClick={() => choose('Уход за лицом')}
+              onClick={() => model.chooseCollection('Уход за лицом')}
               aria-label="Дермакосметика — смотреть уход за лицом"
             >
               <img src={c.banner} alt="Дермакосметика. Красота здоровой кожи" />
@@ -84,7 +75,7 @@ export const CategoryPage = withViewModel(
                 <button
                   key={item.label}
                   type="button"
-                  onClick={() => choose(item.label)}
+                  onClick={() => model.chooseCollection(item.label)}
                 >
                   <img src={item.imageSrc} alt="" />
                   <span>{item.label}</span>
@@ -110,7 +101,7 @@ export const CategoryPage = withViewModel(
                     key={brand.id}
                     type="button"
                     aria-label={brand.name}
-                    onClick={() => choose(brand.name)}
+                    onClick={() => model.chooseCollection(brand.name)}
                   >
                     <img src={brand.imageSrc} alt={brand.name} />
                   </button>
@@ -118,16 +109,19 @@ export const CategoryPage = withViewModel(
               </div>
             </section>
           )}
-          <div className="department-results" ref={results}>
+          <div className="department-results" ref={model.resultsRef}>
             <button
               className="filter-trigger"
               type="button"
-              aria-expanded={filtersOpen}
-              onClick={() => setFiltersOpen(!filtersOpen)}
+              aria-expanded={model.filtersOpen}
+              onClick={model.toggleFilters}
             >
               Фильтры
             </button>
-            <aside className="department-filters" data-expanded={filtersOpen}>
+            <aside
+              className="department-filters"
+              data-expanded={model.filtersOpen}
+            >
               <p className="font-bold text-[15px] text-slate-900">Категория</p>
               <nav className="mt-3 flex flex-col gap-0.5">
                 {c.sidebarCategories.map((item) => (
@@ -225,17 +219,9 @@ export const CategoryPage = withViewModel(
                       <input
                         className="size-4 accent-brand"
                         name="pricePreset"
-                        onChange={() => {
-                          model.setPriceMinInput(
-                            preset.min != null ? String(preset.min) : '',
-                          );
-                          model.setPriceMaxInput(
-                            preset.max != null && preset.max !== undefined
-                              ? String(preset.max)
-                              : '',
-                          );
-                          model.applyPriceFilter();
-                        }}
+                        onChange={() =>
+                          model.applyPricePreset(preset.min, preset.max)
+                        }
                         type="radio"
                       />
                       {preset.label}
@@ -268,7 +254,10 @@ export const CategoryPage = withViewModel(
                     (model.saleOnly ? 'Акции и скидки' : 'Все товары')}
                 </h2>
                 {(model.collection || model.saleOnly) && (
-                  <button type="button" onClick={() => choose('')}>
+                  <button
+                    type="button"
+                    onClick={() => model.chooseCollection('')}
+                  >
                     Сбросить подборку
                   </button>
                 )}

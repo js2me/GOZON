@@ -1,34 +1,11 @@
 import { Grid2X2, MapPin, Search, X } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
-import { useEffect, useRef, useState } from 'react';
 import type { LayoutVM } from '../model';
 import { Navbar } from './navbar';
 
 export const Header = observer(() => {
   const model = useViewModel<LayoutVM>();
-  const [open, setOpen] = useState(false);
-  const catalog = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const outside = (event: PointerEvent) => {
-      if (!catalog.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        if (catalog.current?.contains(document.activeElement))
-          trigger.current?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('pointerdown', outside);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [open]);
   return (
     <header className="market-header" ref={model.headerRef}>
       <div className="header-inner">
@@ -36,14 +13,14 @@ export const Header = observer(() => {
           <a href="/" className="wordmark">
             {model.globals.stores.appInfo.appName}
           </a>
-          <div className="catalog-control" ref={catalog}>
+          <div className="catalog-control" ref={model.catalogRef}>
             <button
               className="catalog-trigger"
               type="button"
-              ref={trigger}
+              ref={model.catalogTriggerRef}
               aria-controls="catalog-menu"
-              aria-expanded={open}
-              onClick={() => setOpen(!open)}
+              aria-expanded={model.catalogOpen}
+              onClick={model.toggleCatalog}
             >
               <span className="catalog-icon" aria-hidden="true">
                 <Grid2X2 size={18} />
@@ -55,7 +32,7 @@ export const Header = observer(() => {
               id="catalog-menu"
               className="catalog-menu"
               aria-label="Категории"
-              inert={!open}
+              inert={!model.catalogOpen}
             >
               {model.globals.stores.category.mainCategories.map((link) => (
                 <a key={link.href} href={link.href}>
@@ -71,11 +48,7 @@ export const Header = observer(() => {
               aria-label="Поиск товаров"
               placeholder="Искать на GOZON"
               type="search"
-              defaultValue={
-                typeof window === 'undefined'
-                  ? ''
-                  : (new URLSearchParams(window.location.search).get('q') ?? '')
-              }
+              defaultValue={model.searchQuery}
             />
             <button type="submit" aria-label="Искать">
               <Search size={21} />

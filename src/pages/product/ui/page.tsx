@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { withViewModel } from 'mobx-view-model-react';
 import { declension } from 'yummies/text';
-import { ClientOnly } from '../../../shared/ui/client-only';
 import { ProductPageVM } from '../model';
 import { FeedbackSections } from './components/product-feedback';
 import { ProductNotFound } from './components/product-not-found';
@@ -107,14 +106,12 @@ export const ProductPage = withViewModel(
                     <dd>{product.colorText}</dd>
                   </div>
                 )}
-                {model.characteristics
-                  .filter((item) => item.label !== 'Наименование')
-                  .map((item) => (
-                    <div key={item.label}>
-                      <dt>{item.label}</dt>
-                      <dd>{item.value}</dd>
-                    </div>
-                  ))}
+                {model.characteristics.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
               </dl>
               <a className="description-link" href="#description">
                 Перейти к описанию
@@ -128,7 +125,11 @@ export const ProductPage = withViewModel(
               </div>
             </section>
           </section>
-          <aside className="purchase-panel" aria-label="Покупка и доставка">
+          <aside
+            ref={model.purchasePanelRef}
+            className="purchase-panel"
+            aria-label="Покупка и доставка"
+          >
             <div className="product-price">
               <strong>{model.priceText}</strong>
               {model.discountText && (
@@ -141,9 +142,7 @@ export const ProductPage = withViewModel(
             {model.showPriceDropBadge && model.discountText && (
               <p className="price-note">Стало дешевле</p>
             )}
-            <ClientOnly
-              fallback={<div className="purchase-loading" aria-hidden="true" />}
-            >
+            {model.purchasePanelRef.current ? (
               <div className="purchase-actions">
                 <button
                   type="button"
@@ -197,7 +196,9 @@ export const ProductPage = withViewModel(
                   <Heart />
                 </button>
               </div>
-            </ClientOnly>
+            ) : (
+              <div className="purchase-loading" aria-hidden="true" />
+            )}
             <section className="shipping">
               <h2>Доставка и возврат</h2>
               <div>
@@ -220,11 +221,7 @@ export const ProductPage = withViewModel(
             </section>
           </aside>
         </div>
-        <FeedbackSections
-          key={product.id}
-          product={product}
-          shop={model.shopName}
-        />
+        <FeedbackSections model={model} />
       </main>
     );
   },

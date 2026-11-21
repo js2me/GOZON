@@ -315,3 +315,11 @@ export const toggleFavorite = async (
 
   return response.json();
 };
+
+export async function loadFavoriteProducts(
+  signal: AbortSignal,
+): Promise<ProductDC[]> {
+  const response = await fetch('/api/favorites/products', { signal });
+  if (!response.ok) throw new Error('Favorites products load failed');
+  return response.json();
+}

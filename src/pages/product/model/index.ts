@@ -1,5 +1,6 @@
 import { computed, computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
+import { createRef } from 'yummies/mobx';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
 import { PageVM } from '../../../globals/stores/view-models/page-vm';
@@ -22,7 +23,47 @@ const deliveryVariantLabels: Record<ProductDeliveryVariant, string> = {
 };
 
 export class ProductPageVM extends PageVM<ProductPageContext | null> {
+  purchasePanelRef = createRef<HTMLElement>();
   activeImageIndex = 0;
+  reviewSort = 'recent';
+  reviewLimit = 3;
+
+  setReviewSort = (sort: string) => {
+    this.reviewSort = sort;
+    this.reviewLimit = 3;
+  };
+
+  showMoreReviews = () => {
+    this.reviewLimit += 3;
+  };
+
+  get visibleReviews() {
+    const reviews = [...(this.product?.feedback?.reviews ?? [])];
+    reviews.sort((a, b) =>
+      this.reviewSort === 'recent'
+        ? b.date.localeCompare(a.date)
+        : this.reviewSort === 'high'
+          ? b.stars - a.stars
+          : a.stars - b.stars,
+    );
+    return reviews.slice(0, this.reviewLimit).map((review) => ({
+      ...review,
+      dateLabel: new Date(review.date).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+      }),
+      starsLabel: '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars),
+    }));
+  }
+
+  get reviewDistribution() {
+    const reviews = this.product?.feedback?.reviews ?? [];
+    return [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: reviews.filter((review) => review.stars === stars).length,
+    }));
+  }
 
   get product(): ProductDC | null {
     return this.ctx?.product ?? null;
@@ -148,7 +189,11 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get characteristics(): ProductCharacteristicDC[] {
-    return this.product?.characteristics ?? [];
+    return (
+      this.product?.characteristics.filter(
+        (item) => item.label !== 'Наименование',
+      ) ?? []
+    );
   }
 
   get categoriesPath(): ProductCategoryDC[] {
@@ -286,6 +331,10 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     super(globals, params);
 
     makeObservable(this, {
+      reviewSort: observableRef,
+      reviewLimit: observableRef,
+      visibleReviews: computed,
+      reviewDistribution: computed,
       activeImageIndex: observableRef,
       product: computed,
       productId: computed,

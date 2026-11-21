@@ -44,9 +44,15 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
     return this.ratingProducts;
   }
 
-  get viewedCards(): ProfileViewedCard[] {
-    return this.viewedProducts;
+  get viewedCards() {
+    return this.viewedProducts.map((item) => ({
+      ...item,
+      isFavorite: this.globals.stores.favorites.hasProduct(Number(item.id)),
+    }));
   }
+
+  toggleViewedFavorite = (id: string) =>
+    this.globals.stores.favorites.toggleProduct(Number(id));
 
   get shouldShowRatingSkeletons(): boolean {
     return this.isRatingLoading && this.ratingProducts.length === 0;

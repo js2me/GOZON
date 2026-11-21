@@ -1,7 +1,6 @@
 import { Package, MapPin, ChevronRight } from 'lucide-react';
-import { observer } from 'mobx-react-lite';
-import { useViewModel } from 'mobx-view-model-react';
-import type { LayoutVM } from '../../widgets/layout/model';
+import { withViewModel } from 'mobx-view-model-react';
+import { OrdersPageVM } from './model';
 
 export function OrderSummary() {
   return (
@@ -18,9 +17,7 @@ export function OrderSummary() {
   );
 }
 
-export const OrdersPage = observer(() => {
-  const { globals } = useViewModel<LayoutVM>();
-  if (globals.ssr) globals.ssr.head.title = 'Заказы — GOZON';
+export const OrdersPage = withViewModel(OrdersPageVM, () => {
   return (
     <main className="account-page">
       <a className="crumb" href="/profile">

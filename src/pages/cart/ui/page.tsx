@@ -11,8 +11,7 @@ import { ProductCheckboxCard } from './components/product-checkbox-card';
 export const CartPage = withViewModel(
   CartPageVM,
   ({ model }) => {
-    const promo = model.promo;
-    const isEmpty = !model.isLoading && model.localItems.length === 0;
+    const { promo, isEmpty } = model;
 
     return (
       <main className="cart-page">
