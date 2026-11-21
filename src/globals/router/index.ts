@@ -19,6 +19,8 @@ export interface RouterParams {
 const defineRoutes = () => ({
   home: createRoute('/', { exact: true }),
   profile: createRoute('/profile', { exact: true }),
+  favorites: createRoute('/favorites', { exact: true }),
+  orders: createRoute('/orders', { exact: true }),
   cart: createRoute('/cart', { exact: true }),
   category: createRoute('/category/:categoryId', { exact: true }),
   product: createRoute('/products/:productId', { exact: true }),

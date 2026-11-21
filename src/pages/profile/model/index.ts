@@ -23,53 +23,36 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
   get menuSections(): ProfileMenuSection[] {
     return [
       {
-        title: 'Личная информация',
+        title: 'Личный кабинет',
         items: [
-          { label: 'Главная', href: '/profile', active: true },
-          { label: 'Ozon Карта', href: '/profile/ozon-card' },
-          { label: 'Кредитная карта', href: '/profile/credit-card' },
-          { label: 'Мои компании', href: '/profile/companies' },
-          { label: 'Коды и сертификаты', href: '/profile/codes' },
-          { label: 'Баллы и бонусы', href: '/profile/bonuses', count: 2001 },
-          { label: 'Способы оплаты', href: '/profile/payment' },
-          { label: 'Ozon Premium', href: '/profile/premium' },
-          { label: 'Баланс средств', href: '/profile/balance' },
-          { label: 'Моя семья', href: '/profile/family' },
-          { label: 'Мой гараж', href: '/profile/garage' },
-        ],
-      },
-      {
-        title: 'Заказы',
-        items: [
-          { label: 'Моя корзина', href: '/cart' },
+          { label: 'Мой профиль', href: '/profile', active: true },
           { label: 'Мои заказы', href: '/orders' },
-          { label: 'Мои возвраты', href: '/profile/returns' },
-          { label: 'Купленные товары', href: '/profile/purchased' },
-          { label: 'OZON Travel', href: '/travel' },
-          { label: 'Для меня', href: '/for-me' },
-          { label: 'Сравнение товаров', href: '/compare' },
-          { label: 'Сообщения', href: '/messages', count: 193 },
-          { label: 'Электронные чеки', href: '/checks' },
-        ],
-      },
-      {
-        title: 'Отзывы и вопросы о товарах',
-        items: [
-          { label: 'Мои отзывы', href: '/reviews', count: 169 },
-          { label: 'Акция «Баллы за отзывы»', href: '/reviews/promo' },
-          { label: 'Мои вопросы и ответы', href: '/questions' },
+          { label: 'Избранное', href: '/favorites' },
+          { label: 'Корзина', href: '/cart' },
         ],
       },
     ];
+  }
+
+  hideRatingCard(id: string) {
+    this.ratingProducts = this.ratingProducts.filter(
+      (product) => product.id !== id,
+    );
   }
 
   get ratingCards(): ProfileRatingCard[] {
     return this.ratingProducts;
   }
 
-  get viewedCards(): ProfileViewedCard[] {
-    return this.viewedProducts;
+  get viewedCards() {
+    return this.viewedProducts.map((item) => ({
+      ...item,
+      isFavorite: this.globals.stores.favorites.hasProduct(Number(item.id)),
+    }));
   }
+
+  toggleViewedFavorite = (id: string) =>
+    this.globals.stores.favorites.toggleProduct(Number(id));
 
   get shouldShowRatingSkeletons(): boolean {
     return this.isRatingLoading && this.ratingProducts.length === 0;
@@ -129,6 +112,7 @@ export class ProfilePageVM extends PageVM<ProfilePageContext> {
       this.ctx = { profile };
     }
 
+    void this.globals.stores.favorites.load();
     void this.loadProfileProducts();
   }
 }

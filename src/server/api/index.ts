@@ -22,6 +22,7 @@ import {
   allProducts,
   type ProductSortOption,
   queryProducts,
+  getProductById,
 } from '../data/products';
 import { getShopById } from '../data/shops';
 
@@ -109,6 +110,12 @@ const handleFavoritesApiRequest = (
   sessionId: string,
 ): boolean => {
   const path = req.path;
+
+  if (path === '/api/favorites/products' && req.method === 'GET') {
+    const ids = new Set(getFavoritesDC(sessionId).productIds);
+    res.json(allProducts.filter((product) => ids.has(product.id)));
+    return true;
+  }
 
   if (path === '/api/favorites' && req.method === 'GET') {
     res.status(200).json(getFavoritesDC(sessionId));
@@ -203,6 +210,14 @@ const handleProductsListApiRequest = (req: Request, res: Response): boolean => {
     sortRaw === 'price_asc' || sortRaw === 'price_desc' ? sortRaw : 'popular';
 
   const filtered = queryProducts({
+    collection:
+      typeof req.query.collection === 'string'
+        ? req.query.collection
+        : undefined,
+    query:
+      typeof req.query.q === 'string'
+        ? req.query.q.trim().toLowerCase()
+        : undefined,
     categoryId,
     saleOnly: saleOnly || undefined,
     minPrice,
@@ -239,7 +254,7 @@ export const handleApiRequest = async (
   if (path.startsWith('/api/products/')) {
     const productIdRaw = path.slice('/api/products/'.length);
     const productId = Number(productIdRaw);
-    const product = allProducts.find((item) => item.id === productId) ?? null;
+    const product = getProductById(productId);
 
     if (!Number.isInteger(productId) || !product) {
       res.status(404).json({ error: 'Product not found' });
@@ -294,6 +309,7 @@ export const handleApiRequest = async (
       .map((product) => ({
         id: String(product.id),
         title: product.title,
+        imageSrc: product.images?.[0],
       }));
 
     res.status(200).send(JSON.stringify(ratingProducts));

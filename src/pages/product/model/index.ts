@@ -1,5 +1,6 @@
 import { computed, computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
+import { createRef } from 'yummies/mobx';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
 import { PageVM } from '../../../globals/stores/view-models/page-vm';
@@ -22,7 +23,47 @@ const deliveryVariantLabels: Record<ProductDeliveryVariant, string> = {
 };
 
 export class ProductPageVM extends PageVM<ProductPageContext | null> {
+  purchasePanelRef = createRef<HTMLElement>();
   activeImageIndex = 0;
+  reviewSort = 'recent';
+  reviewLimit = 3;
+
+  setReviewSort = (sort: string) => {
+    this.reviewSort = sort;
+    this.reviewLimit = 3;
+  };
+
+  showMoreReviews = () => {
+    this.reviewLimit += 3;
+  };
+
+  get visibleReviews() {
+    const reviews = [...(this.product?.feedback?.reviews ?? [])];
+    reviews.sort((a, b) =>
+      this.reviewSort === 'recent'
+        ? b.date.localeCompare(a.date)
+        : this.reviewSort === 'high'
+          ? b.stars - a.stars
+          : a.stars - b.stars,
+    );
+    return reviews.slice(0, this.reviewLimit).map((review) => ({
+      ...review,
+      dateLabel: new Date(review.date).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+      }),
+      starsLabel: '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars),
+    }));
+  }
+
+  get reviewDistribution() {
+    const reviews = this.product?.feedback?.reviews ?? [];
+    return [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: reviews.filter((review) => review.stars === stars).length,
+    }));
+  }
 
   get product(): ProductDC | null {
     return this.ctx?.product ?? null;
@@ -148,7 +189,11 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get characteristics(): ProductCharacteristicDC[] {
-    return this.product?.characteristics ?? [];
+    return (
+      this.product?.characteristics.filter(
+        (item) => item.label !== 'Наименование',
+      ) ?? []
+    );
   }
 
   get categoriesPath(): ProductCategoryDC[] {
@@ -156,21 +201,21 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get isAddingToCart(): boolean {
-    if (!this.productId) {
+    if (this.productId == null) {
       return false;
     }
     return this.globals.stores.cart.isAddingProduct(this.productId);
   }
 
   get isInCart(): boolean {
-    if (!this.productId || this.globals.ssr) {
+    if (this.productId == null || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.cart.hasProduct(this.productId);
   }
 
   get isFavorite(): boolean {
-    if (!this.productId || this.globals.ssr) {
+    if (this.productId == null || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.favorites.hasProduct(this.productId);
@@ -192,7 +237,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get cartQuantity(): number {
-    if (!this.productId) {
+    if (this.productId == null) {
       return 0;
     }
 
@@ -203,7 +248,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get canIncreaseCartQuantity(): boolean {
-    if (!this.productId) {
+    if (this.productId == null) {
       return false;
     }
 
@@ -222,7 +267,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   addToCart = async () => {
-    if (!this.productId || this.isAddingToCart || this.isInCart) {
+    if (this.productId == null || this.isAddingToCart || this.isInCart) {
       return;
     }
 
@@ -234,7 +279,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   toggleFavorite = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
     this.globals.stores.favorites.toggleProduct(this.productId);
@@ -262,7 +307,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   incrementCartQuantity = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
 
@@ -270,7 +315,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   decrementCartQuantity = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
 
@@ -286,6 +331,10 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
     super(globals, params);
 
     makeObservable(this, {
+      reviewSort: observableRef,
+      reviewLimit: observableRef,
+      visibleReviews: computed,
+      reviewDistribution: computed,
       activeImageIndex: observableRef,
       product: computed,
       productId: computed,

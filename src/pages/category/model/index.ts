@@ -1,6 +1,7 @@
 import { computed, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import type { ComputeItemKey } from 'react-virtuoso';
+import { createRef } from 'yummies/mobx';
 import { parser } from 'yummies/parser';
 import type { Globals } from '../../../globals';
 import { PageVM } from '../../../globals/stores/view-models/page-vm';
@@ -24,6 +25,25 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   products: ProductCardInfo[] = [];
   firstPageProducts: ProductCardInfo[] = [];
   firstPageHasMoreProducts = true;
+
+  resultsRef = createRef<HTMLDivElement>();
+  filtersOpen = false;
+  toggleFilters = () => {
+    this.filtersOpen = !this.filtersOpen;
+  };
+  applyPricePreset = (min: number, max?: number) => {
+    this.setPriceMinInput(String(min));
+    this.setPriceMaxInput(max == null ? '' : String(max));
+    this.applyPriceFilter();
+  };
+
+  collection = '';
+  chooseCollection = (label: string) => {
+    this.saleOnly = label === 'Акции и скидки';
+    this.collection = this.saleOnly ? '' : label;
+    this.resetListAndReload();
+    this.resultsRef.current?.scrollIntoView({ block: 'start' });
+  };
 
   saleOnly = false;
   sort: ProductSortParam = 'popular';
@@ -104,7 +124,8 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
         {
           limit: PAGE_SIZE,
           offset: this.offset,
-          categoryId: this.categoryId,
+          categoryId: this.category?.id ?? this.categoryId,
+          collection: this.collection,
           saleOnly: this.saleOnly,
           minPrice: this.getParsedPriceMin(),
           maxPrice: this.getParsedPriceMax(),
@@ -213,6 +234,8 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       isLoadingMore: observableRef,
       hasMoreProducts: observableRef,
       offset: observableRef,
+      collection: observableRef,
+      filtersOpen: observableRef,
       saleOnly: observableRef,
       sort: observableRef,
       priceMinInput: observableRef,

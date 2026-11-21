@@ -7,10 +7,7 @@ export const Navbar = observer(() => {
   const model = useViewModel<LayoutVM>();
 
   return (
-    <nav
-      aria-label="Быстрые действия"
-      className="ml-auto hidden items-end gap-6 xl:flex"
-    >
+    <nav aria-label="Быстрые действия" className="market-actions">
       {model.navItems.map(({ badge, href, icon: Icon, label }) => (
         <Link
           key={label}

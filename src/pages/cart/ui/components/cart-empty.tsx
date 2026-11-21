@@ -1,21 +1,37 @@
-export function CartEmpty() {
+import { ShoppingCart } from 'lucide-react';
+import { observer } from 'mobx-react-lite';
+import { useViewModel } from 'mobx-view-model-react';
+import { ItemCard } from '../../../../widgets/item-card';
+import { CartPageVM } from '../../model';
+
+export const CartEmpty = observer(() => {
+  const model = useViewModel(CartPageVM);
+  const { recommendations } = model;
   return (
-    <div className="flex min-h-[60vh] w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-6 text-center">
-        <span className="font-bold text-[120px] text-gray-200 leading-none">
-          0
-        </span>
-        <h2 className="font-semibold text-3xl text-gray-800">Корзина пуста</h2>
-        <p className="max-w-md text-gray-500">
-          Добавьте товары в корзину, чтобы продолжить оформление заказа.
-        </p>
-        <a
-          className="mt-4 rounded-lg bg-brand px-6 py-3 text-white transition-opacity hover:opacity-85"
-          href="/"
-        >
+    <>
+      <div className="empty-panel">
+        <ShoppingCart />
+        <h2>Корзина пуста</h2>
+        <p>Воспользуйтесь поиском, чтобы найти всё, что нужно.</p>
+        <a className="primary-link" href="/">
           Перейти к покупкам
         </a>
       </div>
-    </div>
+      {recommendations.length > 0 && (
+        <section className="cart-recommendations">
+          <h2>Рекомендуем</h2>
+          <div className="product-grid">
+            {recommendations.map((item) => (
+              <ItemCard
+                key={item.id}
+                {...item}
+                isFavorite={model.isFavorite(item.id)}
+                onFavoriteClick={() => model.toggleFavorite(item.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
   );
-}
+});

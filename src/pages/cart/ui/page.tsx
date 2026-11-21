@@ -11,24 +11,25 @@ import { ProductCheckboxCard } from './components/product-checkbox-card';
 export const CartPage = withViewModel(
   CartPageVM,
   ({ model }) => {
-    const promo = model.promo;
-    const isEmpty = !model.isLoading && model.localItems.length === 0;
+    const { promo, isEmpty } = model;
 
     return (
-      <main className="w-full bg-surface-subtle pt-4 pb-12">
-        <section className="mx-auto w-full max-w-[1416px] px-4">
-          <div className="mb-6 flex items-baseline gap-2">
-            <h1 className="font-bold text-[28px] text-slate-900 leading-none">
-              Корзина
-            </h1>
-            {model.isLoading ? (
-              <Skeleton className="inline-block h-6 w-10 rounded-md align-middle" />
-            ) : (
-              <span className="align-top font-bold text-accent-emphasis text-lg leading-none">
-                {model.headerCount}
-              </span>
-            )}
-          </div>
+      <main className="cart-page">
+        <section className="mx-auto w-full max-w-[1416px]">
+          {!isEmpty && (
+            <div className="mb-4 flex items-baseline gap-2">
+              <h1 className="font-bold text-[28px] text-slate-900 leading-none">
+                Корзина
+              </h1>
+              {model.isLoading ? (
+                <Skeleton className="inline-block h-6 w-10 rounded-md align-middle" />
+              ) : (
+                <span className="align-top font-bold text-accent-emphasis text-lg leading-none">
+                  {model.headerCount}
+                </span>
+              )}
+            </div>
+          )}
 
           {model.loadError ? (
             <Card className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-amber-50 px-4 py-3">
@@ -122,19 +123,17 @@ export const CartPage = withViewModel(
                 ) : null}
               </div>
 
-              <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-                <Card>
+              <aside className="cart-total lg:sticky">
+                <CartSummaryCard />
+                <div className="cart-checkout">
                   <ActionButton
                     text="Перейти к оформлению"
                     look="solidSuccess"
                   />
-                  <p className="mt-2 text-center text-[12px] text-slate-500 leading-snug">
+                  <p className="mt-2 text-center text-xs text-slate-500">
                     Способ доставки и оплаты можно выбрать на следующем шаге
                   </p>
-                </Card>
-
-                <CartSummaryCard />
-
+                </div>
                 <Card className="p-0">
                   <ActionButton className="rounded-2xl" look="insetRow">
                     <span className="flex w-full min-w-0 items-center justify-between gap-3">
