@@ -1,82 +1,104 @@
-import { Link } from '@heroui/react';
-import { ChevronDown, LayoutGridIcon, SearchIcon } from 'lucide-react';
+import { Grid2X2, MapPin, Search, X } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useViewModel } from 'mobx-view-model-react';
-import { ActionButton } from '../../../shared/ui/action-button';
+import { useEffect, useRef, useState } from 'react';
 import type { LayoutVM } from '../model';
 import { Navbar } from './navbar';
 
 export const Header = observer(() => {
   const model = useViewModel<LayoutVM>();
-  const { appName } = model.globals.stores.appInfo;
-
+  const [open, setOpen] = useState(false);
+  const catalog = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => {
+      if (!catalog.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        if (catalog.current?.contains(document.activeElement))
+          trigger.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [open]);
   return (
-    <>
-      <header
-        className="sticky top-0 z-20 flex w-full max-w-[1416px] flex-col items-center justify-center rounded-b-[32px] bg-contrast-bg px-4 py-4"
-        ref={model.headerRef}
-      >
-        <div className="mx-auto -mt-2 flex w-full items-center gap-3">
-          <Link
-            aria-label={appName}
-            className="shrink-0 no-underline"
-            href={model.appNameLink}
-          >
-            <span className="font-black text-[38px] text-brand uppercase leading-none tracking-[-0.08em]">
-              {appName}
-            </span>
-          </Link>
-
-          <ActionButton
-            icon={LayoutGridIcon}
-            iconClassName="size-4"
-            look="solidBrand"
-            text="Каталог"
-          />
-
-          <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-xl border-2 border-brand bg-contrast-bg">
-            <ActionButton className="ml-1" look="neutralInset">
-              <span>Везде</span>
-              <ChevronDown className="size-3.5" />
-            </ActionButton>
-            <div className="flex min-w-0 flex-1 items-center px-3">
-              <input
-                aria-label={`Искать на ${appName}`}
-                className="h-10 min-w-0 flex-1 border-none bg-transparent text-slate-700 text-sm outline-none placeholder:text-slate-400"
-                placeholder={`Искать на ${appName}`}
-                type="text"
-              />
-            </div>
-            <ActionButton
-              ariaLabel="Искать"
-              icon={SearchIcon}
-              iconClassName="size-4"
-              look="solidBrandIcon"
-              className="size-10"
-            />
+    <header className="market-header" ref={model.headerRef}>
+      <div className="header-inner">
+        <div className="header-main">
+          <a href="/" className="wordmark">
+            {model.globals.stores.appInfo.appName}
+          </a>
+          <div className="catalog-control" ref={catalog}>
+            <button
+              className="catalog-trigger"
+              type="button"
+              ref={trigger}
+              aria-controls="catalog-menu"
+              aria-expanded={open}
+              onClick={() => setOpen(!open)}
+            >
+              <span className="catalog-icon" aria-hidden="true">
+                <Grid2X2 size={18} />
+                <X size={18} />
+              </span>
+              Каталог
+            </button>
+            <nav
+              id="catalog-menu"
+              className="catalog-menu"
+              aria-label="Категории"
+              inert={!open}
+            >
+              {model.globals.stores.category.mainCategories.map((link) => (
+                <a key={link.href} href={link.href}>
+                  {link.label}
+                </a>
+              ))}
+            </nav>
           </div>
+          <form className="market-search" action="/" role="search">
+            <span>Везде</span>
+            <input
+              name="q"
+              aria-label="Поиск товаров"
+              placeholder="Искать на GOZON"
+              type="search"
+              defaultValue={
+                typeof window === 'undefined'
+                  ? ''
+                  : (new URLSearchParams(window.location.search).get('q') ?? '')
+              }
+            />
+            <button type="submit" aria-label="Искать">
+              <Search size={21} />
+            </button>
+          </form>
           <Navbar />
         </div>
-      </header>
-      <div
-        className={
-          'mx-auto -mt-7 flex w-full max-w-[1416px] items-center gap-4 overflow-x-auto rounded-b-[32px] bg-contrast-bg px-4 py-4 pt-9 text-slate-500 text-xs'
-        }
-      >
-        {model.quickLinks.map(({ href, label }) => (
-          <Link
-            key={href}
-            className="shrink-0 font-medium text-slate-500 no-underline transition-colors hover:text-slate-900"
-            href={href}
-          >
-            {label}
-          </Link>
-        ))}
-        <div className="ml-auto flex shrink-0 items-center gap-3">
-          <span className="text-slate-400 text-xs">Пункт GOZ0N</span>
-          <ActionButton look="linkNeutral" size="s" text="Выберите адрес" />
+        <div className="header-sub">
+          <nav aria-label="Разделы магазина">
+            <a className="sale-link" href="/?sale=1">
+              Распродажа
+            </a>
+            {model.quickLinks.map((link) => (
+              <a key={link.href} href={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
+          <span>
+            <MapPin size={14} /> Россия <i /> RUB
+          </span>
         </div>
       </div>
-    </>
+    </header>
   );
 });

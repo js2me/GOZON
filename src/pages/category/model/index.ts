@@ -25,6 +25,13 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
   firstPageProducts: ProductCardInfo[] = [];
   firstPageHasMoreProducts = true;
 
+  collection = '';
+  chooseCollection = (label: string) => {
+    this.saleOnly = label === 'Акции и скидки';
+    this.collection = this.saleOnly ? '' : label;
+    this.resetListAndReload();
+  };
+
   saleOnly = false;
   sort: ProductSortParam = 'popular';
   priceMinInput = '';
@@ -104,7 +111,8 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
         {
           limit: PAGE_SIZE,
           offset: this.offset,
-          categoryId: this.categoryId,
+          categoryId: this.category?.id ?? this.categoryId,
+          collection: this.collection,
           saleOnly: this.saleOnly,
           minPrice: this.getParsedPriceMin(),
           maxPrice: this.getParsedPriceMax(),
@@ -213,6 +221,7 @@ export class CategoryPageVM extends PageVM<CategoryPageContext | null> {
       isLoadingMore: observableRef,
       hasMoreProducts: observableRef,
       offset: observableRef,
+      collection: observableRef,
       saleOnly: observableRef,
       sort: observableRef,
       priceMinInput: observableRef,

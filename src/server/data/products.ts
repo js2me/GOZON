@@ -3,7 +3,9 @@ import path from 'node:path';
 
 import { type ProductDC, ProductDeliveryVariant } from '../../shared/api/api';
 import { app } from '../app';
-import { CATEGORY_IDS } from './categories';
+import { mockReview, productFeedback } from './product-feedback';
+import { productShowcase } from './product-showcase';
+import { CATEGORY_IDS, getCategoryById } from './categories';
 import { allShops } from './shops';
 
 const productImagesDir = path.resolve(
@@ -76,54 +78,92 @@ function getCategoriesPath() {
 }
 
 export const allProducts = app.faker.helpers.multiple(
-  (_, id): ProductDC => ({
-    id,
-    categoryId: app.faker.helpers.arrayElement([...CATEGORY_IDS]),
-    shopId: allShops[id % allShops.length]?.id ?? 1,
-    originalPrice: +app.faker.commerce.price({ min: 1, max: 10000 }),
-    price: +app.faker.commerce.price({ min: 1, max: 10000 }),
-    rating: app.faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
-    title: app.faker.commerce.productDescription(),
-    reviewsCount: app.faker.number.int({ min: 0, max: 9999999 }),
-    questionsCount: app.faker.number.int({ min: 0, max: 9999 }),
-    returnPeriodDays: app.faker.helpers.arrayElement([7, 14, 15, 21, 30]),
-    deliveryText: app.faker.helpers.arrayElement([
-      'Доставим завтра',
-      'Доставим послезавтра',
-      'Доставка за 2-3 дня',
-    ]),
-    deliveryVariants: app.faker.helpers.arrayElements(
-      [
-        ProductDeliveryVariant.PartnerCourier,
-        ProductDeliveryVariant.PartnerPickupPoints,
-      ],
-      { min: 1, max: 2 },
-    ),
-    hasPriceDropBadge: app.faker.datatype.boolean(0.7),
-    categoriesPath: getCategoriesPath(),
-    characteristics: getCharacteristics(),
-    colorText: app.faker.helpers.arrayElement([
-      'Хлопок и лен серый',
-      'Графитовый меланж',
-      'Молочный',
-      'Темно-синий',
-    ]),
-    images: app.faker.helpers.maybe(getRandomProductImages, {
-      probability: 0.95,
-    }),
-  }),
+  (_, id): ProductDC => {
+    const sample = productShowcase[id];
+    const categoryId = sample
+      ? CATEGORY_IDS[sample.category]!
+      : app.faker.helpers.arrayElement([...CATEGORY_IDS]);
+    const price = app.faker.number.int({ min: 149, max: 6599 });
+    const reviewsCount = sample ? 5 + (id % 4) : 2 + (id % 3);
+    const stars = Array.from(
+      { length: reviewsCount },
+      (_, index) => mockReview(id, index).stars,
+    );
+    return {
+      id,
+      categoryId,
+      shopId: allShops[id % allShops.length]?.id ?? 1,
+      originalPrice: Math.round(
+        price * app.faker.helpers.arrayElement([1, 1.15, 1.4, 1.7, 2.1, 2.6]),
+      ),
+      price,
+      rating: Number(
+        (stars.reduce((total, n) => total + n, 0) / reviewsCount).toFixed(1),
+      ),
+      title: sample?.title ?? app.faker.commerce.productName(),
+      reviewsCount,
+      questionsCount: 3,
+      returnPeriodDays: app.faker.helpers.arrayElement([7, 14, 15, 21, 30]),
+      deliveryText: app.faker.helpers.arrayElement([
+        'Доставим завтра',
+        'Доставим послезавтра',
+        'Доставка за 2-3 дня',
+      ]),
+      deliveryVariants: app.faker.helpers.arrayElements(
+        [
+          ProductDeliveryVariant.PartnerCourier,
+          ProductDeliveryVariant.PartnerPickupPoints,
+        ],
+        { min: 1, max: 2 },
+      ),
+      hasPriceDropBadge: app.faker.datatype.boolean(0.7),
+      categoriesPath: sample
+        ? [{ id: categoryId, title: getCategoryById(categoryId)!.title }]
+        : getCategoriesPath(),
+      characteristics: sample
+        ? [
+            { label: 'Категория', value: getCategoryById(categoryId)!.title },
+            ...(sample.features ?? []),
+            { label: 'Артикул', value: String(id) },
+          ]
+        : getCharacteristics(),
+      colorText: sample
+        ? (sample.color ?? '')
+        : app.faker.helpers.arrayElement([
+            'Хлопок и лен серый',
+            'Графитовый меланж',
+            'Молочный',
+            'Темно-синий',
+          ]),
+      images: sample
+        ? [sample.image, ...(sample.gallery ?? [])].map(
+            (file) => `/api/assets/product-images/${file}`,
+          )
+        : app.faker.helpers.maybe(getRandomProductImages, {
+            probability: 0.95,
+          }),
+    };
+  },
   {
     count: { min: 2000, max: 5000 },
   },
 );
 
 export function getProductById(productId: number): ProductDC | null {
-  return allProducts.find((product) => product.id === productId) ?? null;
+  const product = allProducts.find((item) => item.id === productId);
+  if (!product) return null;
+  const shop = allShops.find((item) => item.id === product.shopId);
+  return {
+    ...product,
+    feedback: productFeedback(product, shop?.name ?? 'GOZON'),
+  };
 }
 
 export type ProductSortOption = 'popular' | 'price_asc' | 'price_desc';
 
 export interface QueryProductsFilters {
+  collection?: string;
+  query?: string;
   categoryId?: string;
   saleOnly?: boolean;
   minPrice?: number;
@@ -133,6 +173,13 @@ export interface QueryProductsFilters {
 
 export function queryProducts(filters: QueryProductsFilters): ProductDC[] {
   const list = allProducts.filter((p) => {
+    if (filters.query && !p.title.toLowerCase().includes(filters.query))
+      return false;
+    if (
+      filters.collection &&
+      !productShowcase[p.id]?.collections?.includes(filters.collection)
+    )
+      return false;
     if (filters.categoryId && p.categoryId !== filters.categoryId) {
       return false;
     }

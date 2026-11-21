@@ -9,9 +9,22 @@ import type { ProductCardInfo, ProductRow } from './types';
 
 const PAGE_SIZE = 100;
 
-export const ITEMS_PER_ROW = 5;
+export const ITEMS_PER_ROW = 10;
 
 export class HomePageVM extends PageVM {
+  get query() {
+    return typeof window === 'undefined'
+      ? ''
+      : (new URLSearchParams(window.location.search).get('q')?.trim() ?? '');
+  }
+
+  get saleOnly() {
+    return (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('sale') === '1'
+    );
+  }
+
   isProductsLoaded = false;
   isLoadingMore = false;
   hasMoreProducts = true;
@@ -73,6 +86,8 @@ export class HomePageVM extends PageVM {
 
     try {
       const { items, hasMore } = await loadProducts({
+        query: this.query,
+        saleOnly: this.saleOnly,
         limit: PAGE_SIZE,
         offset: this.offset,
       });

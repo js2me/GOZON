@@ -1,3 +1,5 @@
+import { FavoritesPage } from '../pages/favorites/page';
+import { OrdersPage } from '../pages/orders/page';
 import { observer } from 'mobx-react-lite';
 import { RouteView, RouteViewGroup } from 'mobx-route/react';
 import { lazy } from 'react';
@@ -45,11 +47,10 @@ export const Routing = observer(({ globals }: { globals: Globals }) => {
   // children, and with `otherwise` a non-route wrapper makes it return null.
   // Page Suspense lives in Layout.
   return (
-    <RouteViewGroup
-      layout={Layout}
-      otherwise={globals.router.routes.notFound}
-    >
+    <RouteViewGroup layout={Layout} otherwise={globals.router.routes.notFound}>
       <RouteView route={globals.router.routes.home} view={HomePage} />
+      <RouteView route={globals.router.routes.orders} view={OrdersPage} />
+      <RouteView route={globals.router.routes.favorites} view={FavoritesPage} />
       <RouteView route={globals.router.routes.profile} view={ProfilePage} />
       <RouteView route={globals.router.routes.cart} view={CartPage} />
       <RouteView route={globals.router.routes.category} view={CategoryPage} />

@@ -44,7 +44,7 @@ export interface ItemCardProps {
 }
 
 const badgeCx = cva(
-  'inline-flex items-center gap-1.5 rounded-[14px] px-3 py-2 text-[13px] font-bold leading-none',
+  'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[13px] font-bold leading-none',
   {
     variants: {
       tone: {
@@ -192,20 +192,15 @@ export const ItemCard = ({
 
   if (loading) {
     return (
-      <article
-        className={cx(
-          'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-contrast-bg p-2',
-          className,
-        )}
-      >
-        <div className="relative overflow-hidden rounded-[18px] bg-slate-100">
+      <article className={cx('market-item flex min-w-0 flex-col', className)}>
+        <div className="relative overflow-hidden rounded-[15px] bg-slate-100">
           <Skeleton
-            className="h-full w-full rounded-[18px]"
+            className="h-full w-full rounded-[15px]"
             style={{ aspectRatio: imageAspectRatio }}
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-2 px-2 pt-2 pb-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 pt-2 pb-2">
           <Skeleton className="h-9 w-1/2 rounded-xl" />
           <Skeleton className="h-6 w-1/3 rounded-xl" />
           <Skeleton className="h-5 w-full rounded-xl" />
@@ -223,12 +218,12 @@ export const ItemCard = ({
   return (
     <article
       className={cx(
-        'flex shrink-0 flex-col overflow-hidden rounded-[20px] bg-contrast-bg p-2 [container-type:inline-size]',
+        'market-item flex min-w-0 flex-col [container-type:inline-size]',
         className,
       )}
     >
       <div
-        className="relative overflow-hidden rounded-[18px] bg-slate-100"
+        className="relative overflow-hidden rounded-[15px] bg-slate-100"
         style={{ aspectRatio: imageAspectRatio }}
       >
         <LinkTag
@@ -270,18 +265,18 @@ export const ItemCard = ({
         {renderDots(slidesCount, clampedActiveSlide)}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col px-2 pt-2 pb-2">
+      <div className="flex min-h-0 flex-1 flex-col pt-2 pb-2">
         <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-          <span className="font-extrabold text-[clamp(16px,10cqw,28px)] text-brand-accent leading-none tracking-[-0.02em]">
+          <span className="font-extrabold text-[clamp(18px,9cqw,24px)] text-brand-accent leading-none tracking-[-0.02em]">
             {price}
           </span>
           {originalPrice ? (
-            <span className="font-semibold text-[clamp(12px,6.5cqw,18px)] text-slate-400 leading-none line-through">
+            <span className="font-semibold text-[13px] text-slate-400 leading-none line-through">
               {originalPrice}
             </span>
           ) : null}
           {discount ? (
-            <span className="font-bold text-[clamp(12px,6.5cqw,18px)] text-brand-accent leading-none">
+            <span className="font-bold text-[13px] text-brand-accent leading-none">
               {discount}
             </span>
           ) : null}
