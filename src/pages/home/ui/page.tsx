@@ -7,8 +7,34 @@ export const HomePage = withViewModel(
   HomePageVM,
   ({ model }) => {
     return (
-      <main className="w-full bg-base-bg pt-6 pb-10">
+      <main className="home-page">
         <section className="mx-auto max-w-354">
+          {model.isProductsLoaded && model.query ? (
+            <h1>Результаты поиска «{model.query}»</h1>
+          ) : model.isProductsLoaded && model.saleOnly ? (
+            <h1>Распродажа</h1>
+          ) : (
+            <a className="campaign" href="/?sale=1">
+              <span className="campaign-brand">GOZON</span>
+              <strong>
+                Большая
+                <br />
+                распродажа
+              </strong>
+              <span className="campaign-cta">
+                Смотреть товары <span aria-hidden="true">↗</span>
+              </span>
+            </a>
+          )}
+          {model.isProductsLoaded && !model.products.length && (
+            <div className="empty-panel">
+              <h2>Товары не найдены</h2>
+              <p>Попробуйте другое название товара.</p>
+              <a className="primary-link" href="/">
+                На главную
+              </a>
+            </div>
+          )}
           {model.isProductsLoaded ? (
             <Virtuoso
               computeItemKey={model.defineComputeItemKey}
@@ -27,7 +53,7 @@ export const HomePage = withViewModel(
   },
   {
     fallback: () => (
-      <main className="w-full bg-base-bg pt-6 pb-10">
+      <main className="home-page">
         <section className="mx-auto max-w-354">
           <ProductCardsRow loading />
         </section>

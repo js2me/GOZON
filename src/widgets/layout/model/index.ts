@@ -1,4 +1,4 @@
-import { House } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { computedStruct, makeObservable, observableRef } from 'mobx';
 import type { ViewModelParams } from 'mobx-view-model';
 import { createRef } from 'yummies/mobx';
@@ -29,19 +29,19 @@ export class LayoutVM extends VM {
   get navItems(): LayoutNavItem[] {
     return [
       {
-        href: this.globals.router.routes.home.createUrl(),
-        icon: House,
-        label: 'Главная',
-      },
-      {
         href: this.globals.router.routes.profile.createUrl(),
         icon: UserIcon,
         label: 'Профиль',
       },
       {
-        href: '/orders',
+        href: this.globals.router.routes.orders.createUrl(),
         icon: BoxIcon,
         label: 'Заказы',
+      },
+      {
+        href: this.globals.router.routes.favorites.createUrl(),
+        icon: Heart,
+        label: 'Избранное',
       },
       {
         href: this.globals.router.routes.cart.createUrl(),
@@ -52,25 +52,7 @@ export class LayoutVM extends VM {
   }
 
   get quickLinks(): LayoutQuickLink[] {
-    return [
-      {
-        href: '/fresh',
-        label: 'GOZ0N fresh',
-      },
-      {
-        href: '/bank',
-        label: 'GOZ0N Банк',
-      },
-      {
-        href: '/travel',
-        label: 'Билеты, отели',
-      },
-      {
-        href: '/business',
-        label: 'Для бизнеса',
-      },
-      ...this.globals.stores.category.mainCategories,
-    ];
+    return this.globals.stores.category.mainCategories;
   }
 
   handleWindowScroll = () => {

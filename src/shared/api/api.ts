@@ -14,7 +14,14 @@ export interface ProductCategoryDC {
   title: string;
 }
 
+export interface ProductFeedback {
+  description: string;
+  reviews: { author: string; date: string; stars: number; text: string }[];
+  questions: { author: string; question: string; answer: string }[];
+}
+
 export interface ProductDC {
+  feedback?: ProductFeedback;
   id: number;
   /** Каталоговая категория (страница `/category/:categoryId`). */
   categoryId: string;
@@ -52,6 +59,7 @@ export interface CategoryTileDC {
 }
 
 export interface CategoryBrandDC {
+  imageSrc: string;
   id: string;
   name: string;
 }
@@ -68,6 +76,8 @@ export interface CategoryPageDC {
   subNav: CategorySubNavItemDC[];
   /** Доп. пункты для выпадающего «Ещё». */
   subNavMore?: CategorySubNavItemDC[];
+  banner?: string;
+  collections?: { label: string; imageSrc: string }[];
   gridTiles: CategoryTileDC[];
   brands: CategoryBrandDC[];
   sidebarCategories: CategorySidebarItemDC[];
@@ -76,6 +86,8 @@ export interface CategoryPageDC {
 export type ProductSortParam = 'popular' | 'price_asc' | 'price_desc';
 
 export interface LoadProductsParams {
+  collection?: string;
+  query?: string;
   limit: number;
   offset: number;
   /** Фильтр по категории маркетплейса. */
@@ -101,6 +113,7 @@ export interface ProfileDC {
 }
 
 export interface ProfileRatingProductDC {
+  imageSrc?: string;
   id: string;
   title: string;
 }
@@ -168,6 +181,8 @@ export const loadProducts = async (
   if (params.minPrice != null && Number.isFinite(params.minPrice)) {
     searchParams.set('minPrice', String(params.minPrice));
   }
+  if (params.collection) searchParams.set('collection', params.collection);
+  if (params.query) searchParams.set('q', params.query);
   if (params.maxPrice != null && Number.isFinite(params.maxPrice)) {
     searchParams.set('maxPrice', String(params.maxPrice));
   }

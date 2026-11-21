@@ -18,6 +18,7 @@ export interface ProfileMenuSection {
 }
 
 export interface ProfileRatingCard {
+  imageSrc?: string;
   id: string;
   title: string;
 }

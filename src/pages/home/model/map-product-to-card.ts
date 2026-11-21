@@ -13,7 +13,10 @@ export function mapProductToCard(product: ProductDC): ProductCardInfo {
     title: product.title,
     imageSrc: product.images?.[0],
     price: `${product.price.toLocaleString('ru-RU')} ₽`,
-    originalPrice: `${product.originalPrice.toLocaleString('ru-RU')} ₽`,
+    originalPrice:
+      discountPercent > 0
+        ? `${product.originalPrice.toLocaleString('ru-RU')} ₽`
+        : undefined,
     discount: discountPercent > 0 ? `-${discountPercent}%` : undefined,
     badge:
       discountPercent >= 50

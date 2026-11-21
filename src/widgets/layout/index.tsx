@@ -11,7 +11,7 @@ export const Layout = withViewModel(
   LayoutVM,
   ({ children, model }: LayoutProps) => {
     return (
-      <div className="flex min-h-screen w-full flex-col items-center bg-base-bg">
+      <div className="market-shell flex min-h-screen w-full flex-col items-center bg-base-bg">
         <Header />
         {model.favorites.loadError ? (
           <div
@@ -29,9 +29,21 @@ export const Layout = withViewModel(
             </button>
           </div>
         ) : null}
-        <div className="flex w-full max-w-[1416px] flex-1 flex-col">
+        <div className="market-content">
           <Suspense fallback={null}>{children}</Suspense>
         </div>
+        <footer className="market-footer">
+          <a className="wordmark" href="/">
+            {model.globals.stores.appInfo.appName}
+          </a>
+          <nav aria-label="Покупателям">
+            {model.navItems.map((item) => (
+              <a key={item.href} href={item.href}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </footer>
       </div>
     );
   },

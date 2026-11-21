@@ -156,21 +156,21 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get isAddingToCart(): boolean {
-    if (!this.productId) {
+    if (this.productId == null) {
       return false;
     }
     return this.globals.stores.cart.isAddingProduct(this.productId);
   }
 
   get isInCart(): boolean {
-    if (!this.productId || this.globals.ssr) {
+    if (this.productId == null || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.cart.hasProduct(this.productId);
   }
 
   get isFavorite(): boolean {
-    if (!this.productId || this.globals.ssr) {
+    if (this.productId == null || this.globals.ssr) {
       return false;
     }
     return this.globals.stores.favorites.hasProduct(this.productId);
@@ -192,7 +192,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get cartQuantity(): number {
-    if (!this.productId) {
+    if (this.productId == null) {
       return 0;
     }
 
@@ -203,7 +203,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   }
 
   get canIncreaseCartQuantity(): boolean {
-    if (!this.productId) {
+    if (this.productId == null) {
       return false;
     }
 
@@ -222,7 +222,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   addToCart = async () => {
-    if (!this.productId || this.isAddingToCart || this.isInCart) {
+    if (this.productId == null || this.isAddingToCart || this.isInCart) {
       return;
     }
 
@@ -234,7 +234,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   toggleFavorite = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
     this.globals.stores.favorites.toggleProduct(this.productId);
@@ -262,7 +262,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   incrementCartQuantity = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
 
@@ -270,7 +270,7 @@ export class ProductPageVM extends PageVM<ProductPageContext | null> {
   };
 
   decrementCartQuantity = () => {
-    if (!this.productId) {
+    if (this.productId == null) {
       return;
     }
 

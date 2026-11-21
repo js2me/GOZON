@@ -6,7 +6,7 @@ export interface ProductCardInfo {
   title: string;
   imageSrc?: string;
   price: string;
-  originalPrice: string;
+  originalPrice?: string;
   discount?: string;
   badge?: ItemCardBadge | null;
   priceMeta?: ItemCardMeta;
